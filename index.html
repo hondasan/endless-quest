@@ -12,14 +12,15 @@
             --border: #fff;
             --font: 'DotGothic16', sans-serif;
             --accent-red: #e53935;
-            --accent-blue: #1e88e5;
+            --accent-blue: #2979ff;
+            --accent-ice: #80d8ff;
             --accent-yellow: #fdd835;
             --accent-green: #43a047;
-            --accent-purple: #9c27b0;
+            --accent-purple: #d500f9;
             --accent-cyan: #00bcd4;
             --window-border: 2px solid #fff;
             --window-radius: 4px;
-            --anim-speed: 1; /* Speed multiplier for CSS */
+            --anim-speed: 1;
         }
 
         body {
@@ -28,6 +29,10 @@
             height: 100vh; overflow: hidden; user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
+
+        /* Ruby Style */
+        ruby { font-family: var(--font); }
+        rt { font-size: 0.5em; color: var(--accent-cyan); font-weight: normal; user-select: none;}
 
         .game-container {
             width: 100%; max-width: 600px; height: 100%; max-height: 95vh;
@@ -40,13 +45,13 @@
         /* Speed Mode Class */
         .speed-x2 { --anim-speed: 2; }
 
-        /* Awakening Mode Style */
-        .awakening-mode {
-            border-color: var(--accent-red);
-            box-shadow: 0 0 20px var(--accent-red), inset 0 0 50px rgba(200, 0, 0, 0.3);
-            animation: pulse-border 1s infinite alternate;
+        /* Absolute Defense Mode Style (Blue/Ice theme) */
+        .defense-mode {
+            border-color: var(--accent-ice);
+            box-shadow: 0 0 20px var(--accent-ice), inset 0 0 50px rgba(0, 200, 255, 0.3);
+            animation: pulse-defense 1s infinite alternate;
         }
-        @keyframes pulse-border { from { box-shadow: 0 0 10px #500; } to { box-shadow: 0 0 30px #f00; } }
+        @keyframes pulse-defense { from { box-shadow: 0 0 10px #005; } to { box-shadow: 0 0 30px #0ff; } }
 
         /* Header & Progress */
         .header-row { display: flex; gap: 5px; align-items: center; margin-bottom: 5px; flex-shrink: 0; }
@@ -76,12 +81,19 @@
         }
         .status-row { display: flex; justify-content: space-between; align-items: center; line-height: 1.3; }
         .val-hp { color: var(--accent-green); font-weight: bold; }
-        .val-mp { color: var(--accent-blue); }
+        .val-mp { color: var(--accent-blue); font-weight: bold;}
         .val-atk { color: var(--accent-red); }
         .val-def { color: var(--accent-blue); }
         .val-gold { color: var(--accent-yellow); }
         .chain-val { color: var(--accent-yellow); font-weight: bold; text-shadow: 0 0 5px orange; }
-        .awakening-text { color: var(--accent-red); font-weight: bold; animation: blink 0.1s infinite; display: none; margin-left:5px; font-size:0.8rem;}
+        
+        /* Awakening Text updated to Defense */
+        .awakening-text { 
+            color: var(--accent-ice); font-weight: bold; 
+            animation: blink 0.2s infinite alternate; display: none; margin-left:5px; font-size:0.8rem;
+            text-shadow: 0 0 5px #0ff;
+        }
+
         .gen-info { 
             font-size: 0.75rem; color: #aaa; border-top: 1px dashed #333; margin-top: 2px; padding-top: 2px;
             display: flex; flex-direction: column; gap: 1px;
@@ -90,7 +102,7 @@
         .hp-danger { color: var(--accent-red); animation: blink 0.2s infinite alternate; }
         .aura-indicator { font-size: 0.9rem; font-weight: bold; color: #fff; }
         .title-badge { color: var(--accent-purple); border: 1px solid var(--accent-purple); padding: 0 3px; font-size: 0.7rem; border-radius: 3px; margin-right: 5px; }
-        @keyframes blink { from { opacity: 1; } to { opacity: 0.3; } }
+        @keyframes blink { from { opacity: 1; } to { opacity: 0.5; } }
 
         /* Stage */
         .stage {
@@ -103,9 +115,9 @@
             background-size: cover; box-shadow: inset 0 0 50px #000;
         }
         
-        .awakening-mode .stage {
-            background-image: radial-gradient(circle, rgba(50,0,0,0.2) 0%, rgba(0,0,0,0.9) 100%),
-            repeating-linear-gradient(0deg, transparent 0, transparent 2px, #300 2px, #300 4px);
+        .defense-mode .stage {
+            background-image: radial-gradient(circle, rgba(0,20,50,0.4) 0%, rgba(0,0,0,0.9) 100%),
+            repeating-linear-gradient(0deg, transparent 0, transparent 2px, #002 2px, #002 4px);
         }
 
         .character {
@@ -116,6 +128,16 @@
 
         /* Stage Overlays */
         .flash { position: absolute; top:0; left:0; width:100%; height:100%; background: white; opacity:0; pointer-events:none; z-index:99; transition: opacity 0.1s; }
+        
+        /* Just Guard Flash */
+        .flash-invert {
+            position: absolute; top:0; left:0; width:100%; height:100%; 
+            background: white; mix-blend-mode: difference;
+            opacity:0; pointer-events:none; z-index:98; 
+        }
+        .anim-invert { animation: invert-flash 0.2s ease-out; }
+        @keyframes invert-flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+
         .danger-overlay {
             position: absolute; top:0; left:0; right:0; bottom:0;
             box-shadow: inset 0 0 80px 30px rgba(200, 0, 0, 0.6);
@@ -123,13 +145,20 @@
             animation: pulse-danger 0.8s infinite alternate; display: none;
         }
         @keyframes pulse-danger { from { opacity: 0.3; } to { opacity: 1; } }
+        
         .cutin {
             position: absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
-            font-size: 3rem; color:var(--accent-yellow); -webkit-text-stroke: 2px #000; font-style: italic;
+            font-size: 3rem; color:var(--accent-yellow); -webkit-text-stroke: 1px #000; font-style: italic;
             text-shadow: 4px 4px 0 #d32f2f; background:rgba(0,0,0,0.8); padding:10px 30px; border:2px solid #fff;
             z-index:100; transition: transform 0.1s; white-space: nowrap; pointer-events: none;
         }
-        .cutin.just { color: #88ffff; text-shadow: 0 0 10px #00ffff; border-color: #00ffff; font-family: sans-serif; letter-spacing: 5px; }
+        /* Just Guard Style */
+        .cutin.just { 
+            color: #fff; text-shadow: 0 0 10px #0ff, 0 0 20px #00f; 
+            border-color: #0ff; background: rgba(0,0,20,0.9);
+            font-family: serif; letter-spacing: 0.1em;
+        }
+        
         .chain-pop {
              position: absolute; top:30%; left:50%; transform:translate(-50%,-50%) scale(0);
              font-size: 4rem; color:var(--accent-yellow); font-weight: bold; font-style: italic;
@@ -144,6 +173,7 @@
         .damage-pop.deal.crit { font-size: 5rem; color: #ffeb3b; text-shadow: 3px 3px 0 #d32f2f; z-index: 25; }
         .damage-pop.take { top: 60%; font-size: 4rem; color: #e53935; }
         .damage-pop.heal { top: 50%; font-size: 3rem; color: #43a047; }
+        .damage-pop.block { top: 55%; font-size: 2.5rem; color: #80d8ff; text-shadow: 0 0 5px #00f; }
         .damage-pop.miss { top: 45%; font-size: 2rem; color: #aaa; }
         @keyframes pop-damage { 0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; } 15% { transform: translate(-50%, -30px) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -60px) scale(1); opacity: 0; } }
 
@@ -163,7 +193,7 @@
         .chest-label { font-size: 0.7rem; color: #aaa; background: #333; padding: 2px 5px; border-radius: 4px; margin-bottom: 5px; width: 100%; text-align: center; }
         .new .chest-label { color: #000; background: var(--accent-yellow); font-weight: bold; }
         .chest-icon { width: 48px; height: 48px; border: 1px solid #444; background: #000; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; }
-        .chest-name { font-size: 0.9rem; font-weight: bold; color: #fff; margin-bottom: 2px; text-align: center; height: 2.2em; overflow: hidden; line-height: 1.1;}
+        .chest-name { font-size: 0.9rem; font-weight: bold; color: #fff; margin-bottom: 2px; text-align: center; height: 2.5em; overflow: hidden; line-height: 1.1; display:flex; align-items:center; justify-content:center;}
         .chest-stat { font-size: 1rem; color: #fff; font-weight: bold; }
         .chest-sub { font-size: 0.7rem; color: #ccc; min-height: 1rem;}
         .chest-effect { font-size: 0.7rem; color: var(--accent-purple); font-weight: bold; margin-top: 2px; text-shadow: 0 0 3px #a0f;}
@@ -176,7 +206,7 @@
             z-index: 40; background: rgba(0,0,0,0.9); text-align: center; color: #fff;
         }
         .event-title { font-size: 2rem; color: var(--accent-cyan); margin-bottom: 20px; text-shadow: 0 0 10px #0ff; }
-        .event-desc { font-size: 1rem; margin-bottom: 30px; line-height: 1.5; }
+        .event-desc { font-size: 1rem; margin-bottom: 30px; line-height: 1.5; padding: 0 20px;}
 
         /* Gauge */
         .gauge-area {
@@ -189,14 +219,15 @@
 
         /* Log */
         .log-area {
-            height: 80px; background: #000; border: var(--window-border); border-radius: var(--window-radius);
-            margin-bottom: 5px; padding: 5px; overflow-y: hidden; font-size: 0.85rem; line-height: 1.4;
+            height: 90px; background: #000; border: var(--window-border); border-radius: var(--window-radius);
+            margin-bottom: 5px; padding: 5px; overflow-y: hidden; font-size: 0.85rem; line-height: 1.5;
             display: flex; flex-direction: column-reverse; flex-shrink: 0;
         }
         .log-entry { border-bottom: 1px dashed #333; padding: 1px 0; }
         .log-entry.damage { color: var(--accent-red); }
         .log-entry.critical { color: var(--accent-yellow); font-weight: bold; }
         .log-entry.revive { color: var(--accent-green); }
+        .log-entry.block { color: var(--accent-ice); text-shadow: 0 0 2px #0ff; }
         .log-entry.flavor { color: #888; font-style: italic; font-size: 0.8rem; }
         .log-entry.item { color: var(--accent-yellow); border: 1px solid #555; background: #222; text-align: center; }
 
@@ -290,7 +321,7 @@
             <div class="equip-row"><span>E:<span id="disp-weapon">素手</span></span> <span>E:<span id="disp-armor">服</span></span></div>
             <div class="equip-row" style="color:var(--accent-purple);"><span>A:<span id="disp-acc">なし</span></span></div>
             <div class="status-row">
-                <span class="chain-val">CHAIN: <span id="disp-chain">0</span> <span id="awake-txt" class="awakening-text">AWAKENING!</span></span>
+                <span class="chain-val">CHAIN: <span id="disp-chain">0</span> <span id="awake-txt" class="awakening-text">≪絶対防御界≫</span></span>
                 <span class="aura-indicator" id="disp-aura">READY</span>
             </div>
         </div>
@@ -298,6 +329,7 @@
 
     <div class="stage" id="stage">
         <div class="flash" id="flash"></div>
+        <div class="flash-invert" id="flash-invert"></div>
         <div class="danger-overlay" id="danger-overlay"></div>
         <div class="cutin" id="cutin"></div>
         <div class="chain-pop" id="chain-pop"></div>
@@ -356,17 +388,17 @@
     </div>
 
     <div class="log-area" id="log">
-        <div class="log-entry system">クリックして冒険の書を開く</div>
+        <div class="log-entry system">クリックして<ruby>冒険の書<rt>クロニクル</rt></ruby>を開く</div>
     </div>
 
     <div class="controls">
         <button id="btn-main" class="main-btn" onclick="game.handleMainBtn()">運命の抽選へ</button>
         
         <div id="menu-battle" class="command-menu">
-            <button onclick="game.selectAttack()">こうげき</button>
-            <button onclick="game.openSkills()">とくぎ</button>
-            <button onclick="game.selectHeal()">じゅもん</button>
-            <button style="border-color:var(--accent-blue); color:var(--accent-blue);" onclick="game.openLibrary()">ずかん</button>
+            <button onclick="game.selectAttack()"><ruby>攻撃<rt>アタック</rt></ruby></button>
+            <button onclick="game.openSkills()"><ruby>奥義<rt>スキル</rt></ruby></button>
+            <button onclick="game.selectHeal()"><ruby>治癒<rt>ヒール</rt></ruby></button>
+            <button style="border-color:var(--accent-blue); color:var(--accent-blue);" onclick="game.openLibrary()"><ruby>全知<rt>アーカイブ</rt></ruby></button>
         </div>
         
         <!-- Chest Menu (Displayed in controls area) -->
@@ -385,7 +417,7 @@
     <div id="lib-modal" class="modal-overlay">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; width:100%; border-bottom:2px solid #fff; padding-bottom:10px; margin-bottom:10px;">
-                <span>冒険の記録</span>
+                <span><ruby>冒険の記録<rt>アカシックレコード</rt></ruby></span>
                 <button style="width:auto; padding:5px 20px;" onclick="game.closeLibrary()">閉じる</button>
             </div>
             <div style="font-size:0.8rem; margin-bottom:5px; color:#aaa;">※紫枠はソウル(装飾品)</div>
@@ -403,8 +435,8 @@
             <div style="text-align:left; height:300px; overflow-y:auto; font-size:0.9rem;">
                 <p><strong>[基本]</strong><br>地下30階の魔王を討伐せよ。<br>世代(周回)が進むほど敵は強大になる。</p>
                 <p><strong>[装飾品とソウル]</strong><br>3つ目の装備枠。敵が低確率で落とす「魂」は装飾品として装備可能。</p>
-                <p><strong>[覚醒 (Awakening)]</strong><br>CHAIN 5以上で発動。攻撃力2倍、防御力0。</p>
-                <p><strong>[ジャストガード]</strong><br>敵の攻撃モーション中にボタンを押して無効化。</p>
+                <p><strong>[絶対防御界 (Defense Field)]</strong><br>CHAIN 5以上で自動発動。MPを消費してダメージを完全無効化する。MPが切れると解除。</p>
+                <p><strong>[JUSTガード]</strong><br>敵の攻撃に合わせてボタンを押すと発動。ダメージ無効＋反撃。</p>
                 <button class="reset-btn" style="border:1px solid #f44; color:#f44; margin-top:20px; padding:10px; width:100%;" onclick="game.resetSaveData()">セーブデータを削除</button>
             </div>
         </div>
@@ -413,7 +445,7 @@
     <!-- Shop -->
     <div id="shop-modal" class="modal-overlay">
         <div class="modal-content">
-            <div style="text-align:center; font-size:1.5rem; color:var(--accent-purple);">闇市 - 魂の等価交換 -</div>
+            <div style="text-align:center; font-size:1.5rem; color:var(--accent-purple);">闇市 - <ruby>魂の等価交換<rt>ソウル・トレード</rt></ruby> -</div>
             <div style="text-align:center; margin-bottom:10px;">所持金: <span id="shop-gold" class="gold-val">0</span> G</div>
             <div class="scroll-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="shop-btn" onclick="game.buyBoost('hp')"><div>HP+5</div><div style="color:var(--accent-yellow);">500G</div></div>
@@ -450,7 +482,7 @@ class SoundManager {
         if (type==='select') { o.type='square'; o.frequency.setValueAtTime(440,t); o.frequency.exponentialRampToValueAtTime(880,t+0.05); g.gain.setValueAtTime(0.1,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.05); o.start(t); o.stop(t+0.05); }
         else if (type==='attack') { o.type='sawtooth'; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(50,t+0.1); g.gain.setValueAtTime(0.1,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.1); o.start(t); o.stop(t+0.1); }
         else if (type==='hit') { o.type='square'; o.frequency.setValueAtTime(100,t); g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.1); o.start(t); o.stop(t+0.1); }
-        else if (type==='parry') { o.type='triangle'; o.frequency.setValueAtTime(800,t); o.frequency.linearRampToValueAtTime(1200,t+0.05); g.gain.setValueAtTime(0.2,t); g.gain.linearRampToValueAtTime(0,t+0.2); o.start(t); o.stop(t+0.2); }
+        else if (type==='parry') { o.type='triangle'; o.frequency.setValueAtTime(800,t); o.frequency.linearRampToValueAtTime(1600,t+0.05); g.gain.setValueAtTime(0.3,t); g.gain.linearRampToValueAtTime(0,t+0.2); o.start(t); o.stop(t+0.2); }
         else if (type==='crit') { o.type='square'; o.frequency.setValueAtTime(880,t); o.frequency.setValueAtTime(1760,t+0.1); g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.3); o.start(t); o.stop(t+0.3); }
         else if (type === 'revive') {
             const freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51, 2093.00]; 
@@ -480,9 +512,14 @@ class SoundManager {
 }
 
 /** DATA */
-const SAVE_KEY = 'EQ_SAVE_V200';
-const WEAPON_PREFIXES = ["朽ちた", "鉄塊の", "煉獄の", "名工の", "虚無の", "絶対零度の", "雷光の", "聖なる", "深淵の", "神話の"];
-const WEAPON_COLORS = ["#888", "#abc", "#fff", "#da8", "#f44", "#48f", "#fd0", "#ff8", "#808", "#4f4"];
+const SAVE_KEY = 'EQ_SAVE_V300';
+const WEAPON_PREFIXES = [
+    {t:"朽ちた",r:"クチタ"}, {t:"鉄塊の",r:"テッカイノ"}, {t:"煉獄の",r:"レンゴクノ"}, {t:"名工の",r:"メイコウノ"}, 
+    {t:"虚無の",r:"ヴォイド"}, {t:"絶対零度",r:"アブソリュート"}, {t:"雷光の",r:"ライトニング"}, {t:"聖なる",r:"ホーリー"}, 
+    {t:"深淵の",r:"アビス"}, {t:"神話の",r:"ミソロジー"}, {t:"黄昏の",r:"トワイライト"}, {t:"終焉の",r:"カタストロフィ"},
+    {t:"神殺しの",r:"ゴッドスレイヤー"}, {t:"禁忌の",r:"タブー"}, {t:"幻影の",r:"ファントム"}, {t:"血塗られた",r:"ブラッディ"}
+];
+const WEAPON_COLORS = ["#888", "#abc", "#d44", "#da8", "#a4a", "#8df", "#fd0", "#ff8", "#808", "#f4f", "#f84", "#444", "#f00", "#606", "#88f", "#900"];
 
 function generateSVG(data, colorOverride=null, metal=false) {
     if (!data || !data.pixels) return '<svg viewBox="0 0 16 16"></svg>';
@@ -530,69 +567,99 @@ const SPRITES = {
     mimic: { color: "#d84", pixels: [{x:3,y:4,w:10,h:8},{x:2,y:4,w:1,h:8},{x:13,y:4,w:1,h:8},{x:4,y:3,w:8,h:1},{x:6,y:6,w:1,h:2,c:"#fff"},{x:9,y:6,w:1,h:2,c:"#fff"},{x:4,y:9,w:8,h:2,c:"#800"}] },
     ghost: { color: "#eee", pixels: [{x:5,y:2,w:6,h:8,c:"#fff"},{x:3,y:6,w:10,h:6,c:"#eee"},{x:5,y:5,w:2,h:2,c:"#000"},{x:9,y:5,w:2,h:2,c:"#000"},{x:6,y:9,w:4,h:2,c:"#f00"}] },
     reaper: { color: "#222", pixels: [{x:6,y:2,w:4,h:4,c:"#fff"},{x:5,y:6,w:6,h:8},{x:2,y:4,w:12,h:2},{x:12,y:2,w:2,h:12,c:"#888"}] },
+    // NEW ENEMIES
+    cerberus: { color: "#840", pixels: [{x:1,y:4,w:4,h:4},{x:6,y:2,w:4,h:6},{x:11,y:4,w:4,h:4},{x:2,y:5,w:1,h:1,c:"#f00"},{x:7,y:4,w:1,h:1,c:"#f00"},{x:12,y:5,w:1,h:1,c:"#f00"},{x:4,y:8,w:8,h:6,c:"#630"}]},
+    dullahan: { color: "#334", pixels: [{x:6,y:6,w:6,h:8},{x:1,y:6,w:3,h:4,c:"#da8"},{x:1,y:5,w:3,h:2,c:"#222"},{x:10,y:2,w:2,h:10,c:"#888"}]},
+    lich: { color: "#426", pixels: [{x:6,y:2,w:4,h:4,c:"#eea"},{x:5,y:6,w:6,h:8,c:"#426"},{x:3,y:3,w:1,h:10,c:"#a84"},{x:2,y:2,w:3,h:1,c:"#d4f"}]},
+    chimera: { color: "#d84", pixels: [{x:4,y:4,w:8,h:6},{x:2,y:2,w:4,h:4,c:"#da8"},{x:10,y:2,w:4,h:4,c:"#4a2"},{x:12,y:6,w:2,h:6,c:"#a22"}]},
+    angel: { color: "#eea", pixels: [{x:6,y:2,w:4,h:4},{x:1,y:3,w:4,h:8,c:"#fff"},{x:11,y:3,w:4,h:8,c:"#fff"},{x:6,y:6,w:4,h:8,c:"#ccc"},{x:6,y:1,w:4,h:1,c:"#fd0"}]},
+    fallen: { color: "#222", pixels: [{x:6,y:2,w:4,h:4,c:"#ccc"},{x:1,y:3,w:4,h:8,c:"#222"},{x:11,y:3,w:4,h:8,c:"#222"},{x:6,y:6,w:4,h:8,c:"#444"}]},
+
     // NPC
     npc_princess: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#fa8"},{x:5,y:6,w:6,h:8,c:"#f8a"},{x:4,y:7,w:2,h:4,c:"#fca"},{x:10,y:7,w:2,h:4,c:"#fca"}] },
     npc_king: { color: "#fca", pixels: [{x:5,y:1,w:6,h:5,c:"#fff"},{x:6,y:0,w:4,h:2,c:"#fd0"},{x:4,y:6,w:8,h:8,c:"#a22"},{x:6,y:7,w:4,h:6,c:"#fff"}] },
     npc_friend: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#642"},{x:5,y:6,w:6,h:6,c:"#48a"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
     npc_healer: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#fcc"},{x:5,y:6,w:6,h:6,c:"#fff"},{x:7,y:8,w:2,h:2,c:"#8f8"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
-    npc_merchant: { color: "#da8", pixels: [{x:5,y:1,w:6,h:4,c:"#d84"},{x:4,y:5,w:8,h:8,c:"#642"},{x:3,y:5,w:2,h:6,c:"#da8"}] },
 };
 
 const SKILLS = [
-    { id: "fire", name: "紅蓮の腕", mp: 3, dmg: 2.0, msg: "焼き尽くせ！" },
-    { id: "vac", name: "断空の太刀", mp: 5, dmg: 2.5, msg: "空を切る！" },
-    { id: "falcon", name: "幻影連撃", mp: 8, dmg: 1.0, times: 2, msg: "残像だ..." },
-    { id: "gigadein", name: "天雷招来", mp: 15, dmg: 5.0, msg: "消え失せろ！" },
-    { id: "heal", name: "因果逆転", mp: 5, heal: 60, type: "heal", msg: "時を戻す！" },
-    { id: "smash", name: "脳天唐竹", mp: 4, dmg: 2.2, msg: "砕け散れ！" },
-    { id: "all", name: "旋風乱舞", mp: 6, dmg: 1.8, msg: "一網打尽！" },
-    { id: "crit", name: "瞬獄殺", mp: 4, dmg: 1.2, msg: "死角なし！" },
-    { id: "magic", name: "黒炎弾", mp: 6, dmg: 3.0, msg: "闇に飲まれよ！" }
+    { id: "fire", name: "<ruby>紅蓮<rt>グレン</rt></ruby>の<ruby>腕<rt>カイナ</rt></ruby>", mp: 3, dmg: 2.0, msg: "焼き尽くせ！" },
+    { id: "vac", name: "<ruby>断空<rt>ダンクウ</rt></ruby>の<ruby>太刀<rt>タチ</rt></ruby>", mp: 5, dmg: 2.5, msg: "空を切る！" },
+    { id: "falcon", name: "<ruby>幻影<rt>ゲンエイ</rt></ruby><ruby>連撃<rt>レンゲキ</rt></ruby>", mp: 8, dmg: 1.0, times: 2, msg: "残像だ..." },
+    { id: "gigadein", name: "<ruby>天雷<rt>テンライ</rt></ruby><ruby>招来<rt>ショウライ</rt></ruby>", mp: 15, dmg: 5.0, msg: "消え失せろ！" },
+    { id: "heal", name: "<ruby>因果<rt>インガ</rt></ruby><ruby>逆転<rt>ギャクテン</rt></ruby>", mp: 5, heal: 60, type: "heal", msg: "時を戻す！" },
+    { id: "smash", name: "<ruby>脳天<rt>ノウテン</rt></ruby><ruby>唐竹<rt>カラタケ</rt></ruby>", mp: 4, dmg: 2.2, msg: "砕け散れ！" },
+    { id: "all", name: "<ruby>旋風<rt>センプウ</rt></ruby><ruby>乱舞<rt>ランブ</rt></ruby>", mp: 6, dmg: 1.8, msg: "一網打尽！" },
+    { id: "crit", name: "<ruby>瞬獄殺<rt>シュンゴクサツ</rt></ruby>", mp: 4, dmg: 1.2, msg: "死角なし！" },
+    { id: "magic", name: "<ruby>黒炎弾<rt>コクエンダン</rt></ruby>", mp: 6, dmg: 3.0, msg: "闇に飲まれよ！" }
 ];
 
 const ITEMS = [
-    { id: "stick", type:"w", name: "始まりの枝", atk: 2, prob: 0.2, sprite: "stick", color: "#a84" },
-    { id: "club", type:"w", name: "蛮族の棍棒", atk: 4, prob: 0.15, sprite: "club", color: "#953", skillId: "smash" },
-    { id: "cloth", type:"a", name: "旅人の外套", def: 1, prob: 0.2, sprite: "a_cloth", color: "#dca" },
-    { id: "leather", type:"a", name: "獣の皮鎧", def: 3, prob: 0.15, sprite: "a_leather", color: "#a64" },
+    { id: "stick", type:"w", name: "<ruby>始<rt>ハジ</rt></ruby>まりの<ruby>枝<rt>エダ</rt></ruby>", atk: 2, prob: 0.2, sprite: "stick", color: "#a84" },
+    { id: "club", type:"w", name: "<ruby>蛮族<rt>バンゾク</rt></ruby>の<ruby>棍棒<rt>コンボウ</rt></ruby>", atk: 4, prob: 0.15, sprite: "club", color: "#953", skillId: "smash" },
+    { id: "cloth", type:"a", name: "<ruby>旅人<rt>タビビト</rt></ruby>の<ruby>外套<rt>ガイトウ</rt></ruby>", def: 1, prob: 0.2, sprite: "a_cloth", color: "#dca" },
+    { id: "leather", type:"a", name: "<ruby>獣<rt>ケモノ</rt></ruby>の<ruby>皮鎧<rt>カワヨロイ</rt></ruby>", def: 3, prob: 0.15, sprite: "a_leather", color: "#a64" },
     // Artifacts
-    { id: "ring_str", type:"acc", name: "剛力の指輪", atk: 5, prob: 0.1, sprite: "ring", color: "#f44" },
-    { id: "amu_pro", type:"acc", name: "守護の護符", def: 5, prob: 0.1, sprite: "amulet", color: "#48f" },
-    { id: "acc_vamp", type:"acc", name: "吸血鬼の牙", atk: 10, prob: 0.05, sprite: "amulet", color: "#a00", effect: "drain", effectName: "吸血" },
-    { id: "acc_gold", type:"acc", name: "強欲の壺", def: 0, prob: 0.05, sprite: "ring", color: "#fd0", effect: "greed", effectName: "富豪" },
-    { id: "acc_revive", type:"acc", name: "フェニックスの尾", def: 2, prob: 0.01, sprite: "soul", color: "#f80", effect: "rebirth", effectName: "再誕" },
+    { id: "ring_str", type:"acc", name: "<ruby>剛力<rt>ゴウリキ</rt></ruby>の<ruby>指輪<rt>リング</rt></ruby>", atk: 5, prob: 0.1, sprite: "ring", color: "#f44" },
+    { id: "amu_pro", type:"acc", name: "<ruby>守護<rt>シュゴ</rt></ruby>の<ruby>護符<rt>アミュレット</rt></ruby>", def: 5, prob: 0.1, sprite: "amulet", color: "#48f" },
+    { id: "acc_vamp", type:"acc", name: "<ruby>吸血鬼<rt>ヴァンパイア</rt></ruby>の<ruby>牙<rt>キバ</rt></ruby>", atk: 10, prob: 0.05, sprite: "amulet", color: "#a00", effect: "drain", effectName: "吸血" },
+    { id: "acc_gold", type:"acc", name: "<ruby>強欲<rt>グリード</rt></ruby>の<ruby>壺<rt>ツボ</rt></ruby>", def: 0, prob: 0.05, sprite: "ring", color: "#fd0", effect: "greed", effectName: "富豪" },
+    { id: "acc_revive", type:"acc", name: "フェニックスの<ruby>尾<rt>オ</rt></ruby>", def: 2, prob: 0.01, sprite: "soul", color: "#f80", effect: "rebirth", effectName: "再誕" },
 ];
 const W_TYPES = [{id:"sword",name:"剣",base:8,sp:"sword",sk:"fire"},{id:"axe",name:"斧",base:10,sp:"axe",sk:"smash"},{id:"spear",name:"槍",base:9,sp:"spear",sk:"crit"},{id:"hammer",name:"槌",base:12,sp:"hammer",sk:"all"},{id:"wand",name:"杖",base:6,sp:"wand",sk:"magic"}];
 const A_TYPES = [{id:"chain",name:"鎖帷子",base:5,sp:"a_chain"},{id:"iron",name:"鉄の鎧",base:10,sp:"a_iron"},{id:"steel",name:"鋼の鎧",base:15,sp:"a_steel"},{id:"dragon",name:"竜の鎧",base:22,sp:"a_dragon"},{id:"hero",name:"光の鎧",base:30,sp:"a_hero"}];
 
-W_TYPES.forEach(t=>{ WEAPON_PREFIXES.forEach((pre,i)=>{ ITEMS.push({id:`${t.id}_${i}`,type:"w",name:`${pre}${t.name}`,atk:t.base+(i*5),prob:0.1/(i+1),sprite:t.sp,color:WEAPON_COLORS[i],skillId:t.sk}); }); });
-A_TYPES.forEach(t=>{ WEAPON_PREFIXES.forEach((pre,i)=>{ ITEMS.push({id:`${t.id}_${i}`,type:"a",name:`${pre}${t.name}`,def:t.base+(i*3),prob:0.1/(i+1),sprite:t.sp,color:WEAPON_COLORS[i]}); }); });
+W_TYPES.forEach(t=>{ 
+    WEAPON_PREFIXES.forEach((pre,i)=>{ 
+        const rName = `<ruby>${pre.t}<rt>${pre.r}</rt></ruby>${t.name}`;
+        ITEMS.push({id:`${t.id}_${i}`,type:"w",name:rName,atk:t.base+(i*5),prob:0.1/(i+1),sprite:t.sp,color:WEAPON_COLORS[i],skillId:t.sk}); 
+    }); 
+});
+A_TYPES.forEach(t=>{ 
+    WEAPON_PREFIXES.forEach((pre,i)=>{ 
+        const rName = `<ruby>${pre.t}<rt>${pre.r}</rt></ruby>${t.name}`;
+        ITEMS.push({id:`${t.id}_${i}`,type:"a",name:rName,def:t.base+(i*3),prob:0.1/(i+1),sprite:t.sp,color:WEAPON_COLORS[i]}); 
+    }); 
+});
 
 ITEMS.push(
     { id: "hero_w", type:"w", name: "ラグナロク", atk: 80, prob: 0.005, sprite: "sword", color: "#48f", skillId: "gigadein" },
-    { id: "metal_w", type:"w", name: "魔剣オメガ", atk: 40, prob: 0.01, sprite: "sword", color: "#ccc", skillId: "falcon" },
+    { id: "metal_w", type:"w", name: "<ruby>魔剣<rt>マケン</rt></ruby>オメガ", atk: 40, prob: 0.01, sprite: "sword", color: "#ccc", skillId: "falcon" },
 );
 
-// Soul Definitions (Equippable as Accessories)
+// Soul Definitions
 const SOULS = {
-    slime: { name: "スライムの魂", effect: "regen", effectName: "再生", color: "#48f" },
-    bat: { name: "コウモリの魂", effect: "haste", effectName: "神速", color: "#222" },
-    goldman: { name: "黄金の魂", effect: "greed", effectName: "富豪", color: "#fd0" },
-    dragon: { name: "竜の魂", effect: "atk_up", effectName: "剛腕", color: "#62a", val: 50 },
-    mimic: { name: "人食い箱の魂", effect: "crit_up", effectName: "必殺", color: "#d84" },
-    boss: { name: "魔王の魂", effect: "all_up", effectName: "覇王", color: "#f00", val: 100 }
+    slime: { name: "スライムの<ruby>魂<rt>ソウル</rt></ruby>", effect: "regen", effectName: "再生", color: "#48f" },
+    bat: { name: "コウモリの<ruby>魂<rt>ソウル</rt></ruby>", effect: "haste", effectName: "神速", color: "#222" },
+    goldman: { name: "黄金の<ruby>魂<rt>ソウル</rt></ruby>", effect: "greed", effectName: "富豪", color: "#fd0" },
+    dragon: { name: "<ruby>竜<rt>ドラゴン</rt></ruby>の<ruby>魂<rt>ソウル</rt></ruby>", effect: "atk_up", effectName: "剛腕", color: "#62a", val: 50 },
+    mimic: { name: "<ruby>人食い箱<rt>ミミック</rt></ruby>の<ruby>魂<rt>ソウル</rt></ruby>", effect: "crit_up", effectName: "必殺", color: "#d84" },
+    boss: { name: "<ruby>魔王<rt>ダークロード</rt></ruby>の<ruby>魂<rt>ソウル</rt></ruby>", effect: "all_up", effectName: "覇王", color: "#f00", val: 100 },
+    reaper: { name: "<ruby>死神<rt>デス</rt></ruby>の<ruby>魂<rt>ソウル</rt></ruby>", effect: "drain", effectName: "吸血", color: "#222" }
 };
 
-const FLAVOR_TEXTS = ["ククク…力が溢れてくる…", "右腕が疼く…", "魔力が共鳴している…", "この痛み…心地よい…", "我に潜む闇が騒ぐ…", "見えた…死の線が…", "封印が解けそうだ…"];
+const FLAVOR_TEXTS = ["ククク…<ruby>力<rt>フォース</rt></ruby>が溢れてくる…", "右腕が…<ruby>疼<rt>ウズ</rt></ruby>く…", "<ruby>魔力<rt>マナ</rt></ruby>が共鳴している…", "この痛み…心地よい…", "我に潜む<ruby>闇<rt>ダークネス</rt></ruby>が騒ぐ…", "見えた…死の<ruby>線<rt>ライン</rt></ruby>が…", "<ruby>封印<rt>シール</rt></ruby>が解けそうだ…", "世界が…私を拒絶しているのか？"];
 const RATES = [ { name: "絶望", color: "#444", rate: 0.05 }, { name: "凡人", color: "#fff", rate: 0.10 }, { name: "修羅", color: "#48f", rate: 0.20 }, { name: "英雄", color: "#fd0", rate: 0.30 }, { name: "伝説", color: "#f44", rate: 0.50 }, { name: "神話", color: "magenta", rate: 0.65 } ];
-const ENEMY_LINES = ["貴様の命運は尽きた！", "その魂、我が糧となれ！", "絶望を教えてやろう", "フフフ…楽しませてくれよ？", "我が闇に平伏せ！", "この領域に踏み入るとは…", "死へのカウントダウンだ", "恐怖に歪む顔が見たい…"];
-const GUARD_TEXTS = ["PARRY", "VOID", "DENY", "断絶", "IMMUNE", "ZERO", "NULL"];
-const TITLES = [
-    { id: "t_survivor", name: "生存者", cond: (g)=>g.generation>2, eff: "HP+20%" },
-    { id: "t_godspeed", name: "神速", cond: (g)=>g.fastClears>5, eff: "AGI+10%" },
-    { id: "t_immortal", name: "不死者", cond: (g)=>g.reviveCount>0, eff: "REVIVE+" },
-    { id: "t_unscathed", name: "無傷の帝王", cond: (g)=>g.noDamageStreak>5, eff: "LUCK+" }
+
+// New Text Data
+const GUARD_TEXTS = [
+    {t:"見切",r:"ミキリ"},{t:"瞬断",r:"シュンダン"},{t:"絶無",r:"ゼツム"},
+    {t:"相殺",r:"ソウサイ"},{t:"虚空",r:"コクウ"},{t:"凪",r:"ナギ"}
 ];
+const TITLES = [
+    { id: "t_survivor", name: "<ruby>生存者<rt>サバイバー</rt></ruby>", cond: (g)=>g.generation>2, eff: "HP+20%" },
+    { id: "t_godspeed", name: "<ruby>神速<rt>ソニック</rt></ruby>", cond: (g)=>g.fastClears>5, eff: "AGI+10%" },
+    { id: "t_immortal", name: "<ruby>不死者<rt>ノスフェラトゥ</rt></ruby>", cond: (g)=>g.reviveCount>0, eff: "REVIVE+" },
+    { id: "t_unscathed", name: "<ruby>無傷<rt>パーフェクト</rt></ruby>の<ruby>帝王<rt>カイザー</rt></ruby>", cond: (g)=>g.noDamageStreak>5, eff: "LUCK+" }
+];
+
+// Expanded Dialogues
+const TALK_PATTERNS = {
+    start: ["貴様の命運は尽きた！", "その魂、我が糧となれ！", "絶望を教えてやろう", "フフフ…楽しませてくれよ？", "我が闇に平伏せ！", "この領域に踏み入るとは…", "死へのカウントダウンだ", "恐怖に歪む顔が見たい…"],
+    hit: ["貴様…やるな？", "計算外だ…", "効かぬわ！", "ふん、小賢しい", "バカな…", "この私が…押されている？"],
+    pinch: ["まだだ…まだ終わらんよ！", "本気を出させるとは…", "後悔するぞ…", "闇の力よ！我に集え！", "貴様を道連れにしてやる！"],
+    die: ["バカな…私が敗れるとは…", "見事だ…", "これが…敗北の味か…", "第二形態への布石に過ぎん…", "闇は…滅びぬ…", "グフッ…！"]
+};
 
 let game = null;
 
@@ -605,7 +672,8 @@ class Game {
         this.gaugeVal = 0; this.gaugeDir = 1; this.gaugeSpeed = 2;
         this.pendingItem = null;
         this.chain = 0;
-        this.isAwakening = false;
+        this.isDefenseMode = false;
+        this.defenseTimer = null;
         this.isGuardWindow = false;
         this.guardStart = 0;
         this.timeScale = 1;
@@ -630,7 +698,7 @@ class Game {
             
             modalGo: document.getElementById('modal-go'), modalShop: document.getElementById('shop-modal'), modalLib: document.getElementById('lib-modal'),
             modalHelp: document.getElementById('help-modal'),
-            drama: document.getElementById('drama-window'), flash: document.getElementById('flash'), cutin: document.getElementById('cutin'),
+            drama: document.getElementById('drama-window'), flash: document.getElementById('flash'), flashInv: document.getElementById('flash-invert'), cutin: document.getElementById('cutin'),
             damagePop: document.getElementById('damage-pop'), chainPop: document.getElementById('chain-pop'),
             dangerOverlay: document.getElementById('danger-overlay'), itemPop: document.getElementById('item-pop'),
             
@@ -670,7 +738,8 @@ class Game {
         this.luckBonus = Math.min(0.30, this.boosts.luck * 0.02); 
         this.enemy = { name: "", hp: 0, maxHp: 0, atk: 0, type: "slime" };
         this.chain = 0;
-        this.isAwakening = false;
+        this.isDefenseMode = false;
+        if(this.defenseTimer) clearInterval(this.defenseTimer);
         
         // Title Effects
         if(this.acquiredTitles.has("t_survivor")) this.maxHp = Math.floor(this.maxHp * 1.2);
@@ -705,7 +774,7 @@ class Game {
         this.sound.init(); this.sound.playSE('select');
         document.getElementById('click-start').style.display = 'none';
         this.el.btnMain.style.display = "block";
-        this.log(`第${this.generation}代 勇者、冒険の書を開いた。`); this.updateHud();
+        this.log(`第${this.generation}代 勇者、<ruby>冒険の書<rt>クロニクル</rt></ruby>を開いた。`); this.updateHud();
     }
     
     toggleSpeed() {
@@ -738,7 +807,8 @@ class Game {
         let d = SPRITES[t] || SPRITES.slime; 
         let color = d.color;
         if (!metal && !boss) { const hues = [d.color, "#f44", "#4f4", "#fd0", "#f0f", "#48f"]; color = hues[this.lv % hues.length]; }
-        if (t === "asura") color = "#f4f"; if (t === "general") color = "#8af"; 
+        if (t === "asura" || t === "demon") color = "#f4f"; 
+        if (t === "general" || t === "knight") color = "#8af"; 
         if (boss && t === "boss") color = this.clears > 5 ? "#a00" : "#d44"; 
         this.el.enemy.innerHTML = generateSVG({...d, color: color}, null, metal);
     }
@@ -748,29 +818,41 @@ class Game {
         // Soul Effects
         if(this.accessory && this.accessory.soulEffect === "atk_up") a += (this.accessory.val || 0);
         if(this.accessory && this.accessory.soulEffect === "all_up") a += (this.accessory.val || 0);
-        if (this.isAwakening) a *= 2; 
         return Math.floor(a);
     }
     get totalDef() { 
-        if (this.isAwakening) return 0; 
         return (this.armor ? this.armor.def : 0) + (this.accessory ? (this.accessory.def||0) : 0) + (this.boosts.def || 0); 
     }
 
-    checkAwakening() {
-        if (this.chain >= 5 && !this.isAwakening) {
-            this.isAwakening = true;
-            this.el.container.classList.add('awakening-mode');
+    checkDefenseMode() {
+        if (this.chain >= 5 && !this.isDefenseMode) {
+            this.isDefenseMode = true;
+            this.el.container.classList.add('defense-mode');
             this.el.awakeTxt.style.display = "inline";
-            this.sound.playSE('crit');
-            this.log("≪覚醒≫ 力が解放された！", "damage");
-            this.showCutin("A W A K E N I N G");
-            this.sound.playBGM('awake');
-        } else if (this.chain < 5 && this.isAwakening) {
-            this.isAwakening = false;
-            this.el.container.classList.remove('awakening-mode');
-            this.el.awakeTxt.style.display = "none";
-            this.sound.playBGM(this.lv >= this.targetLv ? 'boss' : 'battle');
+            this.sound.playSE('revive'); // Use revive sound for activation
+            this.log("≪絶対防御界≫ 展開！", "block");
+            this.showCutin("A. DEFENSE");
+            
+            // MP Drain Timer (1 per sec)
+            if(this.defenseTimer) clearInterval(this.defenseTimer);
+            this.defenseTimer = setInterval(() => {
+                if(!this.isDefenseMode) return;
+                this.mp = Math.max(0, this.mp - 1);
+                this.updateHud();
+                if(this.mp <= 0) this.breakDefenseMode();
+            }, 1000 / this.timeScale);
+
+        } else if (this.chain < 5 && this.isDefenseMode) {
+            this.breakDefenseMode();
         }
+    }
+    
+    breakDefenseMode() {
+        this.isDefenseMode = false;
+        this.el.container.classList.remove('defense-mode');
+        this.el.awakeTxt.style.display = "none";
+        if(this.defenseTimer) clearInterval(this.defenseTimer);
+        if(this.mp <= 0) this.log("MP枯渇…結界消失。", "damage");
     }
 
     updateHud() {
@@ -778,9 +860,9 @@ class Game {
         this.el.hp.textContent = this.hp; this.el.mp.textContent = this.mp;
         this.el.lv.textContent = this.lv; this.el.atk.textContent = this.totalAtk; this.el.def.textContent = this.totalDef;
         this.el.gold.textContent = this.gold; this.el.gen.textContent = this.generation;
-        this.el.weapon.textContent = this.weapon ? this.weapon.name : "素手";
-        this.el.armor.textContent = this.armor ? this.armor.name : "服";
-        this.el.acc.textContent = this.accessory ? this.accessory.name : "なし";
+        this.el.weapon.textContent = this.weapon ? this.weapon.name.replace(/<rt>.*?<\/rt>/g,"") : "素手";
+        this.el.armor.textContent = this.armor ? this.armor.name.replace(/<rt>.*?<\/rt>/g,"") : "服";
+        this.el.acc.textContent = this.accessory ? this.accessory.name.replace(/<rt>.*?<\/rt>/g,"") : "なし";
         this.el.chain.textContent = this.chain;
         this.el.hp.className = this.hp <= this.maxHp * 0.2 ? "val-hp hp-danger" : "val-hp";
         this.el.dangerOverlay.style.display = this.hp <= this.maxHp * 0.25 ? "block" : "none";
@@ -792,7 +874,7 @@ class Game {
         if(this.acquiredTitles.size > 0) {
             const last = Array.from(this.acquiredTitles).pop();
             const tData = TITLES.find(t=>t.id===last);
-            if(tData){ this.el.title.textContent = tData.name; this.el.title.style.display="inline"; }
+            if(tData){ this.el.title.innerHTML = tData.name; this.el.title.style.display="inline"; }
         }
     }
 
@@ -874,7 +956,7 @@ class Game {
             title = "謎の行商人"; desc = "「いい薬、あるよ...」";
             const cost = 500 * this.generation;
             createBtn(`薬を買う (${cost}G)`, () => {
-                if(this.gold >= cost) { this.gold -= cost; this.hp = Math.min(this.maxHp, this.hp+50); this.log("薬を飲んで回復した！"); }
+                if(this.gold >= cost) { this.gold -= cost; this.hp = Math.min(this.maxHp, this.hp+50); this.log("怪しい薬を飲んで回復した！"); }
                 else { this.log("お金が足りない..."); }
             });
             createBtn("立ち去る", () => {});
@@ -902,7 +984,7 @@ class Game {
         this.noDamageNow = true;
         if (this.lv >= this.targetLv) { this.startBossBattle("boss"); return; }
         if (this.lv === 10 || this.lv === 20) { this.startBossBattle("mid"); return; }
-        if(!this.isAwakening) this.sound.playBGM('battle');
+        if(!this.isDefenseMode) this.sound.playBGM('battle');
         
         let type = "slime", eName = "スライム", gauge="normal", metal=false, goldMult=1, expMult=1;
         const tier = Math.floor((this.lv - 1) / 3);
@@ -911,16 +993,25 @@ class Game {
             if (Math.random() < 0.5) { type="metal_s"; eName="メタルスライム"; gauge="fast"; metal=true; expMult=20; }
             else { type="goldman"; eName="ゴールドマン"; gauge="normal"; goldMult=30; }
         } else {
-            const types = ["slime", "bat", "rabbit", "skeleton", "knight", "wizard", "golem", "demon", "dragon", "ghost", "mimic", "reaper"];
+            const types = ["slime", "bat", "rabbit", "skeleton", "ghost", "knight", "wizard", "golem", "mimic", "cerberus", "dullahan", "chimera", "demon", "dragon", "lich", "fallen", "angel", "reaper"];
             type = types[Math.min(tier, types.length-1)] || "slime";
-            const pres = ["", "凶暴な", "歴戦の", "暗黒の", "真・", "極・", "獄炎の"];
+            const pres = ["", "<ruby>凶暴<rt>マッド</rt></ruby>な", "<ruby>歴戦<rt>ベテラン</rt></ruby>の", "<ruby>暗黒<rt>ダーク</rt></ruby>の", "<ruby>真<rt>シン</rt></ruby>・", "<ruby>極<rt>アルティメット</rt></ruby>・", "<ruby>獄炎<rt>インフェルノ</rt></ruby>の"];
             const pre = pres[Math.min(Math.floor(this.lv/5) + Math.floor(this.generation/2), 6)];
-            eName = pre + (type === "slime" ? "スライム" : (type==="mimic"?"人食い箱": (type==="reaper"?"死神": (type==="ghost"?"ゴースト":type))));
-            gauge = tier > 2 ? (tier > 5 ? "super_fast" : "fast") : "normal";
             
-            if (type === "ghost") gauge = "blink";
-            if (type === "mimic") gauge = "stop_go";
-            if (type === "reaper") gauge = "reverse";
+            // Name mapping with Ruby
+            const nameMap = {
+                slime: "スライム", bat: "バット", rabbit: "ラビット", skeleton: "スケルトン", ghost: "ゴースト",
+                knight: "ナイト", wizard: "ウィザード", golem: "ゴーレム", mimic: "<ruby>人食い箱<rt>ミミック</rt></ruby>",
+                cerberus: "ケルベロス", dullahan: "デュラハン", chimera: "キメラ", demon: "デーモン",
+                dragon: "ドラゴン", lich: "リッチ", fallen: "<ruby>堕天使<rt>フォールン</rt></ruby>", angel: "<ruby>天使<rt>エンジェル</rt></ruby>", reaper: "<ruby>死神<rt>グリムリーパー</rt></ruby>"
+            };
+
+            eName = pre + (nameMap[type] || type);
+            gauge = tier > 4 ? (tier > 8 ? "super_fast" : "fast") : "normal";
+            
+            if (type === "ghost" || type === "fallen") gauge = "blink";
+            if (type === "mimic" || type === "dullahan") gauge = "stop_go";
+            if (type === "reaper" || type === "lich") gauge = "reverse";
             if (tier > 7 && Math.random() < 0.3) gauge = "wavy";
         }
         
@@ -945,7 +1036,7 @@ class Game {
         });
         
         if (Math.random() < 0.6) { 
-            const line = ENEMY_LINES[Math.floor(Math.random() * ENEMY_LINES.length)];
+            const line = TALK_PATTERNS.start[Math.floor(Math.random() * TALK_PATTERNS.start.length)];
             this.showBattleTalk(line, 2000);
         }
         
@@ -953,12 +1044,12 @@ class Game {
     }
     
     async startBossBattle(type) {
-        if(!this.isAwakening) this.sound.playBGM('boss');
+        if(!this.isDefenseMode) this.sound.playBGM('boss');
         const isMaou = type === "boss";
         // INFLATION
         const diff = Math.pow(1.3, this.generation - 1); 
         
-        let name = isMaou ? `第${this.clears}代 魔王` : "魔界の番人";
+        let name = isMaou ? `第${this.clears}代 <ruby>魔王<rt>ダークロード</rt></ruby>` : "<ruby>魔界<rt>アビス</rt></ruby>の<ruby>番人<rt>ガーディアン</rt></ruby>";
         let eType = isMaou ? "boss" : (Math.random() < 0.5 ? "asura" : "general");
         
         const baseHp = isMaou ? 1000 : 500;
@@ -982,6 +1073,10 @@ class Game {
              this.el.enemy.style.transform = "scale(1.2)";
         });
         
+        // Boss Talk
+        const line = isMaou ? "よくぞここまで来た…褒めてやろう" : "ここを通すわけにはいかん…";
+        setTimeout(() => this.showBattleTalk(line, 3000), 1000);
+
         this.showCutin(isMaou ? "魔王 降臨" : "強敵 出現");
     }
     
@@ -990,7 +1085,7 @@ class Game {
         const key = actorKey || this.enemy.type;
         const name = nameOverride || this.enemy.name;
         this.el.dramaActor.innerHTML = generateSVG(SPRITES[key] || SPRITES.slime);
-        this.el.dramaName.textContent = name;
+        this.el.dramaName.innerHTML = name;
         this.el.dramaText.textContent = text;
         if (this.dramaTimer) clearTimeout(this.dramaTimer);
         this.dramaTimer = setTimeout(() => { this.el.drama.style.display = "none"; }, duration);
@@ -1078,13 +1173,13 @@ class Game {
             // Crit Soul
             if(this.accessory && this.accessory.effect === "crit_up") mult += 0.5;
             this.showChainPop(`${this.chain} CHAIN!`);
-            this.checkAwakening(); 
+            this.checkDefenseMode(); 
         } else if (dist <= 15) { 
             if (this.enemy.isMetal && Math.random() < 0.5) { isCrit = true; this.log("神速の剣閃！", "critical"); }
-            mult = 1.0; this.chain = 0; this.checkAwakening(); 
+            mult = 1.0; this.chain = 0; this.checkDefenseMode(); 
         } else {
             if(this.chain > 0) this.log("集中力が途切れた...", "damage");
-            this.chain = 0; mult = 0.5; this.checkAwakening(); 
+            this.chain = 0; mult = 0.5; this.checkDefenseMode(); 
         }
         
         await this.delay(300); this.el.gaugeArea.style.display="none";
@@ -1108,6 +1203,13 @@ class Game {
                 this.log(`${this.enemy.name}に ${dmg} のダメージ！`, isCrit ? "critical" : "");
                 this.showDamage(dmg, 'deal', isCrit); this.enemy.hp-=dmg; 
                 
+                // Enemy React Talk
+                if (this.enemy.hp < this.enemy.maxHp * 0.3 && Math.random() < 0.4) {
+                    this.showBattleTalk(TALK_PATTERNS.pinch[Math.floor(Math.random()*TALK_PATTERNS.pinch.length)], 1000);
+                } else if (Math.random() < 0.2) {
+                    this.showBattleTalk(TALK_PATTERNS.hit[Math.floor(Math.random()*TALK_PATTERNS.hit.length)], 1000);
+                }
+
                 // Drain Effect
                 if ((this.weapon && this.weapon.effect === "drain") || (this.accessory && this.accessory.effect === "drain")) {
                      let drain = Math.floor(dmg * 0.2);
@@ -1155,12 +1257,26 @@ class Game {
         this.el.btnStop.style.display = "none";
         this.el.enemy.classList.remove("anim-lunge");
 
+        // CHECK DEFENSE MODE
+        if (this.isDefenseMode) {
+             this.sound.playSE('metal');
+             this.log(`絶対防御界がダメージを無効化した！`, "block");
+             this.showDamage("BLOCK", 'block', false);
+             // Extra MP cost for block
+             this.mp = Math.max(0, this.mp - 2); 
+             if(this.mp <= 0) this.breakDefenseMode();
+             this.updateHud();
+             this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "grid";
+             return; // No damage taken
+        }
+
         if (this.guardSuccess) {
+            // JUST GUARD SUCCESS
             let counterDmg = Math.floor(this.totalAtk * 1.5);
             this.log(`カウンター！ ${this.enemy.name}に ${counterDmg} のダメージ！`, "critical");
             this.showDamage(counterDmg, 'deal', true);
             this.enemy.hp -= counterDmg;
-            this.sound.playSE('hit');
+            this.sound.playSE('crit');
             if(this.enemy.hp<=0) { this.winBattle(); return; }
         } else {
             this.noDamageNow = false;
@@ -1211,10 +1327,24 @@ class Game {
             this.guardSuccess = true;
             this.isGuardWindow = false;
             this.sound.playSE('parry');
-            const txt = GUARD_TEXTS[Math.floor(Math.random()*GUARD_TEXTS.length)];
-            this.showCutin(txt);
+            
+            // NEW: Just Guard Effect
+            this.el.flashInv.classList.add("anim-invert");
+            setTimeout(() => this.el.flashInv.classList.remove("anim-invert"), 300);
+
+            // NEW: Kanji + Ruby Text
+            const txtObj = GUARD_TEXTS[Math.floor(Math.random()*GUARD_TEXTS.length)];
+            const rubyHtml = `<ruby>${txtObj.t}<rt>${txtObj.r}</rt></ruby>`;
+            
+            this.el.cutin.innerHTML = rubyHtml;
+            this.el.cutin.style.transform="translate(-50%,-50%) scale(1)";
             this.el.cutin.classList.add("just");
-            setTimeout(()=>this.el.cutin.classList.remove("just"), 1000);
+            
+            setTimeout(()=>{
+                this.el.cutin.style.transform="translate(-50%,-50%) scale(0)";
+                this.el.cutin.classList.remove("just");
+            }, 1000);
+
             this.log("見切った！", "critical");
         } else {
             this.log("防御が遅れた！");
@@ -1238,6 +1368,8 @@ class Game {
             this.sound.stopBGM();
             this.sound.playBGM('clear');
             this.log(`魔王を討伐した！`, "critical");
+            this.showBattleTalk(TALK_PATTERNS.die[Math.floor(Math.random()*TALK_PATTERNS.die.length)], 2000);
+            
             this.el.enemy.style.transition = "all 2s";
             this.el.enemy.style.opacity = 0;
             this.el.enemy.style.filter = "brightness(5)";
@@ -1258,6 +1390,12 @@ class Game {
         }
 
         this.log(`${this.enemy.name}を葬った。`, "critical");
+        
+        // Random Death Talk
+        if (Math.random() < 0.3) {
+            this.showBattleTalk(TALK_PATTERNS.die[Math.floor(Math.random()*TALK_PATTERNS.die.length)], 1000);
+        }
+
         this.sound.playSE('select'); 
         this.el.enemy.style.transition = "opacity 1s, transform 1s";
         this.el.enemy.style.opacity = 0;
@@ -1318,7 +1456,7 @@ class Game {
             await this.showItemCompare(newI);
         } else {
             this.state="BATTLE_WAIT"; this.el.btnMain.textContent="さらに奥へ"; this.el.btnMain.style.display="block"; 
-            if(!this.isAwakening) this.sound.playBGM('battle');
+            if(!this.isDefenseMode) this.sound.playBGM('battle');
         }
     }
     
@@ -1356,7 +1494,7 @@ class Game {
     
     renderCard(els, item, type) {
         if(!els.name) return;
-        els.name.textContent = item.name;
+        els.name.innerHTML = item.name; // Use innerHTML for ruby
         const sp = SPRITES[item.sprite] || SPRITES.stick;
         els.icon.innerHTML = generateSVG(sp, item.color);
         
@@ -1367,7 +1505,7 @@ class Game {
         els.stat.textContent = statTxt;
         
         let sText = "";
-        if (item.skillId) { const s = SKILLS.find(k => k.id === item.skillId); if (s) sText = `技:${s.name}`; }
+        if (item.skillId) { const s = SKILLS.find(k => k.id === item.skillId); if (s) sText = `技:${s.name.replace(/<rt>.*?<\/rt>/g,"")}`; }
         els.sub.textContent = sText;
         els.eff.textContent = item.effectName ? `★${item.effectName}` : "";
     }
@@ -1378,7 +1516,7 @@ class Game {
             if (this.pendingItem.type === "acc") this.accessory = this.pendingItem;
             else if (this.pendingItem.type === "a") this.armor = this.pendingItem; 
             else this.weapon = this.pendingItem;
-            this.log(`${this.pendingItem.name}と契約した。`, "item"); this.sound.playSE('revive');
+            this.log(`${this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"")}と契約した。`, "item"); this.sound.playSE('revive');
         } else { this.log("宝箱を拒絶した。", "system"); }
         
         this.el.chestDisplay.style.display = "none"; 
@@ -1388,7 +1526,7 @@ class Game {
         this.updateHud(); 
         
         this.state="BATTLE_WAIT"; this.el.btnMain.textContent="さらに奥へ"; this.el.btnMain.style.display="block"; 
-        if(!this.isAwakening) this.sound.playBGM('battle');
+        if(!this.isDefenseMode) this.sound.playBGM('battle');
         
         if(this.resolveItem) this.resolveItem();
     }
@@ -1405,7 +1543,7 @@ class Game {
             }
             this.hp = Math.floor(this.maxHp * 0.6);
             this.updateHud();
-            if(!this.isAwakening) this.sound.playBGM('boss');
+            if(!this.isDefenseMode) this.sound.playBGM('boss');
             this.state = "BATTLE_CMD";
             this.el.menuBattle.style.display = "grid";
         } else {
@@ -1454,10 +1592,12 @@ class Game {
     showDamage(val, t, c){
         const el = this.el.damagePop; el.textContent = val; el.className = "damage-pop";
         if (t === 'deal') { el.classList.add('deal'); if (c) el.classList.add('crit'); }
-        else if (t === 'take') el.classList.add('take'); else if (t === 'heal') el.classList.add('heal'); else el.classList.add('miss');
+        else if (t === 'take') el.classList.add('take'); else if (t === 'heal') el.classList.add('heal'); 
+        else if (t === 'block') el.classList.add('block');
+        else el.classList.add('miss');
         el.style.animation = "none"; el.offsetHeight; el.style.animation = "pop-damage 0.5s forwards";
     }
-    showCutin(t){this.el.cutin.textContent=t;this.el.cutin.style.transform="translate(-50%,-50%) scale(1)";setTimeout(()=>this.el.cutin.style.transform="translate(-50%,-50%) scale(0)",1500);}
+    showCutin(t){this.el.cutin.innerHTML=t;this.el.cutin.style.transform="translate(-50%,-50%) scale(1)";setTimeout(()=>this.el.cutin.style.transform="translate(-50%,-50%) scale(0)",1500);}
     showChainPop(t) {
         this.el.chainPop.textContent = t;
         this.el.chainPop.style.transform = "translate(-50%,-50%) scale(1.5)";
@@ -1495,7 +1635,7 @@ class Game {
             div.className=`lib-item ${has?'got':''} ${i.isSoul?'soul':''}`;
             let label = "";
             if(i.type==="w") label=`攻${i.atk}`; else if(i.type==="a") label=`守${i.def}`; else label="装飾";
-            div.innerHTML=`${has?generateSVG(SPRITES[i.sprite],i.color):generateSVG(SPRITES.stick,"#333")}<div>${has?i.name:"???"}</div><div>${label}</div>`;
+            div.innerHTML=`${has?generateSVG(SPRITES[i.sprite],i.color):generateSVG(SPRITES.stick,"#333")}<div>${has?i.name.replace(/<rt>.*?<\/rt>/g,""):"???"}</div><div>${label}</div>`;
             document.getElementById('lib-grid').appendChild(div);
         });
     }
