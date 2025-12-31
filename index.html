@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ENDLESS QUEST - 宿命の連闘 XXVII -</title>
+    <title>ENDLESS QUEST - 覚醒の刻 -</title>
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -32,7 +32,16 @@
             border: 4px double var(--border); border-radius: 8px; padding: 5px;
             box-sizing: border-box; display: flex; flex-direction: column;
             position: relative; background: #000;
+            transition: box-shadow 0.5s, border-color 0.5s;
         }
+
+        /* Awakening Mode Style */
+        .awakening-mode {
+            border-color: var(--accent-red);
+            box-shadow: 0 0 20px var(--accent-red), inset 0 0 50px rgba(200, 0, 0, 0.3);
+            animation: pulse-border 1s infinite alternate;
+        }
+        @keyframes pulse-border { from { box-shadow: 0 0 10px #500; } to { box-shadow: 0 0 30px #f00; } }
 
         /* Header & Progress */
         .header-row { display: flex; gap: 5px; align-items: center; margin-bottom: 5px; flex-shrink: 0; }
@@ -66,6 +75,7 @@
         .val-def { color: var(--accent-blue); }
         .val-gold { color: var(--accent-yellow); }
         .chain-val { color: var(--accent-yellow); font-weight: bold; text-shadow: 0 0 5px orange; }
+        .awakening-text { color: var(--accent-red); font-weight: bold; animation: blink 0.1s infinite; display: none; margin-left:5px; font-size:0.8rem;}
         .gen-info { 
             font-size: 0.8rem; color: #aaa; border-top: 1px dashed #333; margin-top: 2px; padding-top: 2px;
             display: flex; justify-content: space-between;
@@ -83,6 +93,12 @@
                 repeating-linear-gradient(0deg, transparent 0, transparent 2px, #1a1a1a 2px, #1a1a1a 4px),
                 repeating-linear-gradient(90deg, transparent 0, transparent 2px, #1a1a1a 2px, #1a1a1a 4px);
             background-size: cover; box-shadow: inset 0 0 50px #000;
+        }
+        
+        /* Awakening Stage Effect */
+        .awakening-mode .stage {
+            background-image: radial-gradient(circle, rgba(50,0,0,0.2) 0%, rgba(0,0,0,0.9) 100%),
+            repeating-linear-gradient(0deg, transparent 0, transparent 2px, #300 2px, #300 4px);
         }
 
         .character {
@@ -106,6 +122,7 @@
             text-shadow: 4px 4px 0 #d32f2f; background:rgba(0,0,0,0.8); padding:10px 30px; border:2px solid #fff;
             z-index:100; transition: transform 0.1s; white-space: nowrap; pointer-events: none;
         }
+        .cutin.just { color: #88ffff; text-shadow: 0 0 10px #00ffff; border-color: #00ffff; }
         .chain-pop {
              position: absolute; top:30%; left:50%; transform:translate(-50%,-50%) scale(0);
              font-size: 4rem; color:var(--accent-yellow); font-weight: bold; font-style: italic;
@@ -139,9 +156,10 @@
         .chest-label { font-size: 0.7rem; color: #aaa; background: #333; padding: 2px 5px; border-radius: 4px; margin-bottom: 5px; width: 100%; text-align: center; }
         .new .chest-label { color: #000; background: var(--accent-yellow); font-weight: bold; }
         .chest-icon { width: 48px; height: 48px; border: 1px solid #444; background: #000; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; }
-        .chest-name { font-size: 0.9rem; font-weight: bold; color: #fff; margin-bottom: 2px; text-align: center; height: 2.2em; overflow: hidden; }
+        .chest-name { font-size: 0.9rem; font-weight: bold; color: #fff; margin-bottom: 2px; text-align: center; height: 2.2em; overflow: hidden; line-height: 1.1;}
         .chest-stat { font-size: 1rem; color: #fff; font-weight: bold; }
-        .chest-sub { font-size: 0.7rem; color: #ccc; }
+        .chest-sub { font-size: 0.7rem; color: #ccc; min-height: 1rem;}
+        .chest-effect { font-size: 0.7rem; color: var(--accent-purple); font-weight: bold; margin-top: 2px; text-shadow: 0 0 3px #a0f;}
         .chest-arrow { font-size: 2rem; color: #888; }
 
         /* Gauge */
@@ -164,6 +182,7 @@
         .log-entry.damage { color: var(--accent-red); }
         .log-entry.critical { color: var(--accent-yellow); font-weight: bold; }
         .log-entry.revive { color: var(--accent-green); }
+        .log-entry.flavor { color: #888; font-style: italic; font-size: 0.8rem; }
         .log-entry.item { color: var(--accent-yellow); border: 1px solid #555; background: #222; text-align: center; }
 
         /* Controls */
@@ -180,6 +199,8 @@
         button:disabled { border-color: #555; color: #555; pointer-events: none; }
         
         .btn-stop { background: rgba(200, 0, 0, 0.4); color: #fff; font-weight: bold; font-size: 2rem; text-shadow: 2px 2px 0 #000; z-index: 50; }
+        /* Guard Button Style */
+        .btn-guard { background: rgba(0, 100, 255, 0.4); border-color: #0ff; color: #0ff; box-shadow: 0 0 15px #0ff; }
         
         /* Chest Command Buttons */
         #menu-chest { display: none; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; height: 100%; }
@@ -235,7 +256,7 @@
 </head>
 <body>
 
-<div class="game-container">
+<div class="game-container" id="game-container">
     <div class="header-row">
         <button class="help-btn" onclick="game.openHelp()">?</button>
         <div class="progress-container">
@@ -256,7 +277,7 @@
         </div>
         <div class="gen-info">
             <span>E:<span id="disp-weapon">素手</span> / <span id="disp-armor">服</span></span>
-            <span class="chain-val">CHAIN: <span id="disp-chain">0</span></span>
+            <span class="chain-val">CHAIN: <span id="disp-chain">0</span> <span id="awake-txt" class="awakening-text">AWAKENING!</span></span>
         </div>
         <div class="status-row" style="margin-top:2px;">
             <span style="font-size:0.8rem; color:#888;">対: 第<span id="disp-dlv">1</span>代 魔王</span>
@@ -296,6 +317,7 @@
                 <div id="cur-name" class="chest-name">素手</div>
                 <div id="cur-stat" class="chest-stat">攻+0</div>
                 <div id="cur-sub" class="chest-sub">なし</div>
+                <div id="cur-effect" class="chest-effect"></div>
             </div>
             <div class="chest-arrow">➡</div>
             <div class="chest-card new">
@@ -304,6 +326,7 @@
                 <div id="new-name" class="chest-name">???</div>
                 <div id="new-stat" class="chest-stat">攻+?</div>
                 <div id="new-sub" class="chest-sub">???</div>
+                <div id="new-effect" class="chest-effect"></div>
             </div>
         </div>
 
@@ -331,13 +354,14 @@
         
         <!-- Chest Menu (Displayed in controls area) -->
         <div id="menu-chest" class="command-menu">
-            <button class="btn-get" onclick="game.decideItem(true)">交換して装備</button>
-            <button class="btn-discard" onclick="game.decideItem(false)">そのまま進む</button>
+            <button class="btn-get" onclick="game.decideItem(true)">契約して装備</button>
+            <button class="btn-discard" onclick="game.decideItem(false)">拒絶して進む</button>
         </div>
 
         <div id="menu-skills" class="command-menu" style="display:none;"></div>
 
-        <button id="btn-stop" class="main-btn btn-stop" style="display:none;" onmousedown="game.stopGauge()" ontouchstart="game.stopGauge()">たたかう！</button>
+        <!-- Button used for both Attack Gauge and Just Guard -->
+        <button id="btn-stop" class="main-btn btn-stop" style="display:none;" onmousedown="game.handleActionBtn()" ontouchstart="game.handleActionBtn()">たたかう！</button>
     </div>
 
     <!-- Library -->
@@ -360,8 +384,8 @@
             </div>
             <div class="help-content">
                 <div class="help-section"><div class="help-title">目的</div>地下30階の魔王を討伐せよ。</div>
-                <div class="help-section"><div class="help-title">CHAIN</div>赤エリアで止めると攻撃力UP＆連鎖。</div>
-                <div class="help-section"><div class="help-title">メタル</div>黄色エリアでも50%で撃破可能。</div>
+                <div class="help-section"><div class="help-title">CHAIN / 覚醒</div>赤エリアで止めると攻撃力UP＆連鎖。<br>CHAIN 5以上で「覚醒(Awakening)」発動。<br>攻撃力2倍、防御力0の狂戦士モードへ。</div>
+                <div class="help-section"><div class="help-title">ジャストガード</div>敵の攻撃中、一瞬表示されるボタンを押せ。<br>成功すればダメージ0＆カウンター。</div>
                 <div class="help-section">
                     <button class="reset-btn" onclick="game.resetSaveData()">セーブデータを削除して最初から</button>
                 </div>
@@ -372,12 +396,13 @@
     <!-- Shop -->
     <div id="shop-modal" class="modal-overlay">
         <div class="modal-content">
-            <div style="text-align:center; font-size:1.5rem; color:var(--accent-purple);">闇市 - 魂の継承 -</div>
+            <div style="text-align:center; font-size:1.5rem; color:var(--accent-purple);">闇市 - 魂の等価交換 -</div>
             <div style="text-align:center; margin-bottom:10px;">所持金: <span id="shop-gold" class="gold-val">0</span> G</div>
             <div class="scroll-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
                 <div class="shop-btn" onclick="game.buyBoost('hp')"><div>HP+5</div><div style="color:var(--accent-yellow);">500G</div></div>
                 <div class="shop-btn" onclick="game.buyBoost('mp')"><div>MP+2</div><div style="color:var(--accent-yellow);">500G</div></div>
                 <div class="shop-btn" onclick="game.buyBoost('atk')"><div>攻+1</div><div style="color:var(--accent-yellow);">1000G</div></div>
+                <div class="shop-btn" onclick="game.buyBoost('def')"><div>守+1</div><div style="color:var(--accent-yellow);">1000G</div></div>
                 <div class="shop-btn" onclick="game.buyBoost('luck')"><div>運+2%</div><div style="color:var(--accent-yellow);">2000G</div></div>
             </div>
             <button style="margin-top:20px; width:100%; padding:15px;" onclick="game.softReset()">次世代へ託す</button>
@@ -391,7 +416,7 @@
     </div>
 
     <div class="click-start" id="click-start" onclick="game.initAudio()">
-        <div>ENDLESS QUEST XXVII<br>- 悠久の戦記 -</div>
+        <div>ENDLESS QUEST XXVII<br>- 覚醒の刻 -</div>
         <div style="font-size:1rem; margin-top:20px;">画面をクリックしてスタート<br>(※音が出ます)</div>
     </div>
 </div>
@@ -408,6 +433,7 @@ class SoundManager {
         if (type==='select') { o.type='square'; o.frequency.setValueAtTime(440,t); o.frequency.exponentialRampToValueAtTime(880,t+0.05); g.gain.setValueAtTime(0.1,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.05); o.start(t); o.stop(t+0.05); }
         else if (type==='attack') { o.type='sawtooth'; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(50,t+0.1); g.gain.setValueAtTime(0.1,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.1); o.start(t); o.stop(t+0.1); }
         else if (type==='hit') { o.type='square'; o.frequency.setValueAtTime(100,t); g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.1); o.start(t); o.stop(t+0.1); }
+        else if (type==='parry') { o.type='triangle'; o.frequency.setValueAtTime(800,t); o.frequency.linearRampToValueAtTime(1200,t+0.05); g.gain.setValueAtTime(0.2,t); g.gain.linearRampToValueAtTime(0,t+0.2); o.start(t); o.stop(t+0.2); }
         else if (type==='crit') { o.type='square'; o.frequency.setValueAtTime(880,t); o.frequency.setValueAtTime(1760,t+0.1); g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.3); o.start(t); o.stop(t+0.3); }
         else if (type === 'revive') {
             const freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51, 2093.00]; 
@@ -429,6 +455,7 @@ class SoundManager {
         const t = this.ctx.currentTime;
         if(type==='battle'){ o.frequency.setValueAtTime(55,t); g.gain.value=0.05; }
         else if(type==='boss'){ o.frequency.setValueAtTime(40,t); g.gain.value=0.08; }
+        else if(type==='awake'){ o.frequency.setValueAtTime(110,t); g.gain.value=0.08; f.frequency.setValueAtTime(600, t); o.type='square';}
         else if(type==='clear'){ o.frequency.setValueAtTime(440,t); g.gain.value=0.03; }
         o.start(); this.bgmOscs.push({o,g});
     }
@@ -436,8 +463,9 @@ class SoundManager {
 }
 
 /** DATA */
-const SAVE_KEY = 'EQ_SAVE_V27';
-const WEAPON_PREFIXES = ["古びた", "鉄の", "鋼の", "名工の", "炎の", "氷の", "雷の", "光の", "暗黒の", "神話の"];
+const SAVE_KEY = 'EQ_SAVE_V30_AWAKE';
+// Chu-ni-byou Weapon Prefixes
+const WEAPON_PREFIXES = ["朽ちた", "鉄塊の", "煉獄の", "名工の", "虚無の", "絶対零度の", "雷光の", "聖なる", "深淵の", "神話の"];
 const WEAPON_COLORS = ["#888", "#abc", "#fff", "#da8", "#f44", "#48f", "#fd0", "#ff8", "#808", "#4f4"];
 
 function generateSVG(data, colorOverride=null, metal=false) {
@@ -452,12 +480,12 @@ function generateSVG(data, colorOverride=null, metal=false) {
 const SPRITES = {
     stick: { color: "#a84", pixels: [{x:7,y:3,w:2,h:10}] },
     club: { color: "#953", pixels: [{x:6,y:2,w:4,h:8},{x:7,y:10,w:2,h:3}] },
-    copper: { color: "#c84", pixels: [{x:7,y:12,w:2,h:3},{x:5,y:11,w:6,h:1},{x:7,y:1,w:2,h:10,c:"#da8"}] },
     sword: { color:"#ccc", pixels:[{x:7,y:12,w:2,h:3,c:"#444"},{x:5,y:11,w:6,h:1,c:"#666"},{x:6,y:1,w:4,h:10},{x:7,y:2,w:2,h:9,c:"#fff"}] },
     axe: { color:"#888", pixels:[{x:7,y:12,w:2,h:3},{x:7,y:3,w:2,h:9},{x:4,y:2,w:8,h:4},{x:4,y:2,w:1,h:2,c:"#fff"}] },
     spear: { color:"#ccc", pixels:[{x:7,y:12,w:2,h:3},{x:7,y:4,w:2,h:8,c:"#642"},{x:6,y:1,w:4,h:4}] },
     hammer: { color:"#654", pixels:[{x:7,y:6,w:2,h:8,c:"#642"},{x:3,y:2,w:10,h:4}] },
     wand: { color:"#a4a", pixels:[{x:7,y:6,w:2,h:8,c:"#642"},{x:5,y:2,w:6,h:4},{x:6,y:3,w:4,h:2,c:"#fff"}] },
+    scythe: { color:"#a4e", pixels:[{x:8,y:2,w:2,h:12},{x:4,y:2,w:8,h:2,c:"#ccc"},{x:2,y:2,w:2,h:6,c:"#fff"}]},
     a_cloth: { color: "#dca", pixels: [{x:4,y:3,w:8,h:10},{x:3,y:4,w:2,h:4},{x:11,y:4,w:2,h:4}] },
     a_leather: { color: "#a64", pixels: [{x:4,y:3,w:8,h:10},{x:3,y:4,w:2,h:4},{x:11,y:4,w:2,h:4},{x:6,y:4,w:4,h:6,c:"#842"}] },
     a_chain: { color: "#888", pixels: [{x:4,y:2,w:8,h:11,c:"#666"},{x:2,y:3,w:12,h:4,c:"#888"},{x:5,y:5,w:6,h:6,c:"#aaa"}] },
@@ -477,43 +505,36 @@ const SPRITES = {
     golem: { color: "#b84", pixels: [{x:5,y:1,w:6,h:5,c:"#c96"},{x:6,y:3,w:1,h:1,c:"#000"},{x:9,y:3,w:1,h:1,c:"#000"},{x:2,y:6,w:12,h:6,c:"#c96"},{x:1,y:6,w:2,h:8,c:"#a75"},{x:13,y:6,w:2,h:8,c:"#a75"}] },
     demon: { color: "#a22", pixels: [{x:4,y:1,w:2,h:3,c:"#fff"},{x:10,y:1,w:2,h:3,c:"#fff"},{x:4,y:4,w:8,h:5,c:"#d22"},{x:3,y:9,w:10,h:5,c:"#a22"},{x:0,y:2,w:4,h:6,c:"#202"},{x:12,y:2,w:4,h:6,c:"#202"}] },
     metal_s: { color: "#ccc", pixels: [{x:7,y:5,w:2,h:2,c:"#eee"},{x:5,y:7,w:6,h:3,c:"#ccc"},{x:3,y:10,w:10,h:4,c:"#aaa"},{x:5,y:9,w:2,h:2,c:"#fff"},{x:6,y:10,w:1,h:1,c:"#000"},{x:9,y:9,w:2,h:2,c:"#fff"},{x:10,y:10,w:1,h:1,c:"#000"}] },
-    metal_k: { color: "#ddd", pixels: [{x:6,y:1,w:4,h:3,c:"#fd0"},{x:5,y:4,w:6,h:8,c:"#ccc"},{x:3,y:6,w:2,h:6,c:"#ccc"},{x:11,y:6,w:2,h:6,c:"#ccc"},{x:6,y:7,w:1,h:2,c:"#000"},{x:9,y:7,w:1,h:2,c:"#000"},{x:6,y:10,w:4,h:1,c:"#a00"}] },
     asura: { color: "#a4e", pixels: [{x:5,y:1,w:6,h:5,c:"#d8d"},{x:4,y:6,w:8,h:6},{x:2,y:4,w:2,h:4},{x:12,y:4,w:2,h:4},{x:2,y:9,w:2,h:4},{x:12,y:9,w:2,h:4},{x:5,y:12,w:2,h:4,c:"#444"},{x:9,y:12,w:2,h:4,c:"#444"}] },
     general: { color: "#667", pixels: [{x:5,y:0,w:6,h:6,c:"#889"},{x:3,y:6,w:10,h:8,c:"#445"},{x:1,y:6,w:2,h:6,c:"#aaa"},{x:13,y:6,w:2,h:6,c:"#aaa"},{x:5,y:14,w:2,h:2,c:"#222"},{x:9,y:14,w:2,h:2,c:"#222"}] },
     mimic: { color: "#d84", pixels: [{x:3,y:4,w:10,h:8},{x:2,y:4,w:1,h:8},{x:13,y:4,w:1,h:8},{x:4,y:3,w:8,h:1},{x:6,y:6,w:1,h:2,c:"#fff"},{x:9,y:6,w:1,h:2,c:"#fff"},{x:4,y:9,w:8,h:2,c:"#800"}] },
     ghost: { color: "#eee", pixels: [{x:5,y:2,w:6,h:8,c:"#fff"},{x:3,y:6,w:10,h:6,c:"#eee"},{x:5,y:5,w:2,h:2,c:"#000"},{x:9,y:5,w:2,h:2,c:"#000"},{x:6,y:9,w:4,h:2,c:"#f00"}] },
     reaper: { color: "#222", pixels: [{x:6,y:2,w:4,h:4,c:"#fff"},{x:5,y:6,w:6,h:8},{x:2,y:4,w:12,h:2},{x:12,y:2,w:2,h:12,c:"#888"}] },
-    chimera: { color: "#d4a", pixels: [{x:4,y:3,w:8,h:6},{x:2,y:4,w:12,h:2},{x:6,y:2,w:4,h:4,c:"#f84"},{x:5,y:9,w:2,h:4},{x:9,y:9,w:2,h:4}] },
-    hydra: { color: "#4a4", pixels: [{x:3,y:2,w:3,h:4},{x:7,y:1,w:3,h:5},{x:11,y:2,w:3,h:4},{x:4,y:6,w:9,h:6},{x:3,y:12,w:10,h:3}] },
-    dullahan: { color: "#446", pixels: [{x:5,y:6,w:6,h:8},{x:2,y:7,w:2,h:6},{x:12,y:7,w:2,h:6},{x:1,y:8,w:3,h:3,c:"#eec"},{x:10,y:2,w:2,h:10,c:"#888"}] },
     // NPC
     npc_princess: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#fa8"},{x:5,y:6,w:6,h:8,c:"#f8a"},{x:4,y:7,w:2,h:4,c:"#fca"},{x:10,y:7,w:2,h:4,c:"#fca"}] },
     npc_king: { color: "#fca", pixels: [{x:5,y:1,w:6,h:5,c:"#fff"},{x:6,y:0,w:4,h:2,c:"#fd0"},{x:4,y:6,w:8,h:8,c:"#a22"},{x:6,y:7,w:4,h:6,c:"#fff"}] },
     npc_friend: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#642"},{x:5,y:6,w:6,h:6,c:"#48a"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
     npc_healer: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#fcc"},{x:5,y:6,w:6,h:6,c:"#fff"},{x:7,y:8,w:2,h:2,c:"#8f8"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
-    npc_mom: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#e88"},{x:5,y:6,w:6,h:8,c:"#d44"},{x:4,y:7,w:2,h:4,c:"#fca"},{x:4,y:1,w:8,h:2,c:"#d44"}] },
-    npc_cat: { color: "#fff", pixels: [{x:6,y:2,w:4,h:4},{x:5,y:6,w:6,h:6},{x:4,y:7,w:2,h:4},{x:2,y:1,w:2,h:3},{x:12,y:1,w:2,h:3},{x:7,y:4,w:2,h:1,c:"#f88"}] },
-    npc_death: { color: "#222", pixels: [{x:5,y:1,w:6,h:6,c:"#ddd"},{x:4,y:5,w:8,h:8,c:"#222"},{x:2,y:4,w:12,h:2,c:"#222"},{x:12,y:2,w:2,h:10,c:"#888"},{x:11,y:2,w:4,h:2,c:"#ccc"}] },
-    npc_angel: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#fe8"},{x:6,y:6,w:4,h:6,c:"#fff"},{x:2,y:4,w:4,h:6,c:"#fff"},{x:10,y:4,w:4,h:6,c:"#fff"},{x:6,y:0,w:4,h:1,c:"#fd0"}] }
 };
 
+// Chu-ni-byou Skill Names
 const SKILLS = [
-    { id: "fire", name: "火炎斬り", mp: 3, dmg: 2.0, msg: "炎が包み込む！" },
-    { id: "vac", name: "しんくう斬り", mp: 5, dmg: 2.5, msg: "カマイタチ！" },
-    { id: "falcon", name: "はやぶさ斬り", mp: 8, dmg: 1.0, times: 2, msg: "超高速連撃！" },
-    { id: "gigadein", name: "ギガデイン", mp: 15, dmg: 5.0, msg: "雷の究極呪文！" },
-    { id: "heal", name: "ベホイミ", mp: 5, heal: 60, type: "heal", msg: "傷が癒える！" },
-    { id: "smash", name: "兜割り", mp: 4, dmg: 2.2, msg: "脳天直撃！" },
-    { id: "all", name: "ぶんまわし", mp: 6, dmg: 1.8, msg: "なぎ払う！" },
-    { id: "crit", name: "きゅうしょ突き", mp: 4, dmg: 1.2, msg: "急所を狙う！" },
-    { id: "magic", name: "メラミ", mp: 6, dmg: 3.0, msg: "火の玉！" }
+    { id: "fire", name: "紅蓮の腕", mp: 3, dmg: 2.0, msg: "焼き尽くせ！" },
+    { id: "vac", name: "断空の太刀", mp: 5, dmg: 2.5, msg: "空を切る！" },
+    { id: "falcon", name: "幻影連撃", mp: 8, dmg: 1.0, times: 2, msg: "残像だ..." },
+    { id: "gigadein", name: "天雷招来", mp: 15, dmg: 5.0, msg: "消え失せろ！" },
+    { id: "heal", name: "因果逆転", mp: 5, heal: 60, type: "heal", msg: "時を戻す！" },
+    { id: "smash", name: "脳天唐竹", mp: 4, dmg: 2.2, msg: "砕け散れ！" },
+    { id: "all", name: "旋風乱舞", mp: 6, dmg: 1.8, msg: "一網打尽！" },
+    { id: "crit", name: "瞬獄殺", mp: 4, dmg: 1.2, msg: "死角なし！" },
+    { id: "magic", name: "黒炎弾", mp: 6, dmg: 3.0, msg: "闇に飲まれよ！" }
 ];
 
 const ITEMS = [
-    { id: "stick", type:"w", name: "ひのきの棒", atk: 2, prob: 0.2, sprite: "stick", color: "#a84" },
-    { id: "club", type:"w", name: "こんぼう", atk: 4, prob: 0.15, sprite: "club", color: "#953", skillId: "smash" },
-    { id: "cloth", type:"a", name: "布の服", def: 1, prob: 0.2, sprite: "a_cloth", color: "#dca" },
-    { id: "leather", type:"a", name: "皮の鎧", def: 3, prob: 0.15, sprite: "a_leather", color: "#a64" },
+    { id: "stick", type:"w", name: "始まりの枝", atk: 2, prob: 0.2, sprite: "stick", color: "#a84" },
+    { id: "club", type:"w", name: "蛮族の棍棒", atk: 4, prob: 0.15, sprite: "club", color: "#953", skillId: "smash" },
+    { id: "cloth", type:"a", name: "旅人の外套", def: 1, prob: 0.2, sprite: "a_cloth", color: "#dca" },
+    { id: "leather", type:"a", name: "獣の皮鎧", def: 3, prob: 0.15, sprite: "a_leather", color: "#a64" },
 ];
 const W_TYPES = [{id:"sword",name:"剣",base:8,sp:"sword",sk:"fire"},{id:"axe",name:"斧",base:10,sp:"axe",sk:"smash"},{id:"spear",name:"槍",base:9,sp:"spear",sk:"crit"},{id:"hammer",name:"槌",base:12,sp:"hammer",sk:"all"},{id:"wand",name:"杖",base:6,sp:"wand",sk:"magic"}];
 const A_TYPES = [{id:"chain",name:"鎖帷子",base:5,sp:"a_chain"},{id:"iron",name:"鉄の鎧",base:10,sp:"a_iron"},{id:"steel",name:"鋼の鎧",base:15,sp:"a_steel"},{id:"dragon",name:"竜の鎧",base:22,sp:"a_dragon"},{id:"hero",name:"光の鎧",base:30,sp:"a_hero"}];
@@ -522,14 +543,21 @@ W_TYPES.forEach(t=>{ WEAPON_PREFIXES.forEach((pre,i)=>{ ITEMS.push({id:`${t.id}_
 A_TYPES.forEach(t=>{ WEAPON_PREFIXES.forEach((pre,i)=>{ ITEMS.push({id:`${t.id}_${i}`,type:"a",name:`${pre}${t.name}`,def:t.base+(i*3),prob:0.1/(i+1),sprite:t.sp,color:WEAPON_COLORS[i]}); }); });
 
 ITEMS.push(
-    { id: "hero_w", type:"w", name: "勇者のつるぎ", atk: 80, prob: 0.005, sprite: "sword", color: "#48f", skillId: "gigadein" },
-    { id: "metal_w", type:"w", name: "メタル殺し", atk: 40, prob: 0.01, sprite: "sword", color: "#ccc", skillId: "falcon" }
+    { id: "hero_w", type:"w", name: "ラグナロク", atk: 80, prob: 0.005, sprite: "sword", color: "#48f", skillId: "gigadein" },
+    { id: "metal_w", type:"w", name: "魔剣オメガ", atk: 40, prob: 0.01, sprite: "sword", color: "#ccc", skillId: "falcon" },
+    
+    // NEW Special Items
+    { id: "sp_drain", type:"w", name: "ソウル・デバウアー", atk: 25, prob: 0.02, sprite: "sword", color: "#f00", effect: "drain", effectName: "吸血" },
+    { id: "sp_time", type:"w", name: "クロノス・ブレイカー", atk: 20, prob: 0.02, sprite: "sword", color: "#0ff", effect: "slow", effectName: "時間干渉" },
+    { id: "sp_scope", type:"w", name: "神眼のモノクル", atk: 18, prob: 0.02, sprite: "wand", color: "#fd0", effect: "scope", effectName: "領域拡大" },
+    { id: "sp_ref", type:"a", name: "嘆きの茨", def: 18, prob: 0.02, sprite: "a_chain", color: "#808", effect: "reflect", effectName: "呪詛反射" },
+    { id: "sp_reg", type:"a", name: "不死鳥の聖衣", def: 20, prob: 0.02, sprite: "a_hero", color: "#f88", effect: "regen", effectName: "不滅" },
+    { id: "sp_greed", type:"a", name: "アワリティア・プレート", def: 10, prob: 0.03, sprite: "a_iron", color: "#fd0", effect: "greed", effectName: "強欲" }
 );
 
-const RATES = [ { name: "絶望", color: "#444", rate: 0.05 }, { name: "旅人", color: "#fff", rate: 0.10 }, { name: "戦士", color: "#48f", rate: 0.20 }, { name: "勇者", color: "#fd0", rate: 0.30 }, { name: "伝説", color: "#f44", rate: 0.50 }, { name: "神話", color: "magenta", rate: 0.65 } ];
-const MID_BOSS_NAMES = ["煉獄", "深淵", "絶望", "暴虐", "虚無"];
-const MID_BOSS_TITLES = ["の守護者", "の番人", "の四天王", "の騎士", "の魔人"];
-const ENEMY_LINES = ["ここを通すわけにはいかん！", "我が剣の錆にしてくれる！", "ほう、ここまで来るとは...", "貴様の運もここまでだ！", "痛みを感じる間もなく終わるぞ", "今日の晩飯は何かな...", "シフト交代まであと少し...", "最近肩こりが酷くてな...", "ローンの支払いが...", "戦いたくないのだが...", "ククク...我は四天王の中でも最弱...", "我が倒れても第二の私が...", "闇の力を見るがいい！", "深淵を覗くとき、深淵もまた...", "我が名は...忘れた！", "ヒャッハー！", "汚物は消毒だー！", "命乞いをするなら今だぞ？", "全力でかかってこい！", "手加減はせんぞ！", "俺のターン！", "ずっと俺のターン！", "その装備、いい値段で売れそうだな", "回復薬は持ったか？", "セーブはこまめにしとけよ", "フフフ...怖いか？", "震えているぞ？", "見切った！", "甘い！", "遅い！", "母ちゃんごめん...", "やめて！HPはもうゼロよ！", "これ以上いじめないで", "平和的解決を望む！", "話せばわかる！"];
+const FLAVOR_TEXTS = ["ククク…力が溢れてくる…", "右腕が疼く…", "魔力が共鳴している…", "この痛み…心地よい…", "我に潜む闇が騒ぐ…", "見えた…死の線が…", "封印が解けそうだ…"];
+const RATES = [ { name: "絶望", color: "#444", rate: 0.05 }, { name: "凡人", color: "#fff", rate: 0.10 }, { name: "修羅", color: "#48f", rate: 0.20 }, { name: "英雄", color: "#fd0", rate: 0.30 }, { name: "伝説", color: "#f44", rate: 0.50 }, { name: "神話", color: "magenta", rate: 0.65 } ];
+const ENEMY_LINES = ["貴様の命運は尽きた！", "その魂、我が糧となれ！", "絶望を教えてやろう", "フフフ…楽しませてくれよ？", "我が闇に平伏せ！", "この領域に踏み入るとは…", "死へのカウントダウンだ", "恐怖に歪む顔が見たい…"];
 
 let game = null;
 
@@ -542,15 +570,19 @@ class Game {
         this.gaugeVal = 0; this.gaugeDir = 1; this.gaugeSpeed = 2;
         this.pendingItem = null;
         this.chain = 0;
+        this.isAwakening = false;
+        this.isGuardWindow = false;
+        this.guardStart = 0;
     }
 
     bindDOM() {
         this.el = {
+            container: document.getElementById('game-container'),
             hp: document.getElementById('disp-hp'), mp: document.getElementById('disp-mp'),
             lv: document.getElementById('disp-lv'), atk: document.getElementById('disp-atk'), def: document.getElementById('disp-def'),
             gold: document.getElementById('disp-gold'), gen: document.getElementById('disp-gen'), dlv: document.getElementById('disp-dlv'),
             weapon: document.getElementById('disp-weapon'), armor: document.getElementById('disp-armor'),
-            aura: document.getElementById('disp-aura'), chain: document.getElementById('disp-chain'),
+            aura: document.getElementById('disp-aura'), chain: document.getElementById('disp-chain'), awakeTxt: document.getElementById('awake-txt'),
             log: document.getElementById('log'), stage: document.getElementById('stage'), enemy: document.getElementById('enemy-slot'),
             bar: document.getElementById('progress-bar'), txt: document.getElementById('progress-text'),
             
@@ -566,8 +598,8 @@ class Game {
             btnMain: document.getElementById('btn-main'), btnStop: document.getElementById('btn-stop'),
             
             chestDisplay: document.getElementById('chest-display'),
-            curI: { icon:document.getElementById('cur-icon'), name:document.getElementById('cur-name'), stat:document.getElementById('cur-stat'), sub:document.getElementById('cur-sub') },
-            newI: { icon:document.getElementById('new-icon'), name:document.getElementById('new-name'), stat:document.getElementById('new-stat'), sub:document.getElementById('new-sub') },
+            curI: { icon:document.getElementById('cur-icon'), name:document.getElementById('cur-name'), stat:document.getElementById('cur-stat'), sub:document.getElementById('cur-sub'), eff:document.getElementById('cur-effect') },
+            newI: { icon:document.getElementById('new-icon'), name:document.getElementById('new-name'), stat:document.getElementById('new-stat'), sub:document.getElementById('new-sub'), eff:document.getElementById('new-effect') },
             
             dramaActor: document.getElementById('drama-actor-box'), dramaName: document.getElementById('drama-name'), dramaText: document.getElementById('drama-text')
         };
@@ -575,12 +607,7 @@ class Game {
     
     resetInternalState() {
         let save = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
-        if (!save) {
-             const oldSave = JSON.parse(localStorage.getItem('EQ_SAVE_V26') || 'null');
-             if(oldSave) save = oldSave;
-        }
-
-        this.boosts = save?.boosts || { hp: 0, mp: 0, atk: 0, luck: 0 };
+        this.boosts = save?.boosts || { hp: 0, mp: 0, atk: 0, def: 0, luck: 0 };
         this.clears = save?.clears || 1; 
         if (save) {
             this.generation = save.generation || 1; this.gold = save.gold || 0; this.acquiredItems = new Set(save.library || []);
@@ -595,6 +622,7 @@ class Game {
         this.luckBonus = Math.min(0.30, this.boosts.luck * 0.02); 
         this.enemy = { name: "", hp: 0, maxHp: 0, atk: 0, type: "slime" };
         this.chain = 0;
+        this.isAwakening = false;
     }
     
     saveData() {
@@ -604,7 +632,7 @@ class Game {
     }
 
     resetSaveData() {
-        if(confirm("本当にリセットしますか？この操作は取り消せません。")) {
+        if(confirm("記憶を消去しますか？\n(セーブデータがリセットされます)")) {
             localStorage.removeItem(SAVE_KEY);
             location.reload();
         }
@@ -612,13 +640,12 @@ class Game {
     
     softReset() {
         this.resetInternalState();
-        this.el.log.innerHTML = `<div class='log-entry system'>第${this.generation}代 勇者、魔王討伐へ！</div>`;
+        this.el.log.innerHTML = `<div class='log-entry system'>第${this.generation}代 勇者、運命の地へ。</div>`;
         this.el.modalGo.style.display = "none"; this.el.modalShop.style.display = "none";
         this.el.btnMain.textContent = "運命の抽選へ"; this.el.btnMain.style.display = "block";
         this.el.menuBattle.style.display = "none"; this.el.enemy.innerHTML = "";
         this.el.dangerOverlay.style.display = "none"; this.updateHud();
         this.el.aura.textContent = "READY"; this.el.aura.style.color = "#fff";
-        this.el.stage.style.boxShadow = "inset 0 0 50px #000";
         this.sound.playSE('select');
     }
 
@@ -626,10 +653,17 @@ class Game {
         this.sound.init(); this.sound.playSE('select');
         document.getElementById('click-start').style.display = 'none';
         this.el.btnMain.style.display = "block";
-        this.log(`第${this.generation}代 勇者、冒険の書を開いた！`); this.updateHud();
+        this.log(`第${this.generation}代 勇者、冒険の書を開いた。`); this.updateHud();
     }
 
     log(msg, type = "") {
+        // Random Flavor Text
+        if (Math.random() < 0.15 && type === "") {
+            const flavor = FLAVOR_TEXTS[Math.floor(Math.random() * FLAVOR_TEXTS.length)];
+            const fd = document.createElement('div'); fd.className = "log-entry flavor"; fd.innerHTML = flavor;
+            this.el.log.prepend(fd);
+        }
+
         const d = document.createElement('div'); d.className = `log-entry ${type}`; d.innerHTML = msg;
         this.el.log.prepend(d);
         if (this.el.log.children.length > 20) this.el.log.removeChild(this.el.log.lastChild);
@@ -644,8 +678,32 @@ class Game {
         this.el.enemy.innerHTML = generateSVG({...d, color: color}, null, metal);
     }
 
-    get totalAtk() { return this.baseAtk + (this.weapon ? this.weapon.atk : 0); }
-    get totalDef() { return (this.armor ? this.armor.def : 0); }
+    get totalAtk() { 
+        let a = this.baseAtk + (this.weapon ? this.weapon.atk : 0);
+        if (this.isAwakening) a *= 2; // Awakening Double Attack
+        return Math.floor(a);
+    }
+    get totalDef() { 
+        if (this.isAwakening) return 0; // Awakening Zero Defense
+        return (this.armor ? this.armor.def : 0) + (this.boosts.def || 0); 
+    }
+
+    checkAwakening() {
+        if (this.chain >= 5 && !this.isAwakening) {
+            this.isAwakening = true;
+            this.el.container.classList.add('awakening-mode');
+            this.el.awakeTxt.style.display = "inline";
+            this.sound.playSE('crit');
+            this.log("≪覚醒≫ 力が解放された！", "damage");
+            this.showCutin("A W A K E N I N G");
+            this.sound.playBGM('awake');
+        } else if (this.chain < 5 && this.isAwakening) {
+            this.isAwakening = false;
+            this.el.container.classList.remove('awakening-mode');
+            this.el.awakeTxt.style.display = "none";
+            this.sound.playBGM(this.lv >= this.targetLv ? 'boss' : 'battle');
+        }
+    }
 
     updateHud() {
         if(!this.el.hp) return;
@@ -653,7 +711,7 @@ class Game {
         this.el.lv.textContent = this.lv; this.el.atk.textContent = this.totalAtk; this.el.def.textContent = this.totalDef;
         this.el.gold.textContent = this.gold; this.el.gen.textContent = this.generation; this.el.dlv.textContent = this.clears;
         this.el.weapon.textContent = this.weapon ? this.weapon.name : "素手";
-        this.el.armor.textContent = this.armor ? this.armor.name : "服";
+        this.el.armor.textContent = this.armor ? this.armor.name : "旅人の服";
         this.el.chain.textContent = this.chain;
         this.el.hp.className = this.hp <= this.maxHp * 0.2 ? "val-hp hp-danger" : "val-hp";
         this.el.dangerOverlay.style.display = this.hp <= this.maxHp * 0.25 ? "block" : "none";
@@ -669,7 +727,7 @@ class Game {
 
     async startLottery() {
         this.state = "LOTTERY"; this.el.btnMain.disabled = true;
-        this.log("神の加護を求めて祈る..."); this.sound.playBGM('boss');
+        this.log("運命の抽選を開始..."); this.sound.playBGM('boss');
         let sel = RATES[0];
         for (let i = 0; i < 15; i++) {
             sel = RATES[Math.floor(Math.random() * RATES.length)];
@@ -684,7 +742,7 @@ class Game {
         this.revivalRate = Math.min(0.65, sel.rate + this.luckBonus); 
         this.el.aura.textContent = `${Math.floor(this.revivalRate*100)}%`;
         this.el.stage.style.boxShadow = `inset 0 0 30px ${sel.color}`;
-        this.showCutin("加護 確定"); this.sound.playSE('crit');
+        this.showCutin(sel.name + " 確定"); this.sound.playSE('crit');
         await this.delay(1000);
         this.el.btnMain.textContent = "魔窟へ"; this.el.btnMain.disabled = false;
         this.state = "BATTLE_WAIT"; this.sound.stopBGM();
@@ -694,7 +752,7 @@ class Game {
         this.state = "BATTLE_CMD"; this.el.btnMain.style.display = "none"; this.el.menuBattle.style.display = "grid"; this.el.itemPop.style.transform = "scale(0)";
         if (this.lv >= this.targetLv) { this.startBossBattle("boss"); return; }
         if (this.lv === 10 || this.lv === 20) { this.startBossBattle("mid"); return; }
-        this.sound.playBGM('battle');
+        if(!this.isAwakening) this.sound.playBGM('battle');
         let type = "slime", eName = "スライム", gauge="normal", metal=false, goldMult=1, expMult=1;
         const tier = Math.floor((this.lv - 1) / 3);
         if (Math.random() < 0.1) { 
@@ -733,17 +791,12 @@ class Game {
     }
     
     async startBossBattle(type) {
-        this.sound.playBGM('boss');
+        if(!this.isAwakening) this.sound.playBGM('boss');
         const isMaou = type === "boss";
         const diff = 1 + (this.clears * 0.5); 
         let name = isMaou ? `第${this.clears}代 魔王` : "魔界の番人";
         let eType = isMaou ? "boss" : (Math.random() < 0.5 ? "asura" : "general");
-        if (!isMaou) {
-             const n1 = MID_BOSS_NAMES[Math.floor(Math.random()*MID_BOSS_NAMES.length)];
-             const n2 = MID_BOSS_TITLES[Math.floor(Math.random()*MID_BOSS_TITLES.length)];
-             name = `${n1}${n2}`;
-        }
-        // Fixed: Reduced EXP mult for bosses to prevent skipping floors
+        
         this.enemy = { name: name, type: eType, maxHp: Math.floor((isMaou?500:250)*diff), hp: Math.floor((isMaou?500:250)*diff), atk: Math.floor((isMaou?50:35)*diff), gaugeType: "super_fast", isMetal: false, expMult: 3, goldMult: 100 };
         
         this.renderEnemy(this.enemy.type, false, true);
@@ -756,8 +809,6 @@ class Game {
              this.el.enemy.style.transform = "scale(1.2)";
         });
         
-        const lines = isMaou ? ["よくぞ来た、人間よ...", "我が代で貴様らを根絶やしにする！", "力の差を教えてやろう..."] : ["ククク…奴は四天王の中でも最弱…", "ここを通すわけにはいかん！", "貴様の首、貰い受ける！", "シフト交代の時間なのだが...", "トイレに行ってる隙をつくとは..."];
-        this.showBattleTalk(lines[Math.floor(Math.random()*lines.length)], 4000);
         this.showCutin(isMaou ? "魔王 降臨" : "強敵 出現");
     }
     
@@ -800,11 +851,28 @@ class Game {
         }
     }
 
+    // Single Handler for the big button
+    handleActionBtn() {
+        if(this.state === "GAUGE") this.stopGauge();
+        else if(this.state === "ENEMY_TURN" && this.isGuardWindow) this.attemptGuard();
+    }
+
     startGauge() {
-        this.state = "GAUGE"; this.el.btnStop.style.display="block"; this.el.gaugeArea.style.display="block";
+        this.state = "GAUGE"; 
+        this.el.btnStop.style.display="block"; 
+        this.el.btnStop.className = "main-btn btn-stop";
+        this.el.btnStop.textContent = "たたかう！";
+        
+        this.el.gaugeArea.style.display="block";
         this.gaugeVal=0; this.gaugeDir=1;
         this.gaugeSpeed = (2 + (this.lv*0.1)) * (this.enemy.gaugeType==="fast"?1.5:(this.enemy.gaugeType==="super_fast"?2.5:1));
         if(this.enemy.gaugeType === "slow") this.gaugeSpeed = 0.5;
+        
+        // Item Effect: Clock Down
+        if(this.weapon && this.weapon.effect === "slow") {
+            this.gaugeSpeed *= 0.7;
+        }
+
         this.el.gaugeCursor.style.opacity = 1;
         this.runGauge();
     }
@@ -821,30 +889,34 @@ class Game {
         this.el.gaugeCursor.style.left = this.gaugeVal+"%"; requestAnimationFrame(()=>this.runGauge());
     }
     
-    // MODIFIED CHAIN SYSTEM
     async stopGauge() {
         if(this.state!=="GAUGE") return; this.state="ANIM"; this.el.btnStop.style.display="none";
         this.sound.playSE('attack');
         let dist = Math.abs(50-this.gaugeVal), mult=1.0, isCrit=false;
         
-        // Strict Chain Rule: Only Perfect (<5) counts
-        if(dist <= 5) {
+        // Item Effect: Scope (Widen perfect zone)
+        let safeZone = 5;
+        if (this.weapon && this.weapon.effect === "scope") safeZone = 10;
+
+        if(dist <= safeZone) {
             this.chain++; 
             isCrit = true;
-            mult = 1.2 + (this.chain * 0.3); // High scaling
+            mult = 1.2 + (this.chain * 0.3); 
             this.showChainPop(`${this.chain} CHAIN!`);
-        } else if (dist <= 15) { // Yellow zone
-            // New logic: Metal Killer Chance
+            this.checkAwakening(); // Check awakening on chain increase
+        } else if (dist <= 15) { 
             if (this.enemy.isMetal && Math.random() < 0.5) {
-                isCrit = true; // Upgrade to crit (instakill for metal)
-                this.log("ラッキー！急所に当たった！", "critical");
+                isCrit = true; 
+                this.log("神速の剣閃！", "critical");
             }
             mult = 1.0; 
             this.chain = 0;
+            this.checkAwakening(); // Check drop
         } else {
-            if(this.chain > 0) this.log("CHAINが途切れた...", "damage");
+            if(this.chain > 0) this.log("集中力が途切れた...", "damage");
             this.chain = 0;
             mult = 0.5;
+            this.checkAwakening(); // Check drop
         }
         
         await this.delay(300); this.el.gaugeArea.style.display="none";
@@ -859,7 +931,6 @@ class Game {
         for(let i=0; i<times; i++) {
             let dmg = Math.floor(dmgBase * mult);
             if(this.enemy.isMetal) {
-                // Instakill if crit (even from yellow zone luck)
                 dmg = (isCrit || (this.weapon&&this.weapon.id==="metal_w")) ? this.enemy.maxHp : (Math.random()<0.5 ? 0 : 1);
                 if(dmg>0) this.sound.playSE('metal');
             } else {
@@ -868,6 +939,16 @@ class Game {
             if(dmg>0) { 
                 this.log(`${this.enemy.name}に ${dmg} のダメージ！`, isCrit ? "critical" : "");
                 this.showDamage(dmg, 'deal', isCrit); this.enemy.hp-=dmg; 
+                
+                // Item Effect: Drain
+                if (this.weapon && this.weapon.effect === "drain") {
+                     let drain = Math.floor(dmg * 0.3);
+                     if(drain > 0) {
+                         this.hp = Math.min(this.maxHp, this.hp + drain);
+                         this.log(`血を啜り ${drain} 回復！`, "revive");
+                     }
+                }
+
             } else { 
                 this.log(`ミス！ ${this.enemy.name}にダメージを与えられない！`); this.showDamage("Miss", 'miss', false); 
             }
@@ -878,6 +959,7 @@ class Game {
     }
 
     async enemyTurn() {
+        this.state = "ENEMY_TURN";
         await this.delay(400);
         
         if (this.enemy.isMetal && Math.random() < 0.5) {
@@ -890,17 +972,63 @@ class Game {
             return;
         }
 
-        this.log(`${this.enemy.name}のこうげき！`, "damage");
+        // JUST GUARD Sequence
+        this.log(`${this.enemy.name}の攻撃構え！`, "damage");
         this.el.enemy.classList.add("anim-lunge");
         
-        let dmg = Math.max(1, this.enemy.atk - Math.floor(Math.random()*3));
-        // Defense Calc
-        dmg = Math.max(1, Math.floor(dmg - (this.totalDef / 2)));
-        if(Math.random()<0.15 && !this.enemy.isMetal) { dmg=Math.floor(dmg*1.5); this.log("痛恨の一撃！","damage"); }
-        this.hp-=dmg; this.updateHud(); 
-        this.log(`${dmg} のダメージを受けた！`, "damage"); this.showDamage(dmg, 'take', false); this.sound.playSE('hit');
-        this.el.stage.style.transform = "translate(5px, 5px)"; setTimeout(() => this.el.stage.style.transform = "translate(0, 0)", 100);
+        // Enable Guard Button
+        this.el.btnStop.style.display = "block";
+        this.el.btnStop.className = "main-btn btn-guard";
+        this.el.btnStop.textContent = "防御！";
+        
+        this.isGuardWindow = true;
+        this.guardStart = Date.now();
+        this.guardSuccess = false;
+        
+        // Wait for impact (0.6s)
+        await this.delay(600);
+        
+        this.isGuardWindow = false;
+        this.el.btnStop.style.display = "none";
         this.el.enemy.classList.remove("anim-lunge");
+
+        if (this.guardSuccess) {
+            // Success Logic (Already handled visually in attemptGuard)
+            let counterDmg = Math.floor(this.totalAtk * 1.5);
+            this.log(`カウンター！ ${this.enemy.name}に ${counterDmg} のダメージ！`, "critical");
+            this.showDamage(counterDmg, 'deal', true);
+            this.enemy.hp -= counterDmg;
+            this.sound.playSE('hit');
+            if(this.enemy.hp<=0) { this.winBattle(); return; }
+        } else {
+            // Take Damage
+            let dmg = Math.max(1, this.enemy.atk - Math.floor(Math.random()*3));
+            
+            // Reflect Effect (Before Def Calc)
+            if (this.armor && this.armor.effect === "reflect") {
+                 let ref = Math.floor(dmg * 0.3);
+                 if(ref > 0) {
+                     this.enemy.hp -= ref;
+                     this.log(`呪詛返し！敵に ${ref} ダメージ！`, "damage");
+                 }
+            }
+
+            dmg = Math.max(1, Math.floor(dmg - (this.totalDef / 2)));
+            if(Math.random()<0.15 && !this.enemy.isMetal) { dmg=Math.floor(dmg*1.5); this.log("痛恨の一撃！","damage"); }
+            
+            this.hp-=dmg; this.updateHud(); 
+            this.log(`${dmg} のダメージを受けた！`, "damage"); this.showDamage(dmg, 'take', false); this.sound.playSE('hit');
+            this.el.stage.style.transform = "translate(5px, 5px)"; setTimeout(() => this.el.stage.style.transform = "translate(0, 0)", 100);
+        }
+
+        // Regen Effect (End of turn)
+        if (this.armor && this.armor.effect === "regen") {
+            let reg = Math.floor(this.maxHp * 0.05);
+            if(reg>0 && this.hp > 0) {
+                this.hp = Math.min(this.maxHp, this.hp+reg);
+                this.updateHud();
+            }
+        }
 
         if (this.hp <= 0) {
             this.sound.stopBGM();
@@ -910,13 +1038,31 @@ class Game {
             this.el.menuBattle.style.display = "grid";
         }
     }
+    
+    attemptGuard() {
+        if(!this.isGuardWindow) return;
+        const now = Date.now();
+        // Just Guard Window: 200ms
+        if (now - this.guardStart <= 250) {
+            this.guardSuccess = true;
+            this.isGuardWindow = false; // Prevent double trigger
+            this.sound.playSE('parry');
+            this.showCutin("J U S T");
+            this.el.cutin.classList.add("just");
+            setTimeout(()=>this.el.cutin.classList.remove("just"), 1000);
+            this.log("見切った！", "critical");
+        } else {
+            // Fail (Too late)
+            this.log("防御が遅れた！");
+        }
+    }
 
     // --- WIN & DROP ---
     async winBattle() {
         if (this.enemy.type === "boss") {
             this.sound.stopBGM();
             this.sound.playBGM('clear');
-            this.log(`魔王を倒した！`, "critical");
+            this.log(`魔王を討伐した！`, "critical");
             this.el.enemy.style.transition = "all 2s";
             this.el.enemy.style.opacity = 0;
             this.el.enemy.style.filter = "brightness(5)";
@@ -936,17 +1082,15 @@ class Game {
             return;
         }
 
-        this.log(`${this.enemy.name}をやっつけた！`, "critical");
+        this.log(`${this.enemy.name}を葬った。`, "critical");
         this.sound.playSE('select'); 
         this.el.enemy.style.transition = "opacity 1s, transform 1s";
         this.el.enemy.style.opacity = 0;
         this.el.enemy.style.transform = "scale(0.1) rotate(180deg)";
         await this.delay(1000);
         
-        // FIXED: Only advance 1 floor
         this.lv += 1;
         
-        // Status gains use multiplier
         const mult = this.enemy.expMult;
         this.maxHp += 4 * mult; 
         this.hp = Math.min(this.maxHp, this.hp + 20);
@@ -954,18 +1098,22 @@ class Game {
         this.maxMp += 2 * mult; 
         this.mp += 2 * mult;
         
-        let g = Math.floor((10 + this.lv*2)*this.enemy.goldMult); this.gold+=g;
+        // Item Effect: Greed
+        let goldRate = 1.0;
+        if(this.armor && this.armor.effect === "greed") goldRate = 1.5;
+        if(this.weapon && this.weapon.effect === "greed") goldRate = 1.5;
+
+        let g = Math.floor((10 + this.lv*2)*this.enemy.goldMult * goldRate); 
+        this.gold+=g;
+        
         this.updateHud(); 
         if (mult > 1) {
-             this.log(`${g}G 獲得。大量の経験値を得た！(Lv+1)`);
+             this.log(`${g}G 強奪。莫大な経験値を得た。(Lv+1)`);
         } else {
-             this.log(`${g}G 獲得。Lv${this.lv}に！`);
+             this.log(`${g}G 獲得。Lv${this.lv}に到達。`);
         }
         this.sound.playSE('coin');
         await this.checkDrop();
-        // NOTE: state transition handled in decideItem or here if no drop?
-        // Logic: checkDrop calls showItemCompare -> decideItem -> BATTLE_WAIT
-        // BUT checkDrop is async and only shows if drop. So if no drop...
     }
 
     async checkDrop() {
@@ -975,7 +1123,8 @@ class Game {
             this.pendingItem = drop;
             await this.showItemCompare(drop);
         } else {
-            this.state="BATTLE_WAIT"; this.el.btnMain.textContent="さらに奥へ"; this.el.btnMain.style.display="block"; this.sound.playBGM('battle');
+            this.state="BATTLE_WAIT"; this.el.btnMain.textContent="さらに奥へ"; this.el.btnMain.style.display="block"; 
+            if(!this.isAwakening) this.sound.playBGM('battle');
         }
     }
     
@@ -983,13 +1132,12 @@ class Game {
         return new Promise(resolve => {
             this.el.menuBattle.style.display = "none";
             this.el.chestDisplay.style.display = "flex";
-            this.el.enemy.style.display = "none"; // Hide enemy slot
+            this.el.enemy.style.display = "none";
             
-            // Show Chest Command Menu
             this.el.menuChest.style.display = "grid";
             
             const isArmor = item.type === "a";
-            const cur = isArmor ? (this.armor || {name:"服", def:0, sprite:"a_cloth", color:"#fff"}) : (this.weapon || {name:"素手", atk:0, skillId:null, sprite:"stick", color:"#fff"});
+            const cur = isArmor ? (this.armor || {name:"旅人の服", def:0, sprite:"a_cloth", color:"#fff"}) : (this.weapon || {name:"素手", atk:0, skillId:null, sprite:"stick", color:"#fff"});
             
             this.renderCard(this.el.curI, cur, isArmor);
             this.renderCard(this.el.newI, item, isArmor);
@@ -999,50 +1147,55 @@ class Game {
     }
     
     renderCard(els, item, isArmor) {
-        if(!els.name) return; // Guard
+        if(!els.name) return;
         els.name.textContent = item.name;
         els.icon.innerHTML = generateSVG(SPRITES[item.sprite], item.color);
         if (isArmor) {
             els.stat.textContent = `守+${item.def}`; els.stat.className = "chest-stat";
-            if(els.sub) els.sub.textContent = "";
         } else {
             els.stat.textContent = `攻+${item.atk}`; els.stat.className = "chest-stat";
-            // Safe skill lookup
-            let sName = "なし";
-            if (item.skillId) {
-                const s = SKILLS.find(k => k.id === item.skillId);
-                if (s) sName = `特技:${s.name}`;
-            }
-            if(els.sub) els.sub.textContent = sName;
+        }
+        
+        let sText = "";
+        if (item.skillId) {
+            const s = SKILLS.find(k => k.id === item.skillId);
+            if (s) sText = `技:${s.name}`;
+        }
+        els.sub.textContent = sText;
+
+        if (item.effectName) {
+            els.eff.textContent = `★${item.effectName}`;
+        } else {
+            els.eff.textContent = "";
         }
     }
     
     decideItem(take) {
         if(take) {
             if (this.pendingItem.type === "a") this.armor = this.pendingItem; else this.weapon = this.pendingItem;
-            this.log(`${this.pendingItem.name}を装備した！`, "item"); this.sound.playSE('revive');
-        } else { this.log("宝箱をあきらめた。", "system"); }
+            this.log(`${this.pendingItem.name}と契約した。`, "item"); this.sound.playSE('revive');
+        } else { this.log("宝箱を拒絶した。", "system"); }
         
         this.el.chestDisplay.style.display = "none"; 
         this.el.menuChest.style.display = "none";
-        this.el.enemy.style.display = "block"; // Restore enemy slot for next battle
+        this.el.enemy.style.display = "block";
         
         this.updateHud(); 
         
-        // Go to Next
-        this.state="BATTLE_WAIT"; this.el.btnMain.textContent="さらに奥へ"; this.el.btnMain.style.display="block"; this.sound.playBGM('battle');
+        this.state="BATTLE_WAIT"; this.el.btnMain.textContent="さらに奥へ"; this.el.btnMain.style.display="block"; 
+        if(!this.isAwakening) this.sound.playBGM('battle');
         
         if(this.resolveItem) this.resolveItem();
     }
 
     async tryRevival() {
         this.state="REVIVAL"; this.log("勇者は力尽きた...","damage"); await this.delay(1500);
-        this.log("運命の判定...", "system"); await this.delay(1000);
+        this.log("運命の天秤が揺れる...", "system"); await this.delay(1000);
         if (Math.random() < this.revivalRate) {
             await this.playRevivalDrama();
             this.hp = Math.floor(this.maxHp * 0.6);
             this.updateHud();
-            this.sound.playBGM('boss');
+            if(!this.isAwakening) this.sound.playBGM('boss');
             this.state = "BATTLE_CMD";
             this.el.menuBattle.style.display = "grid";
         } else {
@@ -1061,7 +1214,6 @@ class Game {
         ];
         const scene = dramas[Math.floor(Math.random() * dramas.length)];
         
-        // Show Drama Window
         this.el.drama.style.display = "flex";
         
         for (const step of scene) {
@@ -1108,10 +1260,15 @@ class Game {
     openHelp() { this.sound.playSE('select'); this.el.modalHelp.style.display="flex"; }
     closeHelp() { this.sound.playSE('select'); this.el.modalHelp.style.display="none"; }
     
-    // Add openShop/buyBoost methods
     openShop() { this.el.modalGo.style.display="none"; this.el.modalShop.style.display="flex"; document.getElementById('shop-gold').textContent=this.gold; }
     buyBoost(t) {
-        let c=0,i=0; if(t==='hp'){c=500;i=5;}if(t==='mp'){c=500;i=2;}if(t==='atk'){c=1000;i=1;}if(t==='luck'){c=2000;i=1;}
+        let c=0,i=0; 
+        if(t==='hp'){c=500;i=5;}
+        if(t==='mp'){c=500;i=2;}
+        if(t==='atk'){c=1000;i=1;}
+        if(t==='def'){c=1000;i=1;}
+        if(t==='luck'){c=2000;i=1;}
+        
         if(this.gold>=c){this.gold-=c;this.boosts[t]+=i;document.getElementById('shop-gold').textContent=this.gold;this.sound.playSE('coin');this.saveData();} else this.sound.playSE('hit');
     }
     openLibrary() {
