@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ENDLESS QUEST - 覚醒の刻 - (Ver 2.0)</title>
+    <title>ENDLESS QUEST - 覚醒の刻 - (Inflation Ver)</title>
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Serif+JP:wght@700&display=swap" rel="stylesheet">
     <style>
         /* --- RESET & VARIABLES --- */
@@ -22,6 +22,7 @@
             --accent-yellow: #f1c40f;
             --accent-purple: #9b59b6;
             --accent-cyan: #1abc9c;
+            --accent-gold: #ffd700;
             
             --font-main: 'DotGothic16', sans-serif;
             --font-serif: 'Noto Serif JP', serif;
@@ -351,6 +352,22 @@
         .progress-fill { height: 100%; background: #e74c3c; width: 0%; transition: width 0.5s; }
         .progress-text { position: absolute; top: -18px; right: 0; font-size: 0.7rem; color: #888; }
 
+        /* UI UPDATE: Generation Bar */
+        .generation-bar {
+            background: #100;
+            border-bottom: var(--border-style);
+            border-color: #522;
+            padding: 4px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-serif);
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        .gen-hero { color: var(--accent-cyan); }
+        .gen-demon { color: var(--accent-red); }
+
         ruby { font-family: var(--font-main); }
         rt { font-size: 0.5em; color: var(--text-dim); text-align: center; transform: translateY(-2px); }
 
@@ -422,6 +439,13 @@
             <div class="progress-fill" id="progress-bar"></div>
             <div class="progress-text" id="progress-text">魔王城まで ???</div>
         </div>
+    </div>
+
+    <!-- UI UPDATE: GENERATION INFO -->
+    <div class="generation-bar">
+        <span class="gen-hero">第<span id="gen-hero-num">1</span>代 勇者</span>
+        <span style="font-size:0.7rem; color:#555;">VS</span>
+        <span class="gen-demon">第<span id="gen-demon-num">1</span>代 魔王</span>
     </div>
 
     <!-- MAIN STAGE -->
@@ -518,7 +542,6 @@
                 <div class="equip-box" title="装飾"><span class="equip-icon">💍</span><span id="disp-acc">なし</span></div>
             </div>
             <span id="disp-title" style="display:none;"></span>
-            <span id="disp-gen" style="display:none;"></span>
         </div>
 
         <div class="action-row">
@@ -565,7 +588,7 @@
         <div class="modal-window">
             <div class="modal-title">冒険の心得</div>
             <div style="font-size:0.9rem; line-height:1.6; color:#ccc;">
-                <p>地下30階の魔王を討伐せよ。<br>タイミングよくバーを止めて連撃（Combo）を稼げ。</p>
+                <p>地下30階の魔王を討伐せよ。<br>周回するごとに敵は強大になる。</p>
                 <p><strong>[絶対防御界]</strong><br>連撃5以上で自動発動。MPを消費してダメージを無効化。</p>
                 <p><strong>[見切り (Just Guard)]</strong><br>敵攻撃に合わせて防御ボタンを押せ。</p>
             </div>
@@ -644,7 +667,7 @@ class SoundManager {
     stopBGM() { this.bgmOscs.forEach(obj=>{try{obj.o.stop();obj.o.disconnect();}catch(e){}}); this.bgmOscs=[]; }
 }
 
-const SAVE_KEY = 'EQ_SAVE_V300';
+const SAVE_KEY = 'EQ_SAVE_INFLATION_V1';
 const WEAPON_PREFIXES = [
     {t:"朽ちた",r:"クチタ"}, {t:"鉄塊の",r:"テッカイノ"}, {t:"煉獄の",r:"レンゴクノ"}, {t:"名工の",r:"メイコウノ"}, 
     {t:"虚無の",r:"ヴォイド"}, {t:"絶対零度",r:"アブソリュート"}, {t:"雷光の",r:"ライトニング"}, {t:"聖なる",r:"ホーリー"}, 
@@ -710,6 +733,8 @@ const SPRITES = {
     npc_king: { color: "#fca", pixels: [{x:4,y:2,w:8,h:5,c:"#eee"},{x:5,y:0,w:6,h:3,c:"#fc0"},{x:4,y:7,w:8,h:8,c:"#b22"},{x:6,y:7,w:4,h:6,c:"#fff"},{x:5,y:6,w:6,h:4,c:"#ddd"}] },
     npc_friend: { color: "#fca", pixels: [{x:5,y:2,w:6,h:5,c:"#642"},{x:5,y:1,w:6,h:2,c:"#420"},{x:5,y:7,w:6,h:6,c:"#468"},{x:6,y:8,w:4,h:4,c:"#68a"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
     npc_healer: { color: "#fca", pixels: [{x:5,y:2,w:6,h:5,c:"#edb"},{x:5,y:1,w:6,h:2,c:"#dca"},{x:5,y:7,w:6,h:8,c:"#fff"},{x:7,y:8,w:2,h:4,c:"#8d8"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
+    npc_smith: { color: "#aaa", pixels: [{x:4,y:3,w:8,h:6,c:"#b86"},{x:3,y:3,w:2,h:4,c:"#531"},{x:11,y:3,w:2,h:4,c:"#531"},{x:5,y:2,w:6,h:2,c:"#ddd"},{x:4,y:9,w:8,h:5,c:"#642"},{x:6,y:10,w:4,h:3,c:"#864"}] },
+    npc_gambler: { color: "#e6e", pixels: [{x:5,y:2,w:6,h:5,c:"#eac"},{x:4,y:1,w:8,h:3,c:"#606"},{x:5,y:7,w:6,h:7,c:"#808"},{x:6,y:8,w:1,h:1,c:"#ff0"},{x:9,y:8,w:1,h:1,c:"#ff0"},{x:3,y:7,w:2,h:4,c:"#eac"}] },
 };
 
 const SKILLS = [
@@ -831,7 +856,10 @@ class Game {
             
             hp: document.getElementById('disp-hp'), mp: document.getElementById('disp-mp'),
             lv: document.getElementById('disp-lv'), atk: document.getElementById('disp-atk'), def: document.getElementById('disp-def'),
-            gold: document.getElementById('disp-gold'), gen: document.getElementById('disp-gen'),
+            gold: document.getElementById('disp-gold'), 
+            // New Gen UI
+            genHero: document.getElementById('gen-hero-num'), genDemon: document.getElementById('gen-demon-num'),
+
             weapon: document.getElementById('disp-weapon'), armor: document.getElementById('disp-armor'), acc: document.getElementById('disp-acc'),
             aura: document.getElementById('disp-aura'), chain: document.getElementById('disp-chain'), awakeTxt: document.getElementById('awake-txt'),
             title: document.getElementById('disp-title'),
@@ -866,7 +894,7 @@ class Game {
     resetInternalState() {
         let save = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
         this.boosts = save?.boosts || { hp: 0, mp: 0, atk: 0, def: 0, luck: 0 };
-        this.clears = save?.clears || 1; 
+        this.clears = save?.clears || 0; // Starts at 0 clears (Gen 1 Demon)
         this.acquiredTitles = new Set(save?.titles || []);
         if (save) {
             this.generation = save.generation || 1; this.gold = save.gold || 0; this.acquiredItems = new Set(save.library || []);
@@ -905,7 +933,6 @@ class Game {
     }
     
     softReset() {
-        // --- FIX: Soft Reset Logic ---
         this.resetInternalState();
         
         // Reset UI States
@@ -1009,7 +1036,12 @@ class Game {
         if(!this.el.hp) return;
         this.el.hp.textContent = this.hp; this.el.mp.textContent = this.mp;
         this.el.lv.textContent = this.lv; this.el.atk.textContent = this.totalAtk; this.el.def.textContent = this.totalDef;
-        this.el.gold.textContent = this.gold; this.el.gen.textContent = this.generation;
+        this.el.gold.textContent = this.gold; 
+        
+        // UI UPDATE: Gen Info
+        this.el.genHero.textContent = this.generation;
+        this.el.genDemon.textContent = this.clears + 1;
+
         this.el.weapon.textContent = this.weapon ? this.weapon.name.replace(/<rt>.*?<\/rt>/g,"") : "素手";
         this.el.armor.textContent = this.armor ? this.armor.name.replace(/<rt>.*?<\/rt>/g,"") : "服";
         this.el.acc.textContent = this.accessory ? this.accessory.name.replace(/<rt>.*?<\/rt>/g,"") : "なし";
@@ -1071,19 +1103,21 @@ class Game {
     
     decideEncounter() {
         const r = Math.random();
-        if (this.lv < this.targetLv && r < 0.15) {
+        if (this.lv < this.targetLv && r < 0.20) { // Slight bump to event rate
             this.triggerEvent();
         } else {
             this.startBattle();
         }
     }
 
+    // --- EXPANDED EVENTS ---
     triggerEvent() {
         this.state = "EVENT"; this.el.btnMain.style.display="none";
         this.el.eventDisplay.style.display = "flex"; this.el.eventChoices.innerHTML = "";
         this.el.enemy.style.display = "none";
         
-        const events = ["spring", "merchant", "devil"];
+        // Added: Blacksmith, Gambler, Mimic Trap
+        const events = ["spring", "merchant", "devil", "blacksmith", "gambler", "mimic_trap", "altar"];
         const type = events[Math.floor(Math.random()*events.length)];
         let title="", desc="";
         
@@ -1092,7 +1126,7 @@ class Game {
             b.className = "cmd-btn";
             b.style.textAlign = "center";
             b.textContent = txt;
-            b.onclick = () => { this.sound.playSE('select'); cb(); this.endEvent(); };
+            b.onclick = () => { this.sound.playSE('select'); cb(); if(this.state !== "BATTLE_CMD") this.endEvent(); };
             this.el.eventChoices.appendChild(b);
         };
         
@@ -1102,9 +1136,9 @@ class Game {
             createBtn("立ち去る", () => {});
         } else if (type === "merchant") {
             title = "謎の行商人"; desc = "「いい薬、あるよ...」";
-            const cost = 500 * this.generation;
+            const cost = 500 * (1 + this.clears); // Cost inflation
             createBtn(`薬を買う (${cost}G)`, () => {
-                if(this.gold >= cost) { this.gold -= cost; this.hp = Math.min(this.maxHp, this.hp+50); this.log("怪しい薬を飲んで回復した！"); }
+                if(this.gold >= cost) { this.gold -= cost; this.hp = Math.min(this.maxHp, this.hp + (50 * (1+this.clears))); this.log("怪しい薬を飲んで回復した！"); }
                 else { this.log("お金が足りない..."); }
             });
             createBtn("立ち去る", () => {});
@@ -1114,6 +1148,65 @@ class Game {
                 if(this.maxHp > 15) { this.maxHp -= 10; this.hp = Math.min(this.hp, this.maxHp); this.boosts.atk += 5; this.log("寿命を削り力を得た...", "damage"); this.sound.playSE('crit'); }
             });
             createBtn("拒絶", () => {});
+        } 
+        // --- NEW EVENTS ---
+        else if (type === "blacksmith") {
+            title = "流浪の鍛冶屋"; desc = "「武器を鍛えてやろうか？」";
+            const cost = 1000 * (1 + this.clears);
+            createBtn(`鍛える (${cost}G)`, () => {
+                if(this.gold >= cost) {
+                    if(this.weapon) {
+                        this.gold -= cost;
+                        const boost = Math.floor(this.weapon.atk * 0.2) + 2;
+                        this.weapon.atk += boost;
+                        this.log(`武器の攻撃力が +${boost} 上昇！`, "critical"); this.sound.playSE('metal');
+                    } else {
+                        this.log("武器を持っていない！");
+                    }
+                } else { this.log("金が足りないようだ。"); }
+            });
+            createBtn("立ち去る", () => {});
+        } else if (type === "gambler") {
+            title = "怪しいギャンブラー"; desc = "「金貨の裏表を当てたら倍にしてやる」";
+            const bet = Math.floor(this.gold / 2);
+            if(bet > 0) {
+                createBtn(`勝負する (賭け金:${bet}G)`, () => {
+                    if(Math.random() < 0.5) {
+                        this.gold += bet;
+                        this.log(`勝った！ ${bet}G 増えた！`, "critical"); this.sound.playSE('coin');
+                    } else {
+                        this.gold -= bet;
+                        this.log(`負けた... ${bet}G 失った...`, "damage");
+                    }
+                });
+            } else { desc = "「金が無い奴に用はないな」"; }
+            createBtn("興味ない", () => {});
+        } else if (type === "mimic_trap") {
+            title = "豪華な宝箱"; desc = "しかし、殺気を感じる...";
+            createBtn("開ける (危険)", () => {
+                if(Math.random() < 0.7) {
+                    this.el.eventDisplay.style.display = "none";
+                    this.log("宝箱はミミックだった！", "damage");
+                    this.startMimicBattle(); // Start special battle
+                } else {
+                    this.log("中身はアイテムだった！");
+                    this.checkDrop(true); // Force drop
+                    this.endEvent();
+                }
+            });
+            createBtn("無視する", () => {});
+        } else if (type === "altar") {
+            title = "血の祭壇"; desc = "捧げよ...さらば与えられん...";
+            createBtn("血を捧げる (HP半減 / 攻+20%)", () => {
+                const sac = Math.floor(this.maxHp / 2);
+                if(sac > 5) {
+                    this.maxHp -= sac; this.hp = Math.min(this.hp, this.maxHp);
+                    const gain = Math.floor(this.baseAtk * 0.2) + 5;
+                    this.baseAtk += gain;
+                    this.log(`最大HPが ${sac} 減り、力が ${gain} 上がった！`, "critical"); this.sound.playSE('crit');
+                }
+            });
+            createBtn("立ち去る", () => {});
         }
         
         this.el.eventTitle.textContent = title;
@@ -1124,7 +1217,9 @@ class Game {
         this.el.eventDisplay.style.display = "none";
         this.el.enemy.style.display = "block";
         this.updateHud();
-        this.state = "BATTLE_WAIT"; this.el.btnMain.style.display = "block";
+        if(this.state !== "BATTLE_CMD") {
+            this.state = "BATTLE_WAIT"; this.el.btnMain.style.display = "block";
+        }
     }
 
     startBattle() {
@@ -1162,7 +1257,10 @@ class Game {
             if (tier > 7 && Math.random() < 0.3) gauge = "wavy";
         }
         
-        let diff = Math.pow(1.2, this.generation - 1) * (1 + (this.lv * 0.1));
+        // BALANCE UPDATE: Inflation based on Clears (Demon Gen)
+        // 1.5 ^ clears. Gen 1=1x, Gen 2=1.5x, Gen 3=2.25x, Gen 10=57x
+        const inflation = Math.pow(1.5, this.clears);
+        let diff = inflation * (1 + (this.lv * 0.1));
         
         this.enemy = { 
             name: eName, type: type, 
@@ -1175,6 +1273,7 @@ class Game {
         this.renderEnemy(type, metal);
         this.el.enemy.style.opacity = 0;
         this.el.enemy.style.transform = "scale(0.5)";
+        this.el.enemy.style.display = "block"; // Ensure visible
         requestAnimationFrame(() => { 
              this.el.enemy.style.opacity = 1; 
              this.el.enemy.style.transform = "scale(1)";
@@ -1187,13 +1286,35 @@ class Game {
         
         this.log(`${this.enemy.name} があらわれた！`);
     }
+
+    // Special Battle for Mimic Trap
+    startMimicBattle() {
+        this.state = "BATTLE_CMD"; this.el.btnMain.style.display = "none"; this.el.menuBattle.style.display = "flex";
+        this.noDamageNow = true;
+        
+        const inflation = Math.pow(1.5, this.clears) * 2; // Stronger than normal
+        this.enemy = {
+            name: "<ruby>貪欲<rt>グリード</rt></ruby>ミミック", type: "mimic",
+            maxHp: Math.floor((50 + Math.pow(this.lv, 1.9)) * inflation),
+            hp: Math.floor((50 + Math.pow(this.lv, 1.9)) * inflation),
+            atk: Math.floor((10 + Math.pow(this.lv, 1.6)) * inflation),
+            gaugeType: "stop_go", isMetal: false, expMult: 5, goldMult: 5, isMimicEvent: true
+        };
+        
+        this.renderEnemy("mimic", false);
+        this.el.enemy.style.display = "block";
+        this.showCutin("TRAP!!");
+        this.log("ミミックが襲いかかってきた！");
+    }
     
     async startBossBattle(type) {
         if(!this.isDefenseMode) this.sound.playBGM('boss');
         const isMaou = type === "boss";
-        const diff = Math.pow(1.3, this.generation - 1); 
         
-        let name = isMaou ? `第${this.clears}代 <ruby>魔王<rt>ダークロード</rt></ruby>` : "<ruby>魔界<rt>アビス</rt></ruby>の<ruby>番人<rt>ガーディアン</rt></ruby>";
+        // BALANCE UPDATE: Boss Inflation
+        const inflation = Math.pow(1.5, this.clears);
+        
+        let name = isMaou ? `第${this.clears+1}代 <ruby>魔王<rt>ダークロード</rt></ruby>` : "<ruby>魔界<rt>アビス</rt></ruby>の<ruby>番人<rt>ガーディアン</rt></ruby>";
         let eType = isMaou ? "boss" : (Math.random() < 0.5 ? "asura" : "general");
         
         const baseHp = isMaou ? 1000 : 500;
@@ -1201,13 +1322,14 @@ class Game {
 
         this.enemy = { 
             name: name, type: eType, 
-            maxHp: Math.floor(baseHp * diff * (1+this.lv*0.1)), 
-            hp: Math.floor(baseHp * diff * (1+this.lv*0.1)), 
-            atk: Math.floor(baseAtk * diff * (1+this.lv*0.05)), 
+            maxHp: Math.floor(baseHp * inflation * (1+this.lv*0.1)), 
+            hp: Math.floor(baseHp * inflation * (1+this.lv*0.1)), 
+            atk: Math.floor(baseAtk * inflation * (1+this.lv*0.05)), 
             gaugeType: "super_fast", isMetal: false, expMult: 3, goldMult: 100 
         };
         
         this.renderEnemy(this.enemy.type, false, true);
+        this.el.enemy.style.display = "block";
         this.el.enemy.style.opacity = 0;
         this.el.enemy.style.transform = "scale(2)";
         requestAnimationFrame(() => { 
@@ -1502,7 +1624,7 @@ class Game {
             await this.delay(3000);
             
             this.clears++;
-            this.gold += 10000;
+            this.gold += 10000 * (1 + this.clears);
             this.saveData();
             
             this.log("世界に平和が戻った...", "revive");
@@ -1526,6 +1648,8 @@ class Game {
         
         this.lv += 1;
         const mult = this.enemy.expMult;
+        
+        // BALANCE: Stat gain
         this.maxHp += 4 * mult; this.hp = Math.min(this.maxHp, this.hp + 20);
         this.baseAtk += 1 * mult; this.maxMp += 2 * mult; this.mp += 2 * mult;
         
@@ -1534,16 +1658,16 @@ class Game {
         if(this.weapon && this.weapon.effect === "greed") goldRate += 0.5;
         if(this.accessory && this.accessory.effect === "greed") goldRate += 0.5;
 
-        let g = Math.floor((10 + this.lv*2)*this.enemy.goldMult * goldRate); 
+        let g = Math.floor((10 + this.lv*2)*this.enemy.goldMult * goldRate * (1 + this.clears * 0.5)); 
         this.gold+=g;
         
         this.updateHud(); 
         this.log(mult > 1 ? `${g}G 強奪。莫大な経験値を得た。(Lv+1)` : `${g}G 獲得。Lv${this.lv}に到達。`);
         this.sound.playSE('coin');
-        await this.checkDrop();
+        await this.checkDrop(this.enemy.isMimicEvent);
     }
 
-    async checkDrop() {
+    async checkDrop(forceDrop = false) {
         if (Math.random() < 0.05 && SOULS[this.enemy.type]) {
             const soulData = SOULS[this.enemy.type];
             const soulItem = { 
@@ -1559,9 +1683,13 @@ class Game {
             return;
         }
 
-        if (Math.random() < 0.4) { 
+        if (forceDrop || Math.random() < 0.4) { 
             let drop = ITEMS[Math.floor(Math.random()*ITEMS.length)]; 
-            let scale = Math.pow(1.15, this.lv/5) * (1 + this.generation * 0.5);
+            
+            // BALANCE UPDATE: Item Inflation
+            const inflation = Math.pow(1.5, this.clears);
+            
+            let scale = Math.pow(1.15, this.lv/5) * (1 + this.generation * 0.5) * inflation;
             let newI = JSON.parse(JSON.stringify(drop)); 
             if(newI.atk) newI.atk = Math.floor(newI.atk * scale);
             if(newI.def) newI.def = Math.floor(newI.def * scale);
