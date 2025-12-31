@@ -2,476 +2,620 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ENDLESS QUEST - 覚醒の刻 -</title>
-    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ENDLESS QUEST - 覚醒の刻 - (Retro Style)</title>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Serif+JP:wght@700&display=swap" rel="stylesheet">
     <style>
+        /* --- RESET & VARIABLES --- */
         :root {
-            --bg: #050505;
-            --text: #e0e0e0;
-            --border: #fff;
-            --font: 'DotGothic16', sans-serif;
-            --accent-red: #e53935;
-            --accent-blue: #2979ff;
-            --accent-ice: #80d8ff;
-            --accent-yellow: #fdd835;
-            --accent-green: #43a047;
-            --accent-purple: #d500f9;
-            --accent-cyan: #00bcd4;
-            --window-border: 2px solid #fff;
-            --window-radius: 4px;
-            --anim-speed: 1;
+            --bg-color: #000000;
+            --win-bg: #000000;
+            --text-main: #f0f0f0; /* アイボリー */
+            --text-dim: #a0a0a0;
+            --border-color: #f0f0f0;
+            --border-style: 4px double var(--border-color);
+            --radius: 6px;
+            
+            --accent-red: #e74c3c;
+            --accent-blue: #3498db;
+            --accent-green: #2ecc71;
+            --accent-yellow: #f1c40f;
+            --accent-purple: #9b59b6;
+            --accent-cyan: #1abc9c;
+            
+            --font-main: 'DotGothic16', sans-serif;
+            --font-serif: 'Noto Serif JP', serif;
+            
+            --gauge-h: 40px;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: var(--bg); color: var(--text); font-family: var(--font);
-            margin: 0; display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden; user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            background: #111; /* 余白用 */
+            color: var(--text-main);
+            font-family: var(--font-main);
+            margin: 0;
+            height: 100dvh; /* Dynamic Viewport Height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
         }
 
-        /* Ruby Style */
-        ruby { font-family: var(--font); }
-        rt { font-size: 0.5em; color: var(--accent-cyan); font-weight: normal; user-select: none;}
-
-        .game-container {
-            width: 100%; max-width: 600px; height: 100%; max-height: 95vh;
-            border: 4px double var(--border); border-radius: 8px; padding: 5px;
-            box-sizing: border-box; display: flex; flex-direction: column;
-            position: relative; background: #000;
-            transition: box-shadow 0.5s, border-color 0.5s;
+        /* --- LAYOUT STRUCTURE --- */
+        .game-wrapper {
+            width: 100%;
+            max-width: 640px;
+            height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            /* iPhone Home Bar area */
+            padding-bottom: env(safe-area-inset-bottom); 
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
         }
 
-        /* Speed Mode Class */
-        .speed-x2 { --anim-speed: 2; }
-
-        /* Absolute Defense Mode Style (Blue/Ice theme) */
-        .defense-mode {
-            border-color: var(--accent-ice);
-            box-shadow: 0 0 20px var(--accent-ice), inset 0 0 50px rgba(0, 200, 255, 0.3);
-            animation: pulse-defense 1s infinite alternate;
-        }
-        @keyframes pulse-defense { from { box-shadow: 0 0 10px #005; } to { box-shadow: 0 0 30px #0ff; } }
-
-        /* Header & Progress */
-        .header-row { display: flex; gap: 5px; align-items: center; margin-bottom: 5px; flex-shrink: 0; }
-        .icon-btn {
-            width: 30px; height: 30px; border: 1px solid #fff; border-radius: 4px;
-            background: #222; color: #fff; font-weight: bold; font-size: 0.8rem;
-            cursor: pointer; display: flex; justify-content: center; align-items: center;
-        }
-        .speed-btn { width: 50px; font-size: 0.7rem; color: var(--accent-cyan); border-color: var(--accent-cyan); }
-        .progress-container {
-            flex-grow: 1; height: 10px; background: #222; border: 1px solid #555;
-            position: relative; overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%; background: linear-gradient(90deg, #333, var(--accent-red));
-            width: 0%; transition: width 0.5s;
-        }
-        .progress-text {
-            position: absolute; top: -3px; left: 5px; font-size: 0.7rem; color: #fff; z-index: 2;
-        }
-
-        /* HUD */
-        .hud {
-            display: flex; flex-direction: column; border: var(--window-border);
-            border-radius: var(--window-radius); padding: 5px 10px; margin-bottom: 5px;
-            font-size: 0.85rem; background: #000; flex-shrink: 0;
-        }
-        .status-row { display: flex; justify-content: space-between; align-items: center; line-height: 1.3; }
-        .val-hp { color: var(--accent-green); font-weight: bold; }
-        .val-mp { color: var(--accent-blue); font-weight: bold;}
-        .val-atk { color: var(--accent-red); }
-        .val-def { color: var(--accent-blue); }
-        .val-gold { color: var(--accent-yellow); }
-        .chain-val { color: var(--accent-yellow); font-weight: bold; text-shadow: 0 0 5px orange; }
-        
-        /* Awakening Text updated to Defense */
-        .awakening-text { 
-            color: var(--accent-ice); font-weight: bold; 
-            animation: blink 0.2s infinite alternate; display: none; margin-left:5px; font-size:0.8rem;
-            text-shadow: 0 0 5px #0ff;
-        }
-
-        .gen-info { 
-            font-size: 0.75rem; color: #aaa; border-top: 1px dashed #333; margin-top: 2px; padding-top: 2px;
-            display: flex; flex-direction: column; gap: 1px;
-        }
-        .equip-row { display: flex; justify-content: space-between; }
-        .hp-danger { color: var(--accent-red); animation: blink 0.2s infinite alternate; }
-        .aura-indicator { font-size: 0.9rem; font-weight: bold; color: #fff; }
-        .title-badge { color: var(--accent-purple); border: 1px solid var(--accent-purple); padding: 0 3px; font-size: 0.7rem; border-radius: 3px; margin-right: 5px; }
-        @keyframes blink { from { opacity: 1; } to { opacity: 0.5; } }
-
-        /* Stage */
-        .stage {
-            flex-grow: 1; display: flex; justify-content: center; align-items: center;
-            position: relative; background: #111; border: var(--window-border);
-            border-radius: var(--window-radius); margin-bottom: 5px; overflow: hidden;
-            background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
-                repeating-linear-gradient(0deg, transparent 0, transparent 2px, #1a1a1a 2px, #1a1a1a 4px),
-                repeating-linear-gradient(90deg, transparent 0, transparent 2px, #1a1a1a 2px, #1a1a1a 4px);
-            background-size: cover; box-shadow: inset 0 0 50px #000;
+        /* --- 1. STAGE VIEW (TOP HALF) --- */
+        .view-port {
+            flex-grow: 1; /* 残りのスペースを埋める */
+            position: relative;
+            background: #000;
+            border-bottom: var(--border-style);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            /* Retro Grid Background */
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
+                linear-gradient(0deg, transparent 24%, #222 25%, #222 26%, transparent 27%, transparent 74%, #222 75%, #222 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, #222 25%, #222 26%, transparent 27%, transparent 74%, #222 75%, #222 76%, transparent 77%, transparent);
+            background-size: 40px 40px;
         }
         
-        .defense-mode .stage {
-            background-image: radial-gradient(circle, rgba(0,20,50,0.4) 0%, rgba(0,0,0,0.9) 100%),
-            repeating-linear-gradient(0deg, transparent 0, transparent 2px, #002 2px, #002 4px);
+        /* Defense Mode: Blue tint */
+        .defense-mode .view-port {
+            box-shadow: inset 0 0 50px var(--accent-blue);
+            border-color: var(--accent-blue);
         }
 
+        /* Character & Effects */
         .character {
-            width: 160px; height: 160px; position: relative;
-            transition: transform 0.2s, filter 0.2s, opacity 0.5s;
-            z-index: 5; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.8));
+            width: 140px; height: 140px;
+            position: relative;
+            z-index: 10;
+            filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.5));
+            transition: transform 0.2s, opacity 0.3s;
         }
 
-        /* Stage Overlays */
-        .flash { position: absolute; top:0; left:0; width:100%; height:100%; background: white; opacity:0; pointer-events:none; z-index:99; transition: opacity 0.1s; }
-        
-        /* Just Guard Flash */
-        .flash-invert {
-            position: absolute; top:0; left:0; width:100%; height:100%; 
-            background: white; mix-blend-mode: difference;
-            opacity:0; pointer-events:none; z-index:98; 
+        /* Drama Window (Enemy Talk) - Top Priority within Viewport */
+        .drama-window {
+            position: absolute;
+            top: 10px; left: 10px; right: 10px;
+            background: #000;
+            border: var(--border-style);
+            border-radius: var(--radius);
+            padding: 10px;
+            z-index: 20; /* Above character */
+            display: none; /* JS toggles flex */
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 12px;
         }
-        .anim-invert { animation: invert-flash 0.2s ease-out; }
-        @keyframes invert-flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+        .drama-actor-box { width: 40px; height: 40px; background: #222; border: 2px solid #555; flex-shrink: 0; }
+        .drama-text-box { flex-grow: 1; display: flex; flex-direction: column; text-align: left; }
+        .drama-name-label { color: var(--accent-yellow); font-size: 0.8rem; margin-bottom: 4px; }
+        .drama-lines { font-size: 0.95rem; line-height: 1.4; color: #fff; }
 
-        .danger-overlay {
-            position: absolute; top:0; left:0; right:0; bottom:0;
-            box-shadow: inset 0 0 80px 30px rgba(200, 0, 0, 0.6);
-            pointer-events: none; z-index: 90;
-            animation: pulse-danger 0.8s infinite alternate; display: none;
+        /* Popups */
+        .cutin, .chain-pop {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            pointer-events: none; z-index: 50;
+            white-space: nowrap;
         }
-        @keyframes pulse-danger { from { opacity: 0.3; } to { opacity: 1; } }
-        
         .cutin {
-            position: absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
-            font-size: 3rem; color:var(--accent-yellow); -webkit-text-stroke: 1px #000; font-style: italic;
-            text-shadow: 4px 4px 0 #d32f2f; background:rgba(0,0,0,0.8); padding:10px 30px; border:2px solid #fff;
-            z-index:100; transition: transform 0.1s; white-space: nowrap; pointer-events: none;
+            background: rgba(0,0,0,0.9);
+            border: var(--border-style);
+            border-color: var(--accent-red);
+            padding: 15px 30px;
+            font-size: 2rem;
+            color: #fff;
+            font-family: var(--font-serif);
         }
-        /* Just Guard Style */
-        .cutin.just { 
-            color: #fff; text-shadow: 0 0 10px #0ff, 0 0 20px #00f; 
-            border-color: #0ff; background: rgba(0,0,20,0.9);
-            font-family: serif; letter-spacing: 0.1em;
-        }
+        .cutin.just { border-color: var(--accent-cyan); color: var(--accent-cyan); }
         
         .chain-pop {
-             position: absolute; top:30%; left:50%; transform:translate(-50%,-50%) scale(0);
-             font-size: 4rem; color:var(--accent-yellow); font-weight: bold; font-style: italic;
-             text-shadow: 0 0 10px red; pointer-events: none; z-index: 95; opacity: 0;
-             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: var(--font-serif);
+            font-size: 3rem;
+            color: var(--accent-yellow);
+            text-shadow: 2px 2px 0 #000;
         }
+
         .damage-pop {
             position: absolute; left: 50%; transform: translateX(-50%);
-            font-weight: bold; pointer-events: none; z-index: 20; opacity: 0; text-shadow: 2px 2px 0 #000;
+            font-size: 2rem; font-weight: bold; 
+            z-index: 30; opacity: 0; pointer-events: none;
+            text-shadow: 2px 2px 0 #000;
         }
-        .damage-pop.deal { top: 40%; font-size: 4rem; color: #fff; }
-        .damage-pop.deal.crit { font-size: 5rem; color: #ffeb3b; text-shadow: 3px 3px 0 #d32f2f; z-index: 25; }
-        .damage-pop.take { top: 60%; font-size: 4rem; color: #e53935; }
-        .damage-pop.heal { top: 50%; font-size: 3rem; color: #43a047; }
-        .damage-pop.block { top: 55%; font-size: 2.5rem; color: #80d8ff; text-shadow: 0 0 5px #00f; }
-        .damage-pop.miss { top: 45%; font-size: 2rem; color: #aaa; }
-        @keyframes pop-damage { 0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; } 15% { transform: translate(-50%, -30px) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -60px) scale(1); opacity: 0; } }
+        .damage-pop.deal { top: 45%; color: #fff; font-size: 3rem; }
+        .damage-pop.deal.crit { color: var(--accent-yellow); font-size: 4rem; }
+        .damage-pop.take { top: 60%; color: var(--accent-red); }
+        .damage-pop.heal { top: 50%; color: var(--accent-green); }
+        .damage-pop.block { top: 55%; color: var(--accent-blue); }
+        .damage-pop.miss { top: 45%; color: #888; }
+        @keyframes pop-damage { 
+            0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; } 
+            20% { transform: translate(-50%, -30px) scale(1.2); opacity: 1; } 
+            100% { transform: translate(-50%, -50px) scale(1); opacity: 0; } 
+        }
 
-        /* Chest Display */
-        #chest-display {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            display: none; justify-content: center; align-items: center;
-            z-index: 40; background: rgba(0,0,0,0.85);
-            gap: 10px; padding: 10px; box-sizing: border-box;
+        /* --- 2. GAUGE AREA (SACRED ZONE) --- */
+        /* Placed between Viewport and Console to prevent overlap */
+        .gauge-container {
+            height: var(--gauge-h);
+            background: #000;
+            border-bottom: 2px solid #333;
+            position: relative;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Highest priority */
         }
-        .chest-card {
-            background: #111; border: 2px solid #555; border-radius: 6px; padding: 10px;
-            width: 45%; max-width: 200px; display: flex; flex-direction: column; align-items: center;
-            box-shadow: 0 0 10px #000; position: relative;
-        }
-        .chest-card.new { border-color: var(--accent-yellow); background: #2a2200; box-shadow: 0 0 15px rgba(255,235,59,0.3); }
-        .chest-label { font-size: 0.7rem; color: #aaa; background: #333; padding: 2px 5px; border-radius: 4px; margin-bottom: 5px; width: 100%; text-align: center; }
-        .new .chest-label { color: #000; background: var(--accent-yellow); font-weight: bold; }
-        .chest-icon { width: 48px; height: 48px; border: 1px solid #444; background: #000; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; }
-        .chest-name { font-size: 0.9rem; font-weight: bold; color: #fff; margin-bottom: 2px; text-align: center; height: 2.5em; overflow: hidden; line-height: 1.1; display:flex; align-items:center; justify-content:center;}
-        .chest-stat { font-size: 1rem; color: #fff; font-weight: bold; }
-        .chest-sub { font-size: 0.7rem; color: #ccc; min-height: 1rem;}
-        .chest-effect { font-size: 0.7rem; color: var(--accent-purple); font-weight: bold; margin-top: 2px; text-shadow: 0 0 3px #a0f;}
-        .chest-arrow { font-size: 2rem; color: #888; }
-        
-        /* Event Display */
-        #event-display {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 40; background: rgba(0,0,0,0.9); text-align: center; color: #fff;
-        }
-        .event-title { font-size: 2rem; color: var(--accent-cyan); margin-bottom: 20px; text-shadow: 0 0 10px #0ff; }
-        .event-desc { font-size: 1rem; margin-bottom: 30px; line-height: 1.5; padding: 0 20px;}
-
-        /* Gauge */
         .gauge-area {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; height: 30px; background: #000; border: 2px solid #fff; border-radius: 4px;
-            display: none; overflow: hidden; box-shadow: 0 0 15px #000; z-index: 30;
+            width: 95%; height: 24px;
+            background: #222;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            position: relative;
+            display: none; /* JS toggles block */
+            overflow: hidden;
         }
-        .gauge-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #1e88e5 0%, #fdd835 42%, #e53935 48%, #e53935 52%, #fdd835 58%, #1e88e5 100%); }
-        .gauge-cursor { position: absolute; top: 0; bottom: 0; width: 4px; background: #fff; box-shadow: 0 0 8px #fff; left: 0%; }
+        .gauge-bar {
+            width: 100%; height: 100%;
+            /* Retro gradient */
+            background: linear-gradient(90deg, 
+                #3498db 0%, #3498db 40%, 
+                #f1c40f 40%, #f1c40f 45%, 
+                #e74c3c 45%, #e74c3c 55%, 
+                #f1c40f 55%, #f1c40f 60%, 
+                #3498db 60%, #3498db 100%);
+        }
+        .gauge-cursor {
+            position: absolute; top: -2px; bottom: -2px;
+            width: 4px; background: #fff;
+            border: 1px solid #000;
+            left: 0%;
+            box-shadow: 0 0 4px #fff;
+        }
 
-        /* Log */
-        .log-area {
-            height: 90px; background: #000; border: var(--window-border); border-radius: var(--window-radius);
-            margin-bottom: 5px; padding: 5px; overflow-y: hidden; font-size: 0.85rem; line-height: 1.5;
-            display: flex; flex-direction: column-reverse; flex-shrink: 0;
+        /* --- 3. CONSOLE (BOTTOM HALF) --- */
+        .console-panel {
+            background: #000;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-shrink: 0;
         }
-        .log-entry { border-bottom: 1px dashed #333; padding: 1px 0; }
+
+        /* Status Window */
+        .status-window {
+            border: var(--border-style);
+            border-radius: var(--radius);
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .status-col { display: flex; flex-direction: column; gap: 2px; }
+        .val-hp { color: var(--accent-green); }
+        .val-mp { color: var(--accent-blue); }
+        .val-gold { color: var(--accent-yellow); }
+        .status-label { color: var(--text-dim); font-size: 0.7rem; margin-right: 4px; }
+        
+        .chain-display {
+            font-family: var(--font-serif);
+            font-size: 1.1rem;
+            color: var(--accent-yellow);
+        }
+        .awakening-text {
+            font-size: 0.8rem; color: var(--accent-blue);
+            animation: blink 1s infinite;
+            display: none;
+        }
+        @keyframes blink { 50% { opacity: 0.3; } }
+
+        /* Log & Command Area */
+        .action-row {
+            display: flex;
+            height: 140px; /* Fixed height for consistency */
+            gap: 5px;
+        }
+
+        .log-window {
+            flex: 1;
+            border: var(--border-style);
+            border-radius: var(--radius);
+            padding: 8px;
+            overflow-y: hidden;
+            font-size: 0.85rem;
+            line-height: 1.6; /* Increased for readability */
+            display: flex;
+            flex-direction: column-reverse;
+            background: #000;
+        }
+        .log-entry { margin-bottom: 2px; word-break: break-all; }
         .log-entry.damage { color: var(--accent-red); }
-        .log-entry.critical { color: var(--accent-yellow); font-weight: bold; }
+        .log-entry.critical { color: var(--accent-yellow); }
         .log-entry.revive { color: var(--accent-green); }
-        .log-entry.block { color: var(--accent-ice); text-shadow: 0 0 2px #0ff; }
-        .log-entry.flavor { color: #888; font-style: italic; font-size: 0.8rem; }
-        .log-entry.item { color: var(--accent-yellow); border: 1px solid #555; background: #222; text-align: center; }
+        .log-entry.system { color: var(--accent-cyan); }
+        .log-entry.flavor { color: #666; font-size: 0.75rem; }
 
-        /* Controls */
-        .controls { display: flex; flex-direction: column; height: 120px; flex-shrink: 0; }
-        .main-btn { width: 100%; height: 100%; display: none; }
-        .command-menu { display: none; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 5px; width: 100%; height: 100%; }
-
-        button {
-            border: 2px solid #fff; border-radius: 6px; background: #000; color: #fff;
-            font-family: var(--font); font-size: 1.1rem; cursor: pointer; transition: all 0.1s; position: relative;
+        .command-window {
+            width: 140px; /* Fixed width like DQ */
+            flex-shrink: 0;
+            border: var(--border-style);
+            border-radius: var(--radius);
+            padding: 4px;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
-        button:hover { background: #111; }
-        button:active { transform: translateY(2px); }
-        button:disabled { border-color: #555; color: #555; pointer-events: none; }
-        
-        .btn-stop { background: rgba(200, 0, 0, 0.4); color: #fff; font-weight: bold; font-size: 2rem; text-shadow: 2px 2px 0 #000; z-index: 50; }
-        /* Guard Button Style */
-        .btn-guard { background: rgba(0, 100, 255, 0.4); border-color: #0ff; color: #0ff; box-shadow: 0 0 15px #0ff; }
-        
-        /* Chest Command Buttons */
-        #menu-chest { display: none; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; height: 100%; }
-        .btn-get { border-color: var(--accent-yellow); color: var(--accent-yellow); background: #332200; font-weight: bold; font-size: 1.3rem; opacity: 0; transition: opacity 0.5s; }
-        .btn-discard { border-color: #666; color: #888; background: #111; font-size: 1rem; opacity: 0; transition: opacity 0.5s; }
 
-        /* Global Modals */
+        /* Command Buttons */
+        .cmd-btn {
+            background: #000;
+            color: #fff;
+            border: 2px solid transparent; /* Invisible border for sizing */
+            border-radius: 4px;
+            padding: 8px 4px;
+            text-align: left;
+            font-family: var(--font-main);
+            font-size: 1rem;
+            cursor: pointer;
+            position: relative;
+            padding-left: 15px; /* Space for cursor */
+            transition: transform 0.05s;
+        }
+        /* Cursor Indicator */
+        .cmd-btn::before {
+            content: '▶';
+            position: absolute; left: 2px; top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            color: var(--accent-yellow);
+            font-size: 0.8rem;
+        }
+        .cmd-btn:active {
+            transform: translateY(2px);
+            background: #222;
+        }
+        .cmd-btn:hover::before, .cmd-btn:active::before { opacity: 1; }
+        
+        .main-btn-full {
+            width: 100%; height: 100%;
+            background: #111;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            color: #fff;
+            font-family: var(--font-main);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .main-btn-full:active { background: #333; }
+
+        /* STOP / GUARD BIG BUTTON */
+        .btn-action-overlay {
+            position: absolute;
+            bottom: 5px; right: 5px; left: 5px;
+            height: 140px; /* Covers action row */
+            z-index: 150;
+            display: none;
+        }
+        .btn-big-action {
+            width: 100%; height: 100%;
+            font-size: 2rem;
+            font-weight: bold;
+            font-family: var(--font-serif);
+            border: 4px double #fff;
+            border-radius: 8px;
+            text-shadow: 2px 2px 0 #000;
+            cursor: pointer;
+        }
+        .btn-stop { background: rgba(180, 0, 0, 0.9); color: #fff; border-color: #f88; }
+        .btn-guard { background: rgba(0, 50, 150, 0.9); color: #0ff; border-color: #0ff; }
+
+        /* Progress Header */
+        .header-bar {
+            display: flex; gap: 5px; align-items: center; padding: 5px;
+            background: #000; border-bottom: 1px solid #333;
+        }
+        .icon-btn {
+            width: 32px; height: 32px;
+            border: 2px solid #fff; border-radius: 4px;
+            background: #000; color: #fff;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .progress-container {
+            flex-grow: 1; height: 12px; background: #222; border: 1px solid #555; position: relative;
+        }
+        .progress-fill { height: 100%; background: #e74c3c; width: 0%; transition: width 0.5s; }
+        .progress-text { position: absolute; top: -18px; right: 0; font-size: 0.7rem; color: #888; }
+
+        /* Ruby Fix */
+        ruby { font-family: var(--font-main); }
+        rt { 
+            font-size: 0.5em; color: var(--text-dim); 
+            text-align: center;
+            /* Minimal visual adjustment */
+            transform: translateY(-2px);
+        }
+
+        /* Modals (Libraries, Shop, etc) */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 200; display: none;
-            flex-direction: column; justify-content: center; align-items: center; padding: 20px;
-            box-sizing: border-box; overflow-y: auto;
+            background: rgba(0,0,0,0.9); z-index: 200;
+            display: none;
+            justify-content: center; align-items: center;
+            padding: 20px;
         }
-        .modal-content { width: 100%; max-width: 500px; background: #111; border: 2px solid #fff; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
-        
-        .scroll-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 5px; max-height: 300px; overflow-y: auto; }
-        .lib-item { border: 1px solid #555; padding: 2px; text-align: center; font-size: 0.6rem; opacity: 0.3; }
-        .lib-item.got { border-color: var(--accent-yellow); opacity: 1; background: #111; }
-        .lib-item.soul { border-color: var(--accent-purple); box-shadow: inset 0 0 5px #f0f; }
-        
-        .shop-btn { padding: 10px; border: 2px solid #fff; text-align: center; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 0.9rem;}
-        
-        /* Drama */
-        .drama-window {
-            position: absolute; top: 10px; left: 10px; right: 10px;
-            background: rgba(0,0,0,0.95); border: 2px solid #fff; border-radius: 8px;
-            padding: 10px; z-index: 80; display: none;
-            flex-direction: row; align-items: center; gap: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        .modal-window {
+            width: 100%; max-width: 500px;
+            background: #000;
+            border: var(--border-style);
+            border-radius: var(--radius);
+            padding: 15px;
+            display: flex; flex-direction: column; gap: 10px;
+            max-height: 80vh; overflow-y: auto;
         }
-        .drama-actor-box { width: 48px; height: 48px; border: 1px solid #555; background: #222; flex-shrink: 0; }
-        .drama-text-box { flex-grow: 1; display: flex; flex-direction: column; text-align: left; }
-        .drama-name-label { color: var(--accent-yellow); font-weight: bold; font-size: 0.8rem; margin-bottom: 2px; }
-        .drama-lines { font-size: 0.9rem; line-height: 1.3; color: #fff; }
+        .modal-title { 
+            font-size: 1.2rem; color: var(--accent-yellow); text-align: center; margin-bottom: 10px; border-bottom: 1px dashed #555; padding-bottom: 5px;
+        }
+        .grid-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; }
+        .list-item { 
+            border: 1px solid #444; padding: 4px; text-align: center; font-size: 0.7rem; color: #666; 
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .list-item.got { border-color: #fff; color: #fff; }
+        
+        /* Event & Chest Overlays in Viewport */
+        .overlay-center {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.9); z-index: 40;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px; text-align: center;
+        }
+        .chest-card {
+            border: 2px solid #fff; padding: 10px; margin: 5px; width: 140px;
+            background: #111; display: flex; flex-direction: column; align-items: center;
+        }
+        .chest-card.new { border-color: var(--accent-yellow); background: #221; }
 
-        .click-start { position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.9); color: #fff; display: flex; justify-content: center; align-items: center; z-index: 300; font-size: 1.5rem; cursor: pointer; flex-direction:column; gap:20px; text-align:center;}
-        .item-get-pop {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-            background: #000; border: var(--window-border); border-radius: var(--window-radius);
-            padding: 20px; text-align: center; z-index: 60; width: 80%; box-shadow: 0 0 20px #000; transition: transform 0.3s;
+        /* Effects */
+        .flash {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: #fff; opacity: 0; pointer-events: none; z-index: 90;
+            transition: opacity 0.1s;
         }
+        .flash-invert {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: #fff; mix-blend-mode: difference; opacity: 0; pointer-events: none; z-index: 91;
+        }
+        .anim-invert { animation: invert-flash 0.15s; }
+        @keyframes invert-flash { 0% { opacity: 0.8; } 100% { opacity: 0; } }
 
-        .anim-shake { animation: shake 0.4s; }
-        .anim-lunge { animation: lunge 0.15s; }
-        @keyframes shake { 0%{transform:translate(0,0)} 25%{transform:translate(-8px,8px)} 50%{transform:translate(8px,-8px)} 75%{transform:translate(-8px,8px)} 100%{transform:translate(0,0)} }
-        @keyframes lunge { 0%{transform: scale(1);} 50% { transform: scale(1.3); } 100%{transform: scale(1);} }
+        .click-start { 
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: #000; color: #fff; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            z-index: 999; cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-<div class="game-container" id="game-container">
-    <div class="header-row">
+<div class="game-wrapper" id="game-container">
+    
+    <!-- HEADER: Progress & Util -->
+    <div class="header-bar">
         <button class="icon-btn" onclick="game.openHelp()">?</button>
-        <button class="icon-btn speed-btn" id="btn-speed" onclick="game.toggleSpeed()">x1</button>
+        <button class="icon-btn" id="btn-speed" onclick="game.toggleSpeed()" style="font-size:0.7rem; width:40px;">x1</button>
         <div class="progress-container">
-            <div class="progress-bar" id="progress-bar"></div>
+            <div class="progress-fill" id="progress-bar"></div>
             <div class="progress-text" id="progress-text">魔王城まで ???</div>
         </div>
     </div>
 
-    <div class="hud">
-        <div class="status-row">
-            <span>第<span id="disp-gen">1</span>代 <span id="disp-title" class="title-badge" style="display:none"></span>(Lv<span id="disp-lv">1</span>)</span>
-            <span class="gold-val"><span id="disp-gold">0</span> G</span>
-        </div>
-        <div class="status-row">
-            <span>HP:<span id="disp-hp" class="val-hp">30</span></span>
-            <span>MP:<span id="disp-mp" class="val-mp">10</span></span>
-            <span>攻:<span id="disp-atk" class="val-atk">5</span> 守:<span id="disp-def" class="val-def">0</span></span>
-        </div>
-        <div class="gen-info">
-            <div class="equip-row"><span>E:<span id="disp-weapon">素手</span></span> <span>E:<span id="disp-armor">服</span></span></div>
-            <div class="equip-row" style="color:var(--accent-purple);"><span>A:<span id="disp-acc">なし</span></span></div>
-            <div class="status-row">
-                <span class="chain-val">CHAIN: <span id="disp-chain">0</span> <span id="awake-txt" class="awakening-text">≪絶対防御界≫</span></span>
-                <span class="aura-indicator" id="disp-aura">READY</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="stage" id="stage">
+    <!-- MAIN STAGE (TOP) -->
+    <div class="view-port" id="stage">
         <div class="flash" id="flash"></div>
         <div class="flash-invert" id="flash-invert"></div>
-        <div class="danger-overlay" id="danger-overlay"></div>
-        <div class="cutin" id="cutin"></div>
-        <div class="chain-pop" id="chain-pop"></div>
+        <div class="danger-overlay" id="danger-overlay" style="display:none; position:absolute; inset:0; box-shadow:inset 0 0 50px #500; pointer-events:none; z-index:5;"></div>
         
-        <!-- Drama Overlay -->
+        <!-- Drama Window moved to top of stage so it doesn't cover gauge -->
         <div id="drama-window" class="drama-window">
-            <div id="drama-actor-box" class="drama-actor-box character"></div>
+            <div id="drama-actor-box" class="drama-actor-box character" style="width:40px;height:40px;"></div>
             <div class="drama-text-box">
                 <div id="drama-name" class="drama-name-label">???</div>
                 <div id="drama-text" class="drama-lines">...</div>
             </div>
         </div>
 
+        <div class="cutin" id="cutin"></div>
+        <div class="chain-pop" id="chain-pop"></div>
+        <div id="damage-pop" class="damage-pop">0</div>
+        
+        <div id="enemy-slot" class="character"></div>
+
+        <!-- Overlays (Chest/Event) -->
+        <div id="chest-display" class="overlay-center">
+            <div style="display:flex; align-items:center;">
+                <div class="chest-card current">
+                    <div style="font-size:0.7rem; color:#888;">装備中</div>
+                    <div id="cur-icon" style="width:48px;height:48px;"></div>
+                    <div id="cur-name" style="font-size:0.8rem; height:2.5em; display:flex; align-items:center; justify-content:center;"></div>
+                    <div id="cur-stat" style="font-weight:bold;"></div>
+                    <div id="cur-sub" style="font-size:0.7rem; color:#aaa;"></div>
+                    <div id="cur-effect" style="font-size:0.7rem; color:var(--accent-purple);"></div>
+                </div>
+                <div style="font-size:2rem; color:#666;">➡</div>
+                <div class="chest-card new">
+                    <div style="font-size:0.7rem; color:var(--accent-yellow);">NEW</div>
+                    <div id="new-icon" style="width:48px;height:48px;"></div>
+                    <div id="new-name" style="font-size:0.8rem; height:2.5em; display:flex; align-items:center; justify-content:center;"></div>
+                    <div id="new-stat" style="font-weight:bold;"></div>
+                    <div id="new-sub" style="font-size:0.7rem; color:#aaa;"></div>
+                    <div id="new-effect" style="font-size:0.7rem; color:var(--accent-purple);"></div>
+                </div>
+            </div>
+            <!-- Chest Buttons moved to console area logically, but for simplicity kept in structure or controlled via JS -->
+        </div>
+
+        <div id="event-display" class="overlay-center">
+            <div id="event-title" style="font-size:1.5rem; color:var(--accent-cyan); margin-bottom:15px; font-family:var(--font-serif);">EVENT</div>
+            <div id="event-desc" style="margin-bottom:20px; line-height:1.6;">...</div>
+            <div id="event-choices" style="display:grid; gap:10px; width:100%; max-width:240px;"></div>
+        </div>
+
+        <div id="item-pop" class="overlay-center" style="background:rgba(0,0,0,0.8);">
+            <div class="item-name" style="color:var(--accent-yellow); margin-bottom:10px;">GET!</div>
+            <div id="item-icon-slot" class="character" style="width:64px;height:64px; margin-bottom:10px;"></div>
+            <div id="item-name-disp" style="font-size:1.2rem; margin-bottom:5px;"></div>
+            <div>を手に入れた！</div>
+        </div>
+    </div>
+
+    <!-- GAUGE (MIDDLE STRIP) -->
+    <div class="gauge-container" id="gauge-container-wrapper">
         <div class="gauge-area" id="gauge-area">
             <div class="gauge-bar"></div>
             <div class="gauge-cursor" id="gauge-cursor"></div>
         </div>
+    </div>
 
-        <div id="damage-pop" class="damage-pop">0</div>
-        <div id="enemy-slot" class="character"></div>
-
-        <!-- NEW Chest Display (In-Stage) -->
-        <div id="chest-display">
-            <div class="chest-card current">
-                <div class="chest-label">装備中</div>
-                <div id="cur-icon" class="chest-icon"></div>
-                <div id="cur-name" class="chest-name">素手</div>
-                <div id="cur-stat" class="chest-stat">攻+0</div>
-                <div id="cur-sub" class="chest-sub">なし</div>
-                <div id="cur-effect" class="chest-effect"></div>
+    <!-- CONSOLE (BOTTOM) -->
+    <div class="console-panel">
+        <div class="status-window">
+            <div class="status-col">
+                <div><span class="status-label">HP</span><span id="disp-hp" class="val-hp">30</span></div>
+                <div><span class="status-label">MP</span><span id="disp-mp" class="val-mp">10</span></div>
             </div>
-            <div class="chest-arrow">➡</div>
-            <div class="chest-card new">
-                <div class="chest-label">宝箱</div>
-                <div id="new-icon" class="chest-icon"></div>
-                <div id="new-name" class="chest-name">???</div>
-                <div id="new-stat" class="chest-stat">攻+?</div>
-                <div id="new-sub" class="chest-sub">???</div>
-                <div id="new-effect" class="chest-effect"></div>
+            <div class="status-col">
+                <div><span class="status-label">LV</span><span id="disp-lv">1</span> <span id="disp-title" style="color:var(--accent-purple); font-size:0.7rem;"></span></div>
+                <div><span class="status-label">G</span><span id="disp-gold" class="val-gold">0</span></div>
+            </div>
+            <div class="status-col" style="text-align:right;">
+                <div>
+                    <span class="chain-display"><span style="font-size:0.7rem; color:#888;">連撃</span> <span id="disp-chain">0</span></span>
+                </div>
+                <div id="awake-txt" class="awakening-text">≪絶対防御界≫</div>
+                <div id="disp-aura" style="font-size:0.8rem; color:#555;">READY</div>
+            </div>
+            <!-- Hidden elements required by JS logic -->
+            <span id="disp-gen" style="display:none;"></span>
+            <span id="disp-atk" style="display:none;"></span>
+            <span id="disp-def" style="display:none;"></span>
+            <span id="disp-weapon" style="display:none;"></span>
+            <span id="disp-armor" style="display:none;"></span>
+            <span id="disp-acc" style="display:none;"></span>
+        </div>
+
+        <div class="action-row">
+            <div class="log-window" id="log">
+                <div class="log-entry system">第1代 勇者、<ruby>冒険の書<rt>クロニクル</rt></ruby>を開く</div>
+            </div>
+
+            <!-- Command Menu (Right Bottom) -->
+            <div class="command-window">
+                <!-- Main Button (Start/Next) -->
+                <button id="btn-main" class="main-btn-full" onclick="game.handleMainBtn()">開始</button>
+                
+                <!-- Battle Menu -->
+                <div id="menu-battle" style="display:none; flex-direction:column; gap:4px; height:100%;">
+                    <button class="cmd-btn" onclick="game.selectAttack()">たたかう</button>
+                    <button class="cmd-btn" onclick="game.openSkills()">呪文・特技</button>
+                    <button class="cmd-btn" onclick="game.selectHeal()">薬草・治癒</button>
+                    <button class="cmd-btn" style="color:var(--text-dim);" onclick="game.openLibrary()">記録を見る</button>
+                </div>
+
+                <!-- Chest Menu -->
+                <div id="menu-chest" style="display:none; flex-direction:column; gap:4px; height:100%;">
+                    <button id="btn-get" class="cmd-btn" style="color:var(--accent-yellow);" onclick="game.decideItem(true)">手に入れる</button>
+                    <button id="btn-discard" class="cmd-btn" onclick="game.decideItem(false)">あきらめる</button>
+                </div>
+
+                <!-- Skill Menu Placeholder -->
+                <div id="menu-skills" style="display:none; flex-direction:column; gap:4px; height:100%; overflow-y:auto;"></div>
             </div>
         </div>
-
-        <!-- Event Display -->
-        <div id="event-display">
-            <div id="event-title" class="event-title">EVENT</div>
-            <div id="event-desc" class="event-desc">...</div>
-            <div id="event-choices" style="display:grid; gap:10px; width:100%; max-width:300px;"></div>
-        </div>
-
-        <div id="item-pop" class="item-get-pop">
-            <div class="item-name">GET!</div>
-            <div id="item-icon-slot" class="character" style="margin: 0 auto 10px; width: 64px; height: 64px;"></div>
-            <div id="item-name-disp" class="item-name" style="font-size:1.2rem;"></div>
-            <div style="color:#fff;">を手に入れた！</div>
-        </div>
-    </div>
-
-    <div class="log-area" id="log">
-        <div class="log-entry system">クリックして<ruby>冒険の書<rt>クロニクル</rt></ruby>を開く</div>
-    </div>
-
-    <div class="controls">
-        <button id="btn-main" class="main-btn" onclick="game.handleMainBtn()">運命の抽選へ</button>
         
-        <div id="menu-battle" class="command-menu">
-            <button onclick="game.selectAttack()"><ruby>攻撃<rt>アタック</rt></ruby></button>
-            <button onclick="game.openSkills()"><ruby>奥義<rt>スキル</rt></ruby></button>
-            <button onclick="game.selectHeal()"><ruby>治癒<rt>ヒール</rt></ruby></button>
-            <button style="border-color:var(--accent-blue); color:var(--accent-blue);" onclick="game.openLibrary()"><ruby>全知<rt>アーカイブ</rt></ruby></button>
+        <!-- Big Action Button Overlay (Stop/Guard) -->
+        <div class="btn-action-overlay" id="btn-stop-wrapper" style="display:none;">
+             <button id="btn-stop" class="btn-big-action btn-stop" onmousedown="game.handleActionBtn()" ontouchstart="game.handleActionBtn()">STOP!</button>
         </div>
-        
-        <!-- Chest Menu (Displayed in controls area) -->
-        <div id="menu-chest" class="command-menu">
-            <button class="btn-get" id="btn-get" onclick="game.decideItem(true)">契約して装備</button>
-            <button class="btn-discard" id="btn-discard" onclick="game.decideItem(false)">拒絶して進む</button>
-        </div>
-
-        <div id="menu-skills" class="command-menu" style="display:none;"></div>
-
-        <!-- Button used for both Attack Gauge and Just Guard -->
-        <button id="btn-stop" class="main-btn btn-stop" style="display:none;" onmousedown="game.handleActionBtn()" ontouchstart="game.handleActionBtn()">たたかう！</button>
     </div>
 
-    <!-- Library -->
+    <!-- MODALS -->
     <div id="lib-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; width:100%; border-bottom:2px solid #fff; padding-bottom:10px; margin-bottom:10px;">
-                <span><ruby>冒険の記録<rt>アカシックレコード</rt></ruby></span>
-                <button style="width:auto; padding:5px 20px;" onclick="game.closeLibrary()">閉じる</button>
-            </div>
-            <div style="font-size:0.8rem; margin-bottom:5px; color:#aaa;">※紫枠はソウル(装飾品)</div>
-            <div id="lib-grid" class="scroll-grid"></div>
+        <div class="modal-window">
+            <div class="modal-title">冒険の記録</div>
+            <div id="lib-grid" class="grid-list"></div>
+            <button class="cmd-btn" style="text-align:center; margin-top:10px;" onclick="game.closeLibrary()">閉じる</button>
         </div>
     </div>
-    
-    <!-- Help -->
+
     <div id="help-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; width:100%; border-bottom:2px solid #fff; padding-bottom:10px; margin-bottom:10px;">
-                <span>冒険の心得</span>
-                <button style="width:auto; padding:5px 20px;" onclick="game.closeHelp()">閉じる</button>
+        <div class="modal-window">
+            <div class="modal-title">冒険の心得</div>
+            <div style="font-size:0.9rem; line-height:1.6; color:#ccc;">
+                <p>地下30階の魔王を討伐せよ。<br>タイミングよくバーを止めて連撃（Combo）を稼げ。</p>
+                <p><strong>[絶対防御界]</strong><br>連撃5以上で自動発動。MPを消費してダメージを無効化。</p>
+                <p><strong>[見切り (Just Guard)]</strong><br>敵攻撃に合わせて防御ボタンを押せ。</p>
             </div>
-            <div style="text-align:left; height:300px; overflow-y:auto; font-size:0.9rem;">
-                <p><strong>[基本]</strong><br>地下30階の魔王を討伐せよ。<br>世代(周回)が進むほど敵は強大になる。</p>
-                <p><strong>[装飾品とソウル]</strong><br>3つ目の装備枠。敵が低確率で落とす「魂」は装飾品として装備可能。</p>
-                <p><strong>[絶対防御界 (Defense Field)]</strong><br>CHAIN 5以上で自動発動。MPを消費してダメージを完全無効化する。MPが切れると解除。</p>
-                <p><strong>[JUSTガード]</strong><br>敵の攻撃に合わせてボタンを押すと発動。ダメージ無効＋反撃。</p>
-                <button class="reset-btn" style="border:1px solid #f44; color:#f44; margin-top:20px; padding:10px; width:100%;" onclick="game.resetSaveData()">セーブデータを削除</button>
-            </div>
+            <button class="cmd-btn" style="text-align:center; margin-top:10px;" onclick="game.closeHelp()">閉じる</button>
+            <button style="background:#300; border:1px solid #f00; color:#f88; padding:5px; margin-top:20px;" onclick="game.resetSaveData()">記録消去</button>
         </div>
     </div>
 
-    <!-- Shop -->
     <div id="shop-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div style="text-align:center; font-size:1.5rem; color:var(--accent-purple);">闇市 - <ruby>魂の等価交換<rt>ソウル・トレード</rt></ruby> -</div>
-            <div style="text-align:center; margin-bottom:10px;">所持金: <span id="shop-gold" class="gold-val">0</span> G</div>
-            <div class="scroll-grid" style="grid-template-columns: 1fr 1fr; gap:10px;">
-                <div class="shop-btn" onclick="game.buyBoost('hp')"><div>HP+5</div><div style="color:var(--accent-yellow);">500G</div></div>
-                <div class="shop-btn" onclick="game.buyBoost('mp')"><div>MP+2</div><div style="color:var(--accent-yellow);">500G</div></div>
-                <div class="shop-btn" onclick="game.buyBoost('atk')"><div>攻+1</div><div style="color:var(--accent-yellow);">1000G</div></div>
-                <div class="shop-btn" onclick="game.buyBoost('def')"><div>守+1</div><div style="color:var(--accent-yellow);">1000G</div></div>
-                <div class="shop-btn" onclick="game.buyBoost('luck')"><div>運+2%</div><div style="color:var(--accent-yellow);">2000G</div></div>
+        <div class="modal-window">
+            <div class="modal-title">闇市</div>
+            <div style="text-align:center; margin-bottom:10px;">所持金: <span id="shop-gold" style="color:var(--accent-yellow)">0</span> G</div>
+            <div class="grid-list" style="grid-template-columns: 1fr 1fr;">
+                <button class="cmd-btn" style="text-align:center;" onclick="game.buyBoost('hp')">HP強化<br><span style="color:var(--accent-yellow)">500G</span></button>
+                <button class="cmd-btn" style="text-align:center;" onclick="game.buyBoost('mp')">MP強化<br><span style="color:var(--accent-yellow)">500G</span></button>
+                <button class="cmd-btn" style="text-align:center;" onclick="game.buyBoost('atk')">力強化<br><span style="color:var(--accent-yellow)">1000G</span></button>
+                <button class="cmd-btn" style="text-align:center;" onclick="game.buyBoost('def')">守り強化<br><span style="color:var(--accent-yellow)">1000G</span></button>
+                <button class="cmd-btn" style="text-align:center;" onclick="game.buyBoost('luck')">運強化<br><span style="color:var(--accent-yellow)">2000G</span></button>
             </div>
-            <button style="margin-top:20px; width:100%; padding:15px;" onclick="game.softReset()">次世代へ託す</button>
+            <button class="cmd-btn" style="text-align:center; margin-top:20px; border-color:var(--accent-purple);" onclick="game.softReset()">次の世代へ託す</button>
         </div>
     </div>
 
-    <div class="game-over-modal modal-overlay" id="modal-go">
-        <h1 style="color:red; margin:0; font-size:3rem; text-shadow:2px 2px #fff;">GAME OVER</h1>
+    <div class="modal-overlay" id="modal-go" style="flex-direction:column; gap:20px;">
+        <h1 style="color:var(--accent-red); font-size:3rem; font-family:var(--font-serif);">死</h1>
         <p>到達: 地下 <span id="final-score">0</span> 階</p>
-        <button onclick="game.openShop()" style="padding:15px 40px; margin-top:20px; font-size:1.2rem;">闇市へ</button>
+        <button class="cmd-btn" style="padding:10px 30px;" onclick="game.openShop()">闇市へ</button>
     </div>
 
     <div class="click-start" id="click-start" onclick="game.initAudio()">
-        <div>ENDLESS QUEST 2.0<br>- 覚醒の刻 -</div>
-        <div style="font-size:1rem; margin-top:20px;">画面をクリックしてスタート<br>(※音が出ます)</div>
+        <div style="font-size:2rem; font-family:var(--font-serif); margin-bottom:20px;">ENDLESS QUEST</div>
+        <div style="font-size:0.9rem; animation:blink 1s infinite;">CLICK TO START</div>
     </div>
 </div>
 
 <script>
-/** AUDIO */
+/** * LOGIC PRESERVED FROM ORIGINAL
+ * Game Class & SoundManager (Content unchanged, structural bindings updated where necessary)
+ */
+
 class SoundManager {
     constructor() { this.ctx = null; this.bgmOscs = []; }
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -511,7 +655,7 @@ class SoundManager {
     stopBGM() { this.bgmOscs.forEach(obj=>{try{obj.o.stop();obj.o.disconnect();}catch(e){}}); this.bgmOscs=[]; }
 }
 
-/** DATA */
+/** DATA (Unchanged) */
 const SAVE_KEY = 'EQ_SAVE_V300';
 const WEAPON_PREFIXES = [
     {t:"朽ちた",r:"クチタ"}, {t:"鉄塊の",r:"テッカイノ"}, {t:"煉獄の",r:"レンゴクノ"}, {t:"名工の",r:"メイコウノ"}, 
@@ -531,7 +675,7 @@ function generateSVG(data, colorOverride=null, metal=false) {
 }
 
 const SPRITES = {
-    // --- WEAPONS: High contrast, metallic shading ---
+    // --- WEAPONS ---
     stick: { color: "#a84", pixels: [{x:6,y:11,w:4,h:4,c:"#753"},{x:7,y:3,w:2,h:10,c:"#964"},{x:8,y:2,w:1,h:2,c:"#bd6"}] },
     club: { color: "#953", pixels: [{x:6,y:11,w:4,h:4,c:"#531"},{x:7,y:8,w:2,h:3,c:"#853"},{x:5,y:2,w:6,h:6,c:"#742"},{x:5,y:2,w:2,h:2,c:"#b86"},{x:9,y:5,w:2,h:2,c:"#421"}] },
     sword: { color:"#ccc", pixels:[{x:6,y:12,w:4,h:4,c:"#531"},{x:4,y:11,w:8,h:1,c:"#daa520"},{x:7,y:11,w:2,h:2,c:"#daa520"},{x:6,y:1,w:4,h:10,c:"#aaa"},{x:6,y:1,w:2,h:10,c:"#eee"},{x:7,y:2,w:1,h:8,c:"#fff"}] },
@@ -543,7 +687,7 @@ const SPRITES = {
     hero_w: { color: "#48f", pixels: [{x:6,y:11,w:4,h:5,c:"#222"},{x:3,y:10,w:10,h:2,c:"#d4af37"},{x:5,y:1,w:6,h:10,c:"#005"},{x:6,y:1,w:2,h:9,c:"#48f"},{x:6,y:2,w:1,h:8,c:"#aaf"},{x:7,y:10,w:2,h:2,c:"#f00"}] },
     metal_w: { color: "#444", pixels: [{x:7,y:11,w:2,h:5,c:"#111"},{x:4,y:10,w:8,h:2,c:"#444"},{x:6,y:1,w:4,h:10,c:"#666"},{x:6,y:1,w:2,h:10,c:"#aaa"},{x:5,y:7,w:6,h:1,c:"#f00"},{x:5,y:8,w:6,h:1,c:"#300"}] },
 
-    // --- ARMOR: 3D effect with highlights ---
+    // --- ARMOR ---
     a_cloth: { color: "#dca", pixels: [{x:3,y:3,w:10,h:11,c:"#b86"},{x:5,y:3,w:6,h:4,c:"#eeb"},{x:4,y:4,w:2,h:8,c:"#964"},{x:10,y:4,w:2,h:8,c:"#964"}] },
     a_leather: { color: "#a64", pixels: [{x:3,y:3,w:10,h:11,c:"#742"},{x:4,y:4,w:8,h:8,c:"#964"},{x:2,y:3,w:3,h:4,c:"#531"},{x:11,y:3,w:3,h:4,c:"#531"},{x:6,y:5,w:4,h:4,c:"#b86"}] },
     a_chain: { color: "#888", pixels: [{x:3,y:2,w:10,h:12,c:"#444"},{x:2,y:3,w:12,h:4,c:"#666"},{x:4,y:6,w:8,h:8,c:"#888"},{x:5,y:7,w:1,h:1,c:"#ccc"},{x:7,y:7,w:1,h:1,c:"#ccc"},{x:9,y:7,w:1,h:1,c:"#ccc"}] },
@@ -557,130 +701,34 @@ const SPRITES = {
     amulet: { color: "#a8f", pixels: [{x:6,y:0,w:4,h:8,c:"#ccc"},{x:5,y:8,w:6,h:6,c:"#62a"},{x:6,y:9,w:4,h:4,c:"#a4d"},{x:7,y:10,w:2,h:2,c:"#fff"}] },
     soul: { color: "#0ff", pixels: [{x:6,y:2,w:4,h:8,c:"#0aa"},{x:4,y:5,w:8,h:6,c:"#0cc"},{x:7,y:4,w:2,h:2,c:"#fff"},{x:5,y:6,w:2,h:2,c:"#fff"},{x:9,y:6,w:2,h:2,c:"#fff"}] },
 
-    // --- ENEMIES: LOW TIER ---
-    slime: { color: "#48f", pixels: [
-        {x:4,y:6,w:8,h:8,c:"#005"},{x:3,y:8,w:10,h:6,c:"#249"},{x:4,y:7,w:8,h:6,c:"#48f"},
-        {x:5,y:9,w:1,h:2,c:"#000"},{x:10,y:9,w:1,h:2,c:"#000"},{x:6,y:9,w:1,h:1,c:"#fff"},
-        {x:5,y:7,w:2,h:1,c:"#bef"},{x:11,y:9,w:1,h:1,c:"#fff"}
-    ]},
-    bat: { color: "#222", pixels: [
-        {x:1,y:2,w:6,h:4,c:"#404"},{x:9,y:2,w:6,h:4,c:"#404"},
-        {x:5,y:5,w:6,h:6,c:"#222"},{x:4,y:4,w:2,h:3,c:"#111"},{x:10,y:4,w:2,h:3,c:"#111"},
-        {x:6,y:7,w:1,h:1,c:"#f00"},{x:9,y:7,w:1,h:1,c:"#f00"},{x:7,y:9,w:2,h:1,c:"#fff"}
-    ]},
-    rabbit: { color: "#da8", pixels: [
-        {x:5,y:2,w:2,h:5,c:"#da8"},{x:9,y:2,w:2,h:5,c:"#da8"},
-        {x:4,y:6,w:8,h:7,c:"#c96"},{x:6,y:8,w:1,h:2,c:"#000"},{x:9,y:8,w:1,h:2,c:"#000"},
-        {x:7,y:10,w:2,h:2,c:"#fcc"}
-    ]},
-    skeleton: { color: "#ddd", pixels: [
-        {x:5,y:2,w:6,h:5,c:"#eee"},{x:6,y:4,w:1,h:1,c:"#000"},{x:9,y:4,w:1,h:1,c:"#000"},
-        {x:6,y:7,w:4,h:5,c:"#ccc"},{x:4,y:8,w:8,h:2,c:"#aaa"},{x:4,y:8,w:1,h:4,c:"#ddd"},{x:11,y:8,w:1,h:4,c:"#ddd"},
-        {x:1,y:4,w:2,h:8,c:"#888"}
-    ]},
-    ghost: { color: "#eee", pixels: [
-        {x:4,y:2,w:8,h:10,c:"#eef"},{x:2,y:5,w:12,h:8,c:"rgba(255,255,255,0.5)"},
-        {x:5,y:6,w:2,h:2,c:"#000"},{x:9,y:6,w:2,h:2,c:"#000"},{x:6,y:10,w:4,h:2,c:"#f00"},
-        {x:1,y:4,w:2,h:4,c:"#ccf"}
-    ]},
-
-    // --- ENEMIES: MID TIER ---
-    knight: { color: "#889", pixels: [
-        {x:5,y:1,w:6,h:6,c:"#667"},{x:7,y:3,w:2,h:1,c:"#000"},{x:4,y:7,w:8,h:7,c:"#889"},
-        {x:2,y:7,w:2,h:6,c:"#667"},{x:12,y:7,w:2,h:6,c:"#667"},{x:5,y:14,w:2,h:2,c:"#222"},{x:9,y:14,w:2,h:2,c:"#222"},
-        {x:13,y:2,w:2,h:10,c:"#aaa"},{x:1,y:5,w:3,h:8,c:"#445"}
-    ]},
-    wizard: { color: "#808", pixels: [
-        {x:5,y:2,w:6,h:4,c:"#404"},{x:4,y:5,w:8,h:8,c:"#606"},{x:2,y:5,w:12,h:2,c:"#808"},
-        {x:5,y:6,w:6,h:3,c:"#000"},{x:6,y:7,w:1,h:1,c:"#ff0"},{x:9,y:7,w:1,h:1,c:"#ff0"},
-        {x:1,y:4,w:2,h:10,c:"#a62"},{x:1,y:2,w:2,h:2,c:"#fb0"}
-    ]},
-    golem: { color: "#b84", pixels: [
-        {x:4,y:1,w:8,h:5,c:"#963"},{x:5,y:3,w:2,h:1,c:"#f00"},{x:9,y:3,w:2,h:1,c:"#f00"},
-        {x:2,y:6,w:12,h:8,c:"#b84"},{x:1,y:6,w:3,h:8,c:"#852"},{x:12,y:6,w:3,h:8,c:"#852"},
-        {x:4,y:14,w:3,h:2,c:"#631"},{x:9,y:14,w:3,h:2,c:"#631"}
-    ]},
-    mimic: { color: "#d84", pixels: [
-        {x:2,y:3,w:12,h:10,c:"#852"},{x:3,y:4,w:10,h:8,c:"#a63"},{x:1,y:5,w:1,h:6,c:"#d84"},{x:14,y:5,w:1,h:6,c:"#d84"},
-        {x:4,y:8,w:8,h:2,c:"#600"},{x:5,y:8,w:1,h:1,c:"#fff"},{x:7,y:8,w:1,h:1,c:"#fff"},{x:9,y:8,w:1,h:1,c:"#fff"},{x:11,y:8,w:1,h:1,c:"#fff"},
-        {x:5,y:5,w:2,h:2,c:"#ff0"},{x:9,y:5,w:2,h:2,c:"#ff0"}
-    ]},
-
-    // --- ENEMIES: HIGH TIER ---
-    cerberus: { color: "#840", pixels: [
-        {x:1,y:4,w:4,h:5,c:"#620"},{x:6,y:2,w:4,h:6,c:"#840"},{x:11,y:4,w:4,h:5,c:"#620"},
-        {x:2,y:5,w:1,h:1,c:"#f00"},{x:7,y:4,w:1,h:1,c:"#f00"},{x:12,y:5,w:1,h:1,c:"#f00"},
-        {x:4,y:8,w:8,h:6,c:"#510"},{x:3,y:14,w:2,h:2,c:"#300"},{x:11,y:14,w:2,h:2,c:"#300"}
-    ]},
-    dullahan: { color: "#334", pixels: [
-        {x:6,y:5,w:8,h:10,c:"#223"},{x:1,y:7,w:4,h:5,c:"#eeb"},{x:2,y:8,w:1,h:1,c:"#000"},{x:4,y:8,w:1,h:1,c:"#000"},
-        {x:6,y:5,w:8,h:2,c:"#556"},{x:12,y:2,w:2,h:12,c:"#667"},{x:12,y:1,w:2,h:1,c:"#fff"}
-    ]},
-    chimera: { color: "#d84", pixels: [
-        {x:4,y:3,w:6,h:6,c:"#c62"},{x:10,y:2,w:4,h:5,c:"#282"},{x:12,y:3,w:1,h:1,c:"#ff0"},
-        {x:2,y:2,w:4,h:5,c:"#d84"},{x:3,y:3,w:1,h:1,c:"#000"},
-        {x:3,y:9,w:10,h:5,c:"#842"},{x:13,y:6,w:2,h:6,c:"#a00"}
-    ]},
-    demon: { color: "#a22", pixels: [
-        {x:5,y:1,w:6,h:6,c:"#800"},{x:4,y:2,w:1,h:3,c:"#fff"},{x:11,y:2,w:1,h:3,c:"#fff"},
-        {x:6,y:3,w:1,h:1,c:"#ff0"},{x:9,y:3,w:1,h:1,c:"#ff0"},
-        {x:3,y:7,w:10,h:7,c:"#600"},{x:1,y:4,w:4,h:6,c:"#303"},{x:11,y:4,w:4,h:6,c:"#303"}
-    ]},
-    dragon: { color: "#62a", pixels: [
-        {x:4,y:1,w:4,h:6,c:"#316"},{x:6,y:2,w:1,h:1,c:"#fc0"},
-        {x:5,y:7,w:7,h:7,c:"#428"},{x:0,y:2,w:5,h:8,c:"#84a"},{x:11,y:2,w:5,h:8,c:"#84a"},
-        {x:2,y:3,w:1,h:4,c:"#316"},{x:13,y:3,w:1,h:4,c:"#316"}
-    ]},
-    lich: { color: "#426", pixels: [
-        {x:6,y:2,w:4,h:4,c:"#eed"},{x:5,y:5,w:6,h:10,c:"#305"},
-        {x:3,y:3,w:2,h:12,c:"#a84"},{x:3,y:2,w:3,h:2,c:"#b4d"},
-        {x:6,y:6,w:4,h:6,c:"#203"},{x:6,y:3,w:1,h:1,c:"#0f0"},{x:9,y:3,w:1,h:1,c:"#0f0"}
-    ]},
-    fallen: { color: "#222", pixels: [
-        {x:6,y:2,w:4,h:4,c:"#ccc"},{x:5,y:6,w:6,h:8,c:"#111"},
-        {x:1,y:2,w:5,h:10,c:"#000"},{x:10,y:2,w:5,h:10,c:"#000"},
-        {x:7,y:3,w:2,h:1,c:"#f00"}
-    ]},
-    angel: { color: "#eea", pixels: [
-        {x:6,y:2,w:4,h:4,c:"#fcc"},{x:6,y:1,w:4,h:1,c:"#fe0"},
-        {x:5,y:6,w:6,h:8,c:"#eee"},{x:1,y:2,w:4,h:8,c:"#fff"},{x:11,y:2,w:4,h:8,c:"#fff"},
-        {x:7,y:3,w:2,h:1,c:"#0af"}
-    ]},
-    reaper: { color: "#222", pixels: [
-        {x:6,y:2,w:4,h:4,c:"#eee"},{x:5,y:4,w:6,h:10,c:"#111"},
-        {x:2,y:6,w:12,h:2,c:"#111"},{x:12,y:1,w:2,h:14,c:"#888"},
-        {x:12,y:1,w:3,h:3,c:"#ccc"}
-    ]},
+    // --- ENEMIES ---
+    slime: { color: "#48f", pixels: [{x:4,y:6,w:8,h:8,c:"#005"},{x:3,y:8,w:10,h:6,c:"#249"},{x:4,y:7,w:8,h:6,c:"#48f"},{x:5,y:9,w:1,h:2,c:"#000"},{x:10,y:9,w:1,h:2,c:"#000"},{x:6,y:9,w:1,h:1,c:"#fff"},{x:5,y:7,w:2,h:1,c:"#bef"},{x:11,y:9,w:1,h:1,c:"#fff"}]},
+    bat: { color: "#222", pixels: [{x:1,y:2,w:6,h:4,c:"#404"},{x:9,y:2,w:6,h:4,c:"#404"},{x:5,y:5,w:6,h:6,c:"#222"},{x:4,y:4,w:2,h:3,c:"#111"},{x:10,y:4,w:2,h:3,c:"#111"},{x:6,y:7,w:1,h:1,c:"#f00"},{x:9,y:7,w:1,h:1,c:"#f00"},{x:7,y:9,w:2,h:1,c:"#fff"}]},
+    rabbit: { color: "#da8", pixels: [{x:5,y:2,w:2,h:5,c:"#da8"},{x:9,y:2,w:2,h:5,c:"#da8"},{x:4,y:6,w:8,h:7,c:"#c96"},{x:6,y:8,w:1,h:2,c:"#000"},{x:9,y:8,w:1,h:2,c:"#000"},{x:7,y:10,w:2,h:2,c:"#fcc"}]},
+    skeleton: { color: "#ddd", pixels: [{x:5,y:2,w:6,h:5,c:"#eee"},{x:6,y:4,w:1,h:1,c:"#000"},{x:9,y:4,w:1,h:1,c:"#000"},{x:6,y:7,w:4,h:5,c:"#ccc"},{x:4,y:8,w:8,h:2,c:"#aaa"},{x:4,y:8,w:1,h:4,c:"#ddd"},{x:11,y:8,w:1,h:4,c:"#ddd"},{x:1,y:4,w:2,h:8,c:"#888"}]},
+    ghost: { color: "#eee", pixels: [{x:4,y:2,w:8,h:10,c:"#eef"},{x:2,y:5,w:12,h:8,c:"rgba(255,255,255,0.5)"},{x:5,y:6,w:2,h:2,c:"#000"},{x:9,y:6,w:2,h:2,c:"#000"},{x:6,y:10,w:4,h:2,c:"#f00"},{x:1,y:4,w:2,h:4,c:"#ccf"}]},
+    knight: { color: "#889", pixels: [{x:5,y:1,w:6,h:6,c:"#667"},{x:7,y:3,w:2,h:1,c:"#000"},{x:4,y:7,w:8,h:7,c:"#889"},{x:2,y:7,w:2,h:6,c:"#667"},{x:12,y:7,w:2,h:6,c:"#667"},{x:5,y:14,w:2,h:2,c:"#222"},{x:9,y:14,w:2,h:2,c:"#222"},{x:13,y:2,w:2,h:10,c:"#aaa"},{x:1,y:5,w:3,h:8,c:"#445"}]},
+    wizard: { color: "#808", pixels: [{x:5,y:2,w:6,h:4,c:"#404"},{x:4,y:5,w:8,h:8,c:"#606"},{x:2,y:5,w:12,h:2,c:"#808"},{x:5,y:6,w:6,h:3,c:"#000"},{x:6,y:7,w:1,h:1,c:"#ff0"},{x:9,y:7,w:1,h:1,c:"#ff0"},{x:1,y:4,w:2,h:10,c:"#a62"},{x:1,y:2,w:2,h:2,c:"#fb0"}]},
+    golem: { color: "#b84", pixels: [{x:4,y:1,w:8,h:5,c:"#963"},{x:5,y:3,w:2,h:1,c:"#f00"},{x:9,y:3,w:2,h:1,c:"#f00"},{x:2,y:6,w:12,h:8,c:"#b84"},{x:1,y:6,w:3,h:8,c:"#852"},{x:12,y:6,w:3,h:8,c:"#852"},{x:4,y:14,w:3,h:2,c:"#631"},{x:9,y:14,w:3,h:2,c:"#631"}]},
+    mimic: { color: "#d84", pixels: [{x:2,y:3,w:12,h:10,c:"#852"},{x:3,y:4,w:10,h:8,c:"#a63"},{x:1,y:5,w:1,h:6,c:"#d84"},{x:14,y:5,w:1,h:6,c:"#d84"},{x:4,y:8,w:8,h:2,c:"#600"},{x:5,y:8,w:1,h:1,c:"#fff"},{x:7,y:8,w:1,h:1,c:"#fff"},{x:9,y:8,w:1,h:1,c:"#fff"},{x:11,y:8,w:1,h:1,c:"#fff"},{x:5,y:5,w:2,h:2,c:"#ff0"},{x:9,y:5,w:2,h:2,c:"#ff0"}]},
+    cerberus: { color: "#840", pixels: [{x:1,y:4,w:4,h:5,c:"#620"},{x:6,y:2,w:4,h:6,c:"#840"},{x:11,y:4,w:4,h:5,c:"#620"},{x:2,y:5,w:1,h:1,c:"#f00"},{x:7,y:4,w:1,h:1,c:"#f00"},{x:12,y:5,w:1,h:1,c:"#f00"},{x:4,y:8,w:8,h:6,c:"#510"},{x:3,y:14,w:2,h:2,c:"#300"},{x:11,y:14,w:2,h:2,c:"#300"}]},
+    dullahan: { color: "#334", pixels: [{x:6,y:5,w:8,h:10,c:"#223"},{x:1,y:7,w:4,h:5,c:"#eeb"},{x:2,y:8,w:1,h:1,c:"#000"},{x:4,y:8,w:1,h:1,c:"#000"},{x:6,y:5,w:8,h:2,c:"#556"},{x:12,y:2,w:2,h:12,c:"#667"},{x:12,y:1,w:2,h:1,c:"#fff"}]},
+    chimera: { color: "#d84", pixels: [{x:4,y:3,w:6,h:6,c:"#c62"},{x:10,y:2,w:4,h:5,c:"#282"},{x:12,y:3,w:1,h:1,c:"#ff0"},{x:2,y:2,w:4,h:5,c:"#d84"},{x:3,y:3,w:1,h:1,c:"#000"},{x:3,y:9,w:10,h:5,c:"#842"},{x:13,y:6,w:2,h:6,c:"#a00"}]},
+    demon: { color: "#a22", pixels: [{x:5,y:1,w:6,h:6,c:"#800"},{x:4,y:2,w:1,h:3,c:"#fff"},{x:11,y:2,w:1,h:3,c:"#fff"},{x:6,y:3,w:1,h:1,c:"#ff0"},{x:9,y:3,w:1,h:1,c:"#ff0"},{x:3,y:7,w:10,h:7,c:"#600"},{x:1,y:4,w:4,h:6,c:"#303"},{x:11,y:4,w:4,h:6,c:"#303"}]},
+    dragon: { color: "#62a", pixels: [{x:4,y:1,w:4,h:6,c:"#316"},{x:6,y:2,w:1,h:1,c:"#fc0"},{x:5,y:7,w:7,h:7,c:"#428"},{x:0,y:2,w:5,h:8,c:"#84a"},{x:11,y:2,w:5,h:8,c:"#84a"},{x:2,y:3,w:1,h:4,c:"#316"},{x:13,y:3,w:1,h:4,c:"#316"}]},
+    lich: { color: "#426", pixels: [{x:6,y:2,w:4,h:4,c:"#eed"},{x:5,y:5,w:6,h:10,c:"#305"},{x:3,y:3,w:2,h:12,c:"#a84"},{x:3,y:2,w:3,h:2,c:"#b4d"},{x:6,y:6,w:4,h:6,c:"#203"},{x:6,y:3,w:1,h:1,c:"#0f0"},{x:9,y:3,w:1,h:1,c:"#0f0"}]},
+    fallen: { color: "#222", pixels: [{x:6,y:2,w:4,h:4,c:"#ccc"},{x:5,y:6,w:6,h:8,c:"#111"},{x:1,y:2,w:5,h:10,c:"#000"},{x:10,y:2,w:5,h:10,c:"#000"},{x:7,y:3,w:2,h:1,c:"#f00"}]},
+    angel: { color: "#eea", pixels: [{x:6,y:2,w:4,h:4,c:"#fcc"},{x:6,y:1,w:4,h:1,c:"#fe0"},{x:5,y:6,w:6,h:8,c:"#eee"},{x:1,y:2,w:4,h:8,c:"#fff"},{x:11,y:2,w:4,h:8,c:"#fff"},{x:7,y:3,w:2,h:1,c:"#0af"}]},
+    reaper: { color: "#222", pixels: [{x:6,y:2,w:4,h:4,c:"#eee"},{x:5,y:4,w:6,h:10,c:"#111"},{x:2,y:6,w:12,h:2,c:"#111"},{x:12,y:1,w:2,h:14,c:"#888"},{x:12,y:1,w:3,h:3,c:"#ccc"}]},
 
     // --- BOSSES ---
-    boss: { color: "#222", pixels: [
-        {x:5,y:1,w:6,h:6,c:"#ddd"},{x:4,y:0,w:2,h:3,c:"#808"},{x:10,y:0,w:2,h:3,c:"#808"},
-        {x:6,y:3,w:1,h:1,c:"#f00"},{x:9,y:3,w:1,h:1,c:"#f00"},
-        {x:3,y:7,w:10,h:8,c:"#222"},{x:4,y:8,w:8,h:6,c:"#404"},
-        {x:1,y:4,w:3,h:10,c:"#101"},{x:12,y:4,w:3,h:10,c:"#101"}
-    ]},
-    asura: { color: "#a4e", pixels: [
-        {x:6,y:1,w:4,h:5,c:"#c8c"},{x:4,y:6,w:8,h:8,c:"#626"},
-        {x:2,y:4,w:2,h:4,c:"#c8c"},{x:12,y:4,w:2,h:4,c:"#c8c"},{x:2,y:9,w:2,h:4,c:"#c8c"},{x:12,y:9,w:2,h:4,c:"#c8c"},
-        {x:2,y:3,w:1,h:4,c:"#888"},{x:13,y:3,w:1,h:4,c:"#888"}
-    ]},
-    general: { color: "#667", pixels: [
-        {x:5,y:0,w:6,h:6,c:"#223"},{x:6,y:2,w:4,h:2,c:"#000"},{x:6,y:2,w:1,h:1,c:"#f00"},{x:9,y:2,w:1,h:1,c:"#f00"},
-        {x:3,y:6,w:10,h:9,c:"#445"},{x:1,y:6,w:3,h:7,c:"#889"},{x:12,y:6,w:3,h:7,c:"#889"},
-        {x:5,y:8,w:6,h:6,c:"#223"}
-    ]},
+    boss: { color: "#222", pixels: [{x:5,y:1,w:6,h:6,c:"#ddd"},{x:4,y:0,w:2,h:3,c:"#808"},{x:10,y:0,w:2,h:3,c:"#808"},{x:6,y:3,w:1,h:1,c:"#f00"},{x:9,y:3,w:1,h:1,c:"#f00"},{x:3,y:7,w:10,h:8,c:"#222"},{x:4,y:8,w:8,h:6,c:"#404"},{x:1,y:4,w:3,h:10,c:"#101"},{x:12,y:4,w:3,h:10,c:"#101"}]},
+    asura: { color: "#a4e", pixels: [{x:6,y:1,w:4,h:5,c:"#c8c"},{x:4,y:6,w:8,h:8,c:"#626"},{x:2,y:4,w:2,h:4,c:"#c8c"},{x:12,y:4,w:2,h:4,c:"#c8c"},{x:2,y:9,w:2,h:4,c:"#c8c"},{x:12,y:9,w:2,h:4,c:"#c8c"},{x:2,y:3,w:1,h:4,c:"#888"},{x:13,y:3,w:1,h:4,c:"#888"}]},
+    general: { color: "#667", pixels: [{x:5,y:0,w:6,h:6,c:"#223"},{x:6,y:2,w:4,h:2,c:"#000"},{x:6,y:2,w:1,h:1,c:"#f00"},{x:9,y:2,w:1,h:1,c:"#f00"},{x:3,y:6,w:10,h:9,c:"#445"},{x:1,y:6,w:3,h:7,c:"#889"},{x:12,y:6,w:3,h:7,c:"#889"},{x:5,y:8,w:6,h:6,c:"#223"}]},
 
     // --- SPECIAL ---
-    goldman: { color: "#fd0", pixels: [
-        {x:4,y:2,w:8,h:6,c:"#fd0"},{x:5,y:3,w:6,h:4,c:"#ff8"},
-        {x:2,y:4,w:3,h:6,c:"#db0"},{x:11,y:4,w:3,h:6,c:"#db0"},
-        {x:5,y:9,w:2,h:5,c:"#b90"},{x:9,y:9,w:2,h:5,c:"#b90"},
-        {x:6,y:4,w:1,h:1,c:"#000"},{x:9,y:4,w:1,h:1,c:"#000"}
-    ]},
-    metal_s: { color: "#ccc", pixels: [
-        {x:5,y:8,w:6,h:4,c:"#aaa"},{x:4,y:9,w:8,h:4,c:"#ccc"},{x:2,y:11,w:12,h:3,c:"#eee"},
-        {x:6,y:10,w:1,h:1,c:"#000"},{x:9,y:10,w:1,h:1,c:"#000"},{x:5,y:9,w:1,h:1,c:"#fff"}
-    ]},
+    goldman: { color: "#fd0", pixels: [{x:4,y:2,w:8,h:6,c:"#fd0"},{x:5,y:3,w:6,h:4,c:"#ff8"},{x:2,y:4,w:3,h:6,c:"#db0"},{x:11,y:4,w:3,h:6,c:"#db0"},{x:5,y:9,w:2,h:5,c:"#b90"},{x:9,y:9,w:2,h:5,c:"#b90"},{x:6,y:4,w:1,h:1,c:"#000"},{x:9,y:4,w:1,h:1,c:"#000"}]},
+    metal_s: { color: "#ccc", pixels: [{x:5,y:8,w:6,h:4,c:"#aaa"},{x:4,y:9,w:8,h:4,c:"#ccc"},{x:2,y:11,w:12,h:3,c:"#eee"},{x:6,y:10,w:1,h:1,c:"#000"},{x:9,y:10,w:1,h:1,c:"#000"},{x:5,y:9,w:1,h:1,c:"#fff"}]},
 
     // --- NPC ---
     npc_princess: { color: "#fca", pixels: [{x:5,y:2,w:6,h:5,c:"#fa8"},{x:6,y:1,w:4,h:2,c:"#f84"},{x:5,y:7,w:6,h:7,c:"#f8a"},{x:6,y:8,w:4,h:4,c:"#fce"},{x:4,y:7,w:2,h:4,c:"#fca"},{x:10,y:7,w:2,h:4,c:"#fca"}] },
@@ -792,38 +840,55 @@ class Game {
     }
 
     bindDOM() {
+        // Updated IDs based on new HTML structure
         this.el = {
             container: document.getElementById('game-container'),
+            stage: document.getElementById('stage'),
+            
+            // HUD
             hp: document.getElementById('disp-hp'), mp: document.getElementById('disp-mp'),
             lv: document.getElementById('disp-lv'), atk: document.getElementById('disp-atk'), def: document.getElementById('disp-def'),
             gold: document.getElementById('disp-gold'), gen: document.getElementById('disp-gen'),
             weapon: document.getElementById('disp-weapon'), armor: document.getElementById('disp-armor'), acc: document.getElementById('disp-acc'),
             aura: document.getElementById('disp-aura'), chain: document.getElementById('disp-chain'), awakeTxt: document.getElementById('awake-txt'),
             title: document.getElementById('disp-title'),
-            log: document.getElementById('log'), stage: document.getElementById('stage'), enemy: document.getElementById('enemy-slot'),
             bar: document.getElementById('progress-bar'), txt: document.getElementById('progress-text'),
+
+            // Windows
+            log: document.getElementById('log'), 
+            enemy: document.getElementById('enemy-slot'),
             
+            // Modals
             modalGo: document.getElementById('modal-go'), modalShop: document.getElementById('shop-modal'), modalLib: document.getElementById('lib-modal'),
             modalHelp: document.getElementById('help-modal'),
+            
+            // Overlays
             drama: document.getElementById('drama-window'), flash: document.getElementById('flash'), flashInv: document.getElementById('flash-invert'), cutin: document.getElementById('cutin'),
             damagePop: document.getElementById('damage-pop'), chainPop: document.getElementById('chain-pop'),
             dangerOverlay: document.getElementById('danger-overlay'), itemPop: document.getElementById('item-pop'),
             
+            // Menus
             menuBattle: document.getElementById('menu-battle'), menuSkills: document.getElementById('menu-skills'), menuChest: document.getElementById('menu-chest'),
+            
+            // Gauge
             gaugeArea: document.getElementById('gauge-area'), gaugeCursor: document.getElementById('gauge-cursor'),
             
-            btnMain: document.getElementById('btn-main'), btnStop: document.getElementById('btn-stop'),
+            // Buttons
+            btnMain: document.getElementById('btn-main'), 
+            btnStopWrapper: document.getElementById('btn-stop-wrapper'), // New Wrapper
+            btnStop: document.getElementById('btn-stop'),
             btnSpeed: document.getElementById('btn-speed'),
             
+            // Chest
             chestDisplay: document.getElementById('chest-display'),
             curI: { icon:document.getElementById('cur-icon'), name:document.getElementById('cur-name'), stat:document.getElementById('cur-stat'), sub:document.getElementById('cur-sub'), eff:document.getElementById('cur-effect') },
             newI: { icon:document.getElementById('new-icon'), name:document.getElementById('new-name'), stat:document.getElementById('new-stat'), sub:document.getElementById('new-sub'), eff:document.getElementById('new-effect') },
+            btnGet: document.getElementById('btn-get'), btnDiscard: document.getElementById('btn-discard'),
             
+            // Events
             eventDisplay: document.getElementById('event-display'), eventTitle: document.getElementById('event-title'), eventDesc: document.getElementById('event-desc'), eventChoices: document.getElementById('event-choices'),
 
             dramaActor: document.getElementById('drama-actor-box'), dramaName: document.getElementById('drama-name'), dramaText: document.getElementById('drama-text'),
-            
-            btnGet: document.getElementById('btn-get'), btnDiscard: document.getElementById('btn-discard')
         };
     }
     
@@ -870,17 +935,16 @@ class Game {
         this.resetInternalState();
         this.el.log.innerHTML = `<div class='log-entry system'>第${this.generation}代 勇者、運命の地へ。</div>`;
         this.el.modalGo.style.display = "none"; this.el.modalShop.style.display = "none";
-        this.el.btnMain.textContent = "運命の抽選へ"; this.el.btnMain.style.display = "block";
+        this.el.btnMain.textContent = "抽選へ"; this.el.btnMain.disabled = false;
         this.el.menuBattle.style.display = "none"; this.el.enemy.innerHTML = "";
         this.el.dangerOverlay.style.display = "none"; this.updateHud();
-        this.el.aura.textContent = "READY"; this.el.aura.style.color = "#fff";
+        this.el.aura.textContent = "READY"; this.el.aura.style.color = "#555";
         this.sound.playSE('select');
     }
 
     initAudio() {
         this.sound.init(); this.sound.playSE('select');
         document.getElementById('click-start').style.display = 'none';
-        this.el.btnMain.style.display = "block";
         this.log(`第${this.generation}代 勇者、<ruby>冒険の書<rt>クロニクル</rt></ruby>を開いた。`); this.updateHud();
     }
     
@@ -894,7 +958,7 @@ class Game {
             this.timeScale = 1;
             this.el.container.classList.remove('speed-x2');
             this.el.btnSpeed.textContent = "x1";
-            this.el.btnSpeed.style.background = "#222";
+            this.el.btnSpeed.style.background = "#000";
         }
         this.sound.playSE('select');
     }
@@ -913,8 +977,8 @@ class Game {
     renderEnemy(t, metal, boss) { 
         let d = SPRITES[t] || SPRITES.slime; 
         let color = d.color;
-        if (!metal && !boss) { const hues = [d.color, "#f44", "#4f4", "#fd0", "#f0f", "#48f"]; color = hues[this.lv % hues.length]; }
-        if (t === "asura" || t === "demon") color = "#f4f"; 
+        if (!metal && !boss) { const hues = [d.color, "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#3498db"]; color = hues[this.lv % hues.length]; }
+        if (t === "asura" || t === "demon") color = "#f0f"; 
         if (t === "general" || t === "knight") color = "#8af"; 
         if (boss && t === "boss") color = this.clears > 5 ? "#a00" : "#d44"; 
         this.el.enemy.innerHTML = generateSVG({...d, color: color}, null, metal);
@@ -975,7 +1039,7 @@ class Game {
         this.el.dangerOverlay.style.display = this.hp <= this.maxHp * 0.25 ? "block" : "none";
         const prog = Math.min(100, (this.lv / this.targetLv) * 100);
         this.el.bar.style.width = `${prog}%`;
-        this.el.txt.textContent = this.lv >= this.targetLv ? "決戦！ 魔王の間" : `魔王城まで あと${this.targetLv - this.lv}階`;
+        this.el.txt.textContent = this.lv >= this.targetLv ? "決戦！ 魔王の間" : `地下 ${this.lv} / ${this.targetLv} 階`;
         
         // Title
         if(this.acquiredTitles.size > 0) {
@@ -1020,6 +1084,7 @@ class Game {
         
         this.el.aura.textContent = `${Math.floor(this.revivalRate*100)}%`;
         this.el.aura.style.color = sel.color;
+        // Effect on stage background in Retro Mode
         this.el.stage.style.boxShadow = `inset 0 0 30px ${sel.color}`;
         this.showCutin(sel.name + " 確定"); this.sound.playSE('crit');
         
@@ -1050,7 +1115,10 @@ class Game {
         let title="", desc="";
         
         const createBtn = (txt, cb) => {
-            const b = document.createElement("button"); b.textContent = txt;
+            const b = document.createElement("button"); 
+            b.className = "cmd-btn";
+            b.style.textAlign = "center";
+            b.textContent = txt;
             b.onclick = () => { this.sound.playSE('select'); cb(); this.endEvent(); };
             this.el.eventChoices.appendChild(b);
         };
@@ -1087,7 +1155,7 @@ class Game {
     }
 
     startBattle() {
-        this.state = "BATTLE_CMD"; this.el.btnMain.style.display = "none"; this.el.menuBattle.style.display = "grid"; this.el.itemPop.style.transform = "scale(0)";
+        this.state = "BATTLE_CMD"; this.el.btnMain.style.display = "none"; this.el.menuBattle.style.display = "flex"; this.el.itemPop.style.display = "none";
         this.noDamageNow = true;
         if (this.lv >= this.targetLv) { this.startBossBattle("boss"); return; }
         if (this.lv === 10 || this.lv === 20) { this.startBossBattle("mid"); return; }
@@ -1137,7 +1205,6 @@ class Game {
         this.el.enemy.style.opacity = 0;
         this.el.enemy.style.transform = "scale(0.5)";
         requestAnimationFrame(() => { 
-             this.el.enemy.style.transition = "all 0.5s";
              this.el.enemy.style.opacity = 1; 
              this.el.enemy.style.transform = "scale(1)";
         });
@@ -1147,7 +1214,7 @@ class Game {
             this.showBattleTalk(line, 2000);
         }
         
-        this.log(`${this.enemy.name} (HP:${this.enemy.hp}) があらわれた！`);
+        this.log(`${this.enemy.name} があらわれた！`);
     }
     
     async startBossBattle(type) {
@@ -1171,11 +1238,9 @@ class Game {
         };
         
         this.renderEnemy(this.enemy.type, false, true);
-        this.el.stage.style.background = "#301";
         this.el.enemy.style.opacity = 0;
         this.el.enemy.style.transform = "scale(2)";
         requestAnimationFrame(() => { 
-             this.el.enemy.style.transition = "all 2s";
              this.el.enemy.style.opacity = 1; 
              this.el.enemy.style.transform = "scale(1.2)";
         });
@@ -1203,14 +1268,18 @@ class Game {
     selectHeal() { this.sound.playSE('select'); if(this.mp<5){this.log("MP不足！");return;} this.useSkill(SKILLS.find(s=>s.id==="heal")); }
     
     openSkills() {
-        this.sound.playSE('select'); this.el.menuBattle.style.display = "none"; this.el.menuSkills.style.display = "grid"; this.el.menuSkills.innerHTML = "";
+        this.sound.playSE('select'); this.el.menuBattle.style.display = "none"; this.el.menuSkills.style.display = "flex"; this.el.menuSkills.innerHTML = "";
         const addBtn = (s) => {
-            const b = document.createElement('button'); b.innerHTML = `${s.name}<br><span style="font-size:0.8rem">MP:${s.mp}</span>`;
-            b.onclick = () => this.useSkill(s); if(this.mp<s.mp) b.disabled=true; this.el.menuSkills.appendChild(b);
+            const b = document.createElement('button'); 
+            b.className = "cmd-btn";
+            b.innerHTML = `${s.name} <span style="font-size:0.8rem;color:#88f">(MP:${s.mp})</span>`;
+            b.onclick = () => this.useSkill(s); if(this.mp<s.mp) { b.disabled=true; b.style.color="#555"; } 
+            this.el.menuSkills.appendChild(b);
         };
         if(this.weapon && this.weapon.skillId) addBtn(SKILLS.find(s=>s.id===this.weapon.skillId));
         if(this.lv>=3) addBtn(SKILLS.find(s=>s.id==="heal"));
-        const back = document.createElement('button'); back.textContent="もどる"; back.onclick=()=>{this.sound.playSE('select');this.el.menuSkills.style.display="none";this.el.menuBattle.style.display="grid";};
+        
+        const back = document.createElement('button'); back.className="cmd-btn"; back.textContent="もどる"; back.onclick=()=>{this.sound.playSE('select');this.el.menuSkills.style.display="none";this.el.menuBattle.style.display="flex";};
         this.el.menuSkills.appendChild(back);
     }
     
@@ -1233,9 +1302,9 @@ class Game {
 
     startGauge() {
         this.state = "GAUGE"; 
-        this.el.btnStop.style.display="block"; 
-        this.el.btnStop.className = "main-btn btn-stop";
-        this.el.btnStop.textContent = "たたかう！";
+        this.el.btnStopWrapper.style.display="block"; 
+        this.el.btnStop.className = "btn-big-action btn-stop";
+        this.el.btnStop.textContent = "STOP!";
         
         this.el.gaugeArea.style.display="block";
         this.gaugeVal=0; this.gaugeDir=1;
@@ -1264,7 +1333,7 @@ class Game {
     }
     
     async stopGauge() {
-        if(this.state!=="GAUGE") return; this.state="ANIM"; this.el.btnStop.style.display="none";
+        if(this.state!=="GAUGE") return; this.state="ANIM"; this.el.btnStopWrapper.style.display="none";
         this.sound.playSE('attack');
         let dist = Math.abs(50-this.gaugeVal), mult=1.0, isCrit=false;
         
@@ -1279,7 +1348,7 @@ class Game {
             mult = 1.2 + (this.chain * 0.3); 
             // Crit Soul
             if(this.accessory && this.accessory.effect === "crit_up") mult += 0.5;
-            this.showChainPop(`${this.chain} CHAIN!`);
+            this.showChainPop(`${this.chain}連撃`); // Changed text to JP
             this.checkDefenseMode(); 
         } else if (dist <= 15) { 
             if (this.enemy.isMetal && Math.random() < 0.5) { isCrit = true; this.log("神速の剣閃！", "critical"); }
@@ -1331,7 +1400,8 @@ class Game {
             }
             await this.delay(200);
         }
-        this.updateHud(); this.el.enemy.classList.remove("anim-shake");
+        this.updateHud(); 
+        setTimeout(() => this.el.enemy.classList.remove("anim-shake"), 200);
         if(this.enemy.hp<=0) this.winBattle(); else this.enemyTurn();
     }
 
@@ -1347,12 +1417,12 @@ class Game {
             return;
         }
 
-        this.log(`${this.enemy.name}の攻撃構え！`, "damage");
-        this.el.enemy.classList.add("anim-lunge");
+        this.log(`${this.enemy.name}の攻撃！`, "damage");
+        this.el.enemy.style.transform = "scale(1.2)";
         
-        this.el.btnStop.style.display = "block";
-        this.el.btnStop.className = "main-btn btn-guard";
-        this.el.btnStop.textContent = "防御！";
+        this.el.btnStopWrapper.style.display = "block";
+        this.el.btnStop.className = "btn-big-action btn-guard";
+        this.el.btnStop.textContent = "GUARD!";
         
         this.isGuardWindow = true;
         this.guardStart = Date.now();
@@ -1361,8 +1431,8 @@ class Game {
         await this.delay(600);
         
         this.isGuardWindow = false;
-        this.el.btnStop.style.display = "none";
-        this.el.enemy.classList.remove("anim-lunge");
+        this.el.btnStopWrapper.style.display = "none";
+        this.el.enemy.style.transform = "scale(1)";
 
         // CHECK DEFENSE MODE
         if (this.isDefenseMode) {
@@ -1373,7 +1443,7 @@ class Game {
              this.mp = Math.max(0, this.mp - 2); 
              if(this.mp <= 0) this.breakDefenseMode();
              this.updateHud();
-             this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "grid";
+             this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "flex";
              return; // No damage taken
         }
 
@@ -1417,13 +1487,13 @@ class Game {
                 this.updateHud();
                 this.sound.playSE('revive');
                 this.showCutin("復 活");
-                this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "grid";
+                this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "flex";
             } else {
                 this.sound.stopBGM();
                 await this.tryRevival();
             }
         } else {
-            this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "grid";
+            this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "flex";
         }
     }
     
@@ -1435,17 +1505,17 @@ class Game {
             this.isGuardWindow = false;
             this.sound.playSE('parry');
             
-            // NEW: Just Guard Effect
+            // Just Guard Effect
             this.el.flashInv.classList.add("anim-invert");
             setTimeout(() => this.el.flashInv.classList.remove("anim-invert"), 300);
 
-            // NEW: Kanji + Ruby Text
+            // Kanji + Ruby Text
             const txtObj = GUARD_TEXTS[Math.floor(Math.random()*GUARD_TEXTS.length)];
             const rubyHtml = `<ruby>${txtObj.t}<rt>${txtObj.r}</rt></ruby>`;
             
             this.el.cutin.innerHTML = rubyHtml;
-            this.el.cutin.style.transform="translate(-50%,-50%) scale(1)";
             this.el.cutin.classList.add("just");
+            this.el.cutin.style.transform="translate(-50%,-50%) scale(1)";
             
             setTimeout(()=>{
                 this.el.cutin.style.transform="translate(-50%,-50%) scale(0)";
@@ -1491,12 +1561,11 @@ class Game {
             this.log(`クリア回数: ${this.clears}`, "revive");
             await this.delay(2000);
             
-            this.el.stage.style.background = "#111"; 
             this.openShop();
             return;
         }
 
-        this.log(`${this.enemy.name}を葬った。`, "critical");
+        this.log(`${this.enemy.name}を倒した。`, "critical");
         
         // Random Death Talk
         if (Math.random() < 0.3) {
@@ -1573,7 +1642,7 @@ class Game {
             this.el.chestDisplay.style.display = "flex";
             this.el.enemy.style.display = "none";
             
-            this.el.menuChest.style.display = "grid";
+            this.el.menuChest.style.display = "flex";
             
             // Trap Prevention: Delay inputs
             this.el.btnGet.style.opacity = 0.3; this.el.btnGet.style.pointerEvents = "none";
@@ -1623,8 +1692,8 @@ class Game {
             if (this.pendingItem.type === "acc") this.accessory = this.pendingItem;
             else if (this.pendingItem.type === "a") this.armor = this.pendingItem; 
             else this.weapon = this.pendingItem;
-            this.log(`${this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"")}と契約した。`, "item"); this.sound.playSE('revive');
-        } else { this.log("宝箱を拒絶した。", "system"); }
+            this.log(`${this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"")}を装備した。`, "item"); this.sound.playSE('revive');
+        } else { this.log("宝箱を無視した。", "system"); }
         
         this.el.chestDisplay.style.display = "none"; 
         this.el.menuChest.style.display = "none";
@@ -1652,7 +1721,7 @@ class Game {
             this.updateHud();
             if(!this.isDefenseMode) this.sound.playBGM('boss');
             this.state = "BATTLE_CMD";
-            this.el.menuBattle.style.display = "grid";
+            this.el.menuBattle.style.display = "flex";
         } else {
             this.log("......", "system");
             await this.delay(1000);
@@ -1704,7 +1773,11 @@ class Game {
         else el.classList.add('miss');
         el.style.animation = "none"; el.offsetHeight; el.style.animation = "pop-damage 0.5s forwards";
     }
-    showCutin(t){this.el.cutin.innerHTML=t;this.el.cutin.style.transform="translate(-50%,-50%) scale(1)";setTimeout(()=>this.el.cutin.style.transform="translate(-50%,-50%) scale(0)",1500);}
+    showCutin(t){
+        this.el.cutin.innerHTML=t;
+        this.el.cutin.style.transform="translate(-50%,-50%) scale(1)";
+        setTimeout(()=>this.el.cutin.style.transform="translate(-50%,-50%) scale(0)",1500);
+    }
     showChainPop(t) {
         this.el.chainPop.textContent = t;
         this.el.chainPop.style.transform = "translate(-50%,-50%) scale(1.5)";
@@ -1739,7 +1812,7 @@ class Game {
 
         allItems.forEach(i=>{
             const div=document.createElement('div'); const has=this.acquiredItems.has(i.id);
-            div.className=`lib-item ${has?'got':''} ${i.isSoul?'soul':''}`;
+            div.className=`list-item ${has?'got':''} ${i.isSoul?'soul':''}`;
             let label = "";
             if(i.type==="w") label=`攻${i.atk}`; else if(i.type==="a") label=`守${i.def}`; else label="装飾";
             div.innerHTML=`${has?generateSVG(SPRITES[i.sprite],i.color):generateSVG(SPRITES.stick,"#333")}<div>${has?i.name.replace(/<rt>.*?<\/rt>/g,""):"???"}</div><div>${label}</div>`;
