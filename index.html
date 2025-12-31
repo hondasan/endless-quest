@@ -531,55 +531,162 @@ function generateSVG(data, colorOverride=null, metal=false) {
 }
 
 const SPRITES = {
-    stick: { color: "#a84", pixels: [{x:7,y:3,w:2,h:10}] },
-    club: { color: "#953", pixels: [{x:6,y:2,w:4,h:8},{x:7,y:10,w:2,h:3}] },
-    sword: { color:"#ccc", pixels:[{x:7,y:12,w:2,h:3,c:"#444"},{x:5,y:11,w:6,h:1,c:"#666"},{x:6,y:1,w:4,h:10},{x:7,y:2,w:2,h:9,c:"#fff"}] },
-    axe: { color:"#888", pixels:[{x:7,y:12,w:2,h:3},{x:7,y:3,w:2,h:9},{x:4,y:2,w:8,h:4},{x:4,y:2,w:1,h:2,c:"#fff"}] },
-    spear: { color:"#ccc", pixels:[{x:7,y:12,w:2,h:3},{x:7,y:4,w:2,h:8,c:"#642"},{x:6,y:1,w:4,h:4}] },
-    hammer: { color:"#654", pixels:[{x:7,y:6,w:2,h:8,c:"#642"},{x:3,y:2,w:10,h:4}] },
-    wand: { color:"#a4a", pixels:[{x:7,y:6,w:2,h:8,c:"#642"},{x:5,y:2,w:6,h:4},{x:6,y:3,w:4,h:2,c:"#fff"}] },
-    scythe: { color:"#a4e", pixels:[{x:8,y:2,w:2,h:12},{x:4,y:2,w:8,h:2,c:"#ccc"},{x:2,y:2,w:2,h:6,c:"#fff"}]},
-    a_cloth: { color: "#dca", pixels: [{x:4,y:3,w:8,h:10},{x:3,y:4,w:2,h:4},{x:11,y:4,w:2,h:4}] },
-    a_leather: { color: "#a64", pixels: [{x:4,y:3,w:8,h:10},{x:3,y:4,w:2,h:4},{x:11,y:4,w:2,h:4},{x:6,y:4,w:4,h:6,c:"#842"}] },
-    a_chain: { color: "#888", pixels: [{x:4,y:2,w:8,h:11,c:"#666"},{x:2,y:3,w:12,h:4,c:"#888"},{x:5,y:5,w:6,h:6,c:"#aaa"}] },
-    a_iron: { color: "#abc", pixels: [{x:3,y:2,w:10,h:10},{x:2,y:3,w:12,h:4},{x:5,y:4,w:6,h:8,c:"#def"}] },
-    a_steel: { color: "#fff", pixels: [{x:3,y:2,w:10,h:11},{x:1,y:3,w:14,h:4},{x:6,y:4,w:4,h:6,c:"#888"}] },
-    a_dragon: { color: "#a44", pixels: [{x:2,y:2,w:12,h:12},{x:4,y:4,w:8,h:8,c:"#f84"},{x:6,y:6,w:4,h:4,c:"#fd0"}] },
-    a_hero: { color: "#48f", pixels: [{x:2,y:2,w:12,h:12},{x:4,y:4,w:8,h:8,c:"#da0"},{x:6,y:6,w:4,h:4,c:"#f00"}] },
-    ring: { color: "#fd0", pixels: [{x:5,y:4,w:6,h:8,c:"#fd0"},{x:6,y:5,w:4,h:6,c:"#000"},{x:7,y:3,w:2,h:2,c:"#f00"}] },
-    amulet: { color: "#a8f", pixels: [{x:6,y:1,w:4,h:10,c:"#aaa"},{x:5,y:10,w:6,h:4,c:"#a8f"}] },
-    soul: { color: "#0ff", pixels: [{x:6,y:3,w:4,h:8,c:"#0ff"},{x:4,y:5,w:8,h:4,c:"#0ff"},{x:5,y:5,w:2,h:2,c:"#fff"},{x:9,y:5,w:2,h:2,c:"#fff"}] },
-    // Enemies
-    slime: { color: "#48f", pixels: [{x:7,y:4,w:2,h:2},{x:5,y:6,w:6,h:3},{x:3,y:9,w:10,h:5},{x:2,y:12,w:12,h:2},{x:5,y:8,w:2,h:2,c:"#fff"},{x:6,y:9,w:1,h:1,c:"#000"},{x:9,y:8,w:2,h:2,c:"#fff"},{x:10,y:9,w:1,h:1,c:"#000"},{x:6,y:11,w:4,h:1,c:"#a00"}] },
-    bat: { color: "#222", pixels: [{x:2,y:2,w:4,h:4,c:"#404"},{x:10,y:2,w:4,h:4,c:"#404"},{x:5,y:5,w:6,h:6},{x:6,y:6,w:1,h:2,c:"#fff"},{x:9,y:6,w:1,h:2,c:"#fff"}] },
-    skeleton: { color: "#ddd", pixels: [{x:6,y:2,w:4,h:4,c:"#fff"},{x:6,y:3,w:1,h:1,c:"#000"},{x:9,y:3,w:1,h:1,c:"#000"},{x:7,y:7,w:2,h:5},{x:5,y:8,w:6,h:1},{x:12,y:5,w:2,h:7,c:"#888"}] },
-    knight: { color: "#889", pixels: [{x:6,y:1,w:4,h:5,c:"#aaa"},{x:4,y:6,w:8,h:6},{x:2,y:6,w:2,h:5,c:"#aaa"},{x:12,y:6,w:2,h:5,c:"#aaa"},{x:5,y:12,w:2,h:4,c:"#444"},{x:1,y:4,w:2,h:8,c:"#ccc"}] },
-    dragon: { color: "#62a", pixels: [{x:4,y:1,w:3,h:5,c:"#4a2"},{x:6,y:2,w:1,h:1,c:"#fc0"},{x:2,y:3,w:2,h:4,c:"#4a2"},{x:5,y:6,w:6,h:6},{x:0,y:2,w:4,h:8,c:"#a4e"},{x:12,y:2,w:4,h:8,c:"#a4e"},{x:8,y:9,w:6,h:2,c:"#4a2"}] },
-    boss: { color: "#222", pixels: [{x:5,y:0,w:6,h:6,c:"#ddd"},{x:6,y:3,w:1,h:1,c:"#f00"},{x:9,y:3,w:1,h:1,c:"#f00"},{x:3,y:6,w:10,h:8},{x:3,y:6,w:10,h:2,c:"#808"},{x:1,y:6,w:2,h:8,c:"#ccc"},{x:13,y:6,w:2,h:8,c:"#ccc"}] },
-    goldman: { color: "#fd0", pixels: [{x:4,y:2,w:8,h:6},{x:2,y:4,w:2,h:6},{x:12,y:4,w:2,h:6},{x:5,y:9,w:2,h:5},{x:9,y:9,w:2,h:5},{x:6,y:4,w:1,h:1,c:"#000"},{x:9,y:4,w:1,h:1,c:"#000"}] },
-    rabbit: { color: "#da8", pixels: [{x:6,y:2,w:1,h:4},{x:9,y:2,w:1,h:4},{x:5,y:6,w:6,h:5},{x:6,y:7,w:1,h:1,c:"#000"},{x:9,y:7,w:1,h:1,c:"#000"},{x:7,y:9,w:2,h:1,c:"#f88"}] },
-    wizard: { color: "#808", pixels: [{x:6,y:2,w:4,h:3,c:"#d0d"},{x:5,y:5,w:6,h:4,c:"#fcc"},{x:4,y:7,w:8,h:7,c:"#808"},{x:12,y:4,w:2,h:8,c:"#a62"},{x:2,y:8,w:2,h:4,c:"#fcc"}] },
-    golem: { color: "#b84", pixels: [{x:5,y:1,w:6,h:5,c:"#c96"},{x:6,y:3,w:1,h:1,c:"#000"},{x:9,y:3,w:1,h:1,c:"#000"},{x:2,y:6,w:12,h:6,c:"#c96"},{x:1,y:6,w:2,h:8,c:"#a75"},{x:13,y:6,w:2,h:8,c:"#a75"}] },
-    demon: { color: "#a22", pixels: [{x:4,y:1,w:2,h:3,c:"#fff"},{x:10,y:1,w:2,h:3,c:"#fff"},{x:4,y:4,w:8,h:5,c:"#d22"},{x:3,y:9,w:10,h:5,c:"#a22"},{x:0,y:2,w:4,h:6,c:"#202"},{x:12,y:2,w:4,h:6,c:"#202"}] },
-    metal_s: { color: "#ccc", pixels: [{x:7,y:5,w:2,h:2,c:"#eee"},{x:5,y:7,w:6,h:3,c:"#ccc"},{x:3,y:10,w:10,h:4,c:"#aaa"},{x:5,y:9,w:2,h:2,c:"#fff"},{x:6,y:10,w:1,h:1,c:"#000"},{x:9,y:9,w:2,h:2,c:"#fff"},{x:10,y:10,w:1,h:1,c:"#000"}] },
-    asura: { color: "#a4e", pixels: [{x:5,y:1,w:6,h:5,c:"#d8d"},{x:4,y:6,w:8,h:6},{x:2,y:4,w:2,h:4},{x:12,y:4,w:2,h:4},{x:2,y:9,w:2,h:4},{x:12,y:9,w:2,h:4},{x:5,y:12,w:2,h:4,c:"#444"},{x:9,y:12,w:2,h:4,c:"#444"}] },
-    general: { color: "#667", pixels: [{x:5,y:0,w:6,h:6,c:"#889"},{x:3,y:6,w:10,h:8,c:"#445"},{x:1,y:6,w:2,h:6,c:"#aaa"},{x:13,y:6,w:2,h:6,c:"#aaa"},{x:5,y:14,w:2,h:2,c:"#222"},{x:9,y:14,w:2,h:2,c:"#222"}] },
-    mimic: { color: "#d84", pixels: [{x:3,y:4,w:10,h:8},{x:2,y:4,w:1,h:8},{x:13,y:4,w:1,h:8},{x:4,y:3,w:8,h:1},{x:6,y:6,w:1,h:2,c:"#fff"},{x:9,y:6,w:1,h:2,c:"#fff"},{x:4,y:9,w:8,h:2,c:"#800"}] },
-    ghost: { color: "#eee", pixels: [{x:5,y:2,w:6,h:8,c:"#fff"},{x:3,y:6,w:10,h:6,c:"#eee"},{x:5,y:5,w:2,h:2,c:"#000"},{x:9,y:5,w:2,h:2,c:"#000"},{x:6,y:9,w:4,h:2,c:"#f00"}] },
-    reaper: { color: "#222", pixels: [{x:6,y:2,w:4,h:4,c:"#fff"},{x:5,y:6,w:6,h:8},{x:2,y:4,w:12,h:2},{x:12,y:2,w:2,h:12,c:"#888"}] },
-    // NEW ENEMIES
-    cerberus: { color: "#840", pixels: [{x:1,y:4,w:4,h:4},{x:6,y:2,w:4,h:6},{x:11,y:4,w:4,h:4},{x:2,y:5,w:1,h:1,c:"#f00"},{x:7,y:4,w:1,h:1,c:"#f00"},{x:12,y:5,w:1,h:1,c:"#f00"},{x:4,y:8,w:8,h:6,c:"#630"}]},
-    dullahan: { color: "#334", pixels: [{x:6,y:6,w:6,h:8},{x:1,y:6,w:3,h:4,c:"#da8"},{x:1,y:5,w:3,h:2,c:"#222"},{x:10,y:2,w:2,h:10,c:"#888"}]},
-    lich: { color: "#426", pixels: [{x:6,y:2,w:4,h:4,c:"#eea"},{x:5,y:6,w:6,h:8,c:"#426"},{x:3,y:3,w:1,h:10,c:"#a84"},{x:2,y:2,w:3,h:1,c:"#d4f"}]},
-    chimera: { color: "#d84", pixels: [{x:4,y:4,w:8,h:6},{x:2,y:2,w:4,h:4,c:"#da8"},{x:10,y:2,w:4,h:4,c:"#4a2"},{x:12,y:6,w:2,h:6,c:"#a22"}]},
-    angel: { color: "#eea", pixels: [{x:6,y:2,w:4,h:4},{x:1,y:3,w:4,h:8,c:"#fff"},{x:11,y:3,w:4,h:8,c:"#fff"},{x:6,y:6,w:4,h:8,c:"#ccc"},{x:6,y:1,w:4,h:1,c:"#fd0"}]},
-    fallen: { color: "#222", pixels: [{x:6,y:2,w:4,h:4,c:"#ccc"},{x:1,y:3,w:4,h:8,c:"#222"},{x:11,y:3,w:4,h:8,c:"#222"},{x:6,y:6,w:4,h:8,c:"#444"}]},
+    // --- WEAPONS: High contrast, metallic shading ---
+    stick: { color: "#a84", pixels: [{x:6,y:11,w:4,h:4,c:"#753"},{x:7,y:3,w:2,h:10,c:"#964"},{x:8,y:2,w:1,h:2,c:"#bd6"}] },
+    club: { color: "#953", pixels: [{x:6,y:11,w:4,h:4,c:"#531"},{x:7,y:8,w:2,h:3,c:"#853"},{x:5,y:2,w:6,h:6,c:"#742"},{x:5,y:2,w:2,h:2,c:"#b86"},{x:9,y:5,w:2,h:2,c:"#421"}] },
+    sword: { color:"#ccc", pixels:[{x:6,y:12,w:4,h:4,c:"#531"},{x:4,y:11,w:8,h:1,c:"#daa520"},{x:7,y:11,w:2,h:2,c:"#daa520"},{x:6,y:1,w:4,h:10,c:"#aaa"},{x:6,y:1,w:2,h:10,c:"#eee"},{x:7,y:2,w:1,h:8,c:"#fff"}] },
+    axe: { color:"#888", pixels:[{x:6,y:12,w:4,h:4,c:"#531"},{x:7,y:3,w:2,h:10,c:"#742"},{x:3,y:2,w:10,h:5,c:"#888"},{x:3,y:2,w:8,h:1,c:"#ccc"},{x:3,y:3,w:1,h:3,c:"#eee"},{x:11,y:3,w:2,h:3,c:"#444"}] },
+    spear: { color:"#ccc", pixels:[{x:7,y:11,w:2,h:5,c:"#742"},{x:7,y:4,w:2,h:8,c:"#964"},{x:6,y:1,w:4,h:4,c:"#ccc"},{x:7,y:1,w:2,h:2,c:"#fff"}] },
+    hammer: { color:"#654", pixels:[{x:7,y:7,w:2,h:9,c:"#532"},{x:3,y:2,w:10,h:5,c:"#444"},{x:3,y:2,w:10,h:1,c:"#888"},{x:4,y:3,w:8,h:3,c:"#222"}] },
+    wand: { color:"#a4a", pixels:[{x:7,y:6,w:2,h:10,c:"#852"},{x:5,y:2,w:6,h:4,c:"#909"},{x:6,y:3,w:4,h:2,c:"#f0f"},{x:7,y:3,w:2,h:2,c:"#fff"}] },
+    scythe: { color:"#a4e", pixels:[{x:8,y:3,w:2,h:13,c:"#422"},{x:2,y:2,w:10,h:2,c:"#ccc"},{x:2,y:2,w:2,h:8,c:"#eee"},{x:3,y:3,w:1,h:6,c:"#fff"}]},
+    hero_w: { color: "#48f", pixels: [{x:6,y:11,w:4,h:5,c:"#222"},{x:3,y:10,w:10,h:2,c:"#d4af37"},{x:5,y:1,w:6,h:10,c:"#005"},{x:6,y:1,w:2,h:9,c:"#48f"},{x:6,y:2,w:1,h:8,c:"#aaf"},{x:7,y:10,w:2,h:2,c:"#f00"}] },
+    metal_w: { color: "#444", pixels: [{x:7,y:11,w:2,h:5,c:"#111"},{x:4,y:10,w:8,h:2,c:"#444"},{x:6,y:1,w:4,h:10,c:"#666"},{x:6,y:1,w:2,h:10,c:"#aaa"},{x:5,y:7,w:6,h:1,c:"#f00"},{x:5,y:8,w:6,h:1,c:"#300"}] },
 
-    // NPC
-    npc_princess: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#fa8"},{x:5,y:6,w:6,h:8,c:"#f8a"},{x:4,y:7,w:2,h:4,c:"#fca"},{x:10,y:7,w:2,h:4,c:"#fca"}] },
-    npc_king: { color: "#fca", pixels: [{x:5,y:1,w:6,h:5,c:"#fff"},{x:6,y:0,w:4,h:2,c:"#fd0"},{x:4,y:6,w:8,h:8,c:"#a22"},{x:6,y:7,w:4,h:6,c:"#fff"}] },
-    npc_friend: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#642"},{x:5,y:6,w:6,h:6,c:"#48a"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
-    npc_healer: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#fcc"},{x:5,y:6,w:6,h:6,c:"#fff"},{x:7,y:8,w:2,h:2,c:"#8f8"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
+    // --- ARMOR: 3D effect with highlights ---
+    a_cloth: { color: "#dca", pixels: [{x:3,y:3,w:10,h:11,c:"#b86"},{x:5,y:3,w:6,h:4,c:"#eeb"},{x:4,y:4,w:2,h:8,c:"#964"},{x:10,y:4,w:2,h:8,c:"#964"}] },
+    a_leather: { color: "#a64", pixels: [{x:3,y:3,w:10,h:11,c:"#742"},{x:4,y:4,w:8,h:8,c:"#964"},{x:2,y:3,w:3,h:4,c:"#531"},{x:11,y:3,w:3,h:4,c:"#531"},{x:6,y:5,w:4,h:4,c:"#b86"}] },
+    a_chain: { color: "#888", pixels: [{x:3,y:2,w:10,h:12,c:"#444"},{x:2,y:3,w:12,h:4,c:"#666"},{x:4,y:6,w:8,h:8,c:"#888"},{x:5,y:7,w:1,h:1,c:"#ccc"},{x:7,y:7,w:1,h:1,c:"#ccc"},{x:9,y:7,w:1,h:1,c:"#ccc"}] },
+    a_iron: { color: "#abc", pixels: [{x:2,y:2,w:12,h:12,c:"#567"},{x:3,y:3,w:10,h:10,c:"#89a"},{x:4,y:4,w:8,h:6,c:"#bce"},{x:5,y:5,w:2,h:3,c:"#fff"}] },
+    a_steel: { color: "#fff", pixels: [{x:2,y:2,w:12,h:12,c:"#789"},{x:3,y:3,w:10,h:10,c:"#abc"},{x:5,y:4,w:6,h:8,c:"#fff"},{x:6,y:5,w:2,h:4,c:"#eef"}] },
+    a_dragon: { color: "#a44", pixels: [{x:1,y:2,w:14,h:12,c:"#500"},{x:3,y:3,w:10,h:10,c:"#900"},{x:5,y:5,w:6,h:6,c:"#d22"},{x:6,y:6,w:4,h:2,c:"#fb0"}] },
+    a_hero: { color: "#48f", pixels: [{x:1,y:1,w:14,h:14,c:"#004"},{x:3,y:3,w:10,h:10,c:"#248"},{x:5,y:4,w:6,h:8,c:"#48c"},{x:6,y:6,w:4,h:4,c:"#fd0"},{x:7,y:7,w:2,h:2,c:"#f00"}] },
+
+    // --- ACCESSORIES ---
+    ring: { color: "#fd0", pixels: [{x:4,y:3,w:8,h:10,c:"#d4af37"},{x:5,y:4,w:6,h:8,c:"#000"},{x:6,y:2,w:4,h:3,c:"#f00"},{x:7,y:3,w:1,h:1,c:"#fff"}] },
+    amulet: { color: "#a8f", pixels: [{x:6,y:0,w:4,h:8,c:"#ccc"},{x:5,y:8,w:6,h:6,c:"#62a"},{x:6,y:9,w:4,h:4,c:"#a4d"},{x:7,y:10,w:2,h:2,c:"#fff"}] },
+    soul: { color: "#0ff", pixels: [{x:6,y:2,w:4,h:8,c:"#0aa"},{x:4,y:5,w:8,h:6,c:"#0cc"},{x:7,y:4,w:2,h:2,c:"#fff"},{x:5,y:6,w:2,h:2,c:"#fff"},{x:9,y:6,w:2,h:2,c:"#fff"}] },
+
+    // --- ENEMIES: LOW TIER ---
+    slime: { color: "#48f", pixels: [
+        {x:4,y:6,w:8,h:8,c:"#005"},{x:3,y:8,w:10,h:6,c:"#249"},{x:4,y:7,w:8,h:6,c:"#48f"},
+        {x:5,y:9,w:1,h:2,c:"#000"},{x:10,y:9,w:1,h:2,c:"#000"},{x:6,y:9,w:1,h:1,c:"#fff"},
+        {x:5,y:7,w:2,h:1,c:"#bef"},{x:11,y:9,w:1,h:1,c:"#fff"}
+    ]},
+    bat: { color: "#222", pixels: [
+        {x:1,y:2,w:6,h:4,c:"#404"},{x:9,y:2,w:6,h:4,c:"#404"},
+        {x:5,y:5,w:6,h:6,c:"#222"},{x:4,y:4,w:2,h:3,c:"#111"},{x:10,y:4,w:2,h:3,c:"#111"},
+        {x:6,y:7,w:1,h:1,c:"#f00"},{x:9,y:7,w:1,h:1,c:"#f00"},{x:7,y:9,w:2,h:1,c:"#fff"}
+    ]},
+    rabbit: { color: "#da8", pixels: [
+        {x:5,y:2,w:2,h:5,c:"#da8"},{x:9,y:2,w:2,h:5,c:"#da8"},
+        {x:4,y:6,w:8,h:7,c:"#c96"},{x:6,y:8,w:1,h:2,c:"#000"},{x:9,y:8,w:1,h:2,c:"#000"},
+        {x:7,y:10,w:2,h:2,c:"#fcc"}
+    ]},
+    skeleton: { color: "#ddd", pixels: [
+        {x:5,y:2,w:6,h:5,c:"#eee"},{x:6,y:4,w:1,h:1,c:"#000"},{x:9,y:4,w:1,h:1,c:"#000"},
+        {x:6,y:7,w:4,h:5,c:"#ccc"},{x:4,y:8,w:8,h:2,c:"#aaa"},{x:4,y:8,w:1,h:4,c:"#ddd"},{x:11,y:8,w:1,h:4,c:"#ddd"},
+        {x:1,y:4,w:2,h:8,c:"#888"}
+    ]},
+    ghost: { color: "#eee", pixels: [
+        {x:4,y:2,w:8,h:10,c:"#eef"},{x:2,y:5,w:12,h:8,c:"rgba(255,255,255,0.5)"},
+        {x:5,y:6,w:2,h:2,c:"#000"},{x:9,y:6,w:2,h:2,c:"#000"},{x:6,y:10,w:4,h:2,c:"#f00"},
+        {x:1,y:4,w:2,h:4,c:"#ccf"}
+    ]},
+
+    // --- ENEMIES: MID TIER ---
+    knight: { color: "#889", pixels: [
+        {x:5,y:1,w:6,h:6,c:"#667"},{x:7,y:3,w:2,h:1,c:"#000"},{x:4,y:7,w:8,h:7,c:"#889"},
+        {x:2,y:7,w:2,h:6,c:"#667"},{x:12,y:7,w:2,h:6,c:"#667"},{x:5,y:14,w:2,h:2,c:"#222"},{x:9,y:14,w:2,h:2,c:"#222"},
+        {x:13,y:2,w:2,h:10,c:"#aaa"},{x:1,y:5,w:3,h:8,c:"#445"}
+    ]},
+    wizard: { color: "#808", pixels: [
+        {x:5,y:2,w:6,h:4,c:"#404"},{x:4,y:5,w:8,h:8,c:"#606"},{x:2,y:5,w:12,h:2,c:"#808"},
+        {x:5,y:6,w:6,h:3,c:"#000"},{x:6,y:7,w:1,h:1,c:"#ff0"},{x:9,y:7,w:1,h:1,c:"#ff0"},
+        {x:1,y:4,w:2,h:10,c:"#a62"},{x:1,y:2,w:2,h:2,c:"#fb0"}
+    ]},
+    golem: { color: "#b84", pixels: [
+        {x:4,y:1,w:8,h:5,c:"#963"},{x:5,y:3,w:2,h:1,c:"#f00"},{x:9,y:3,w:2,h:1,c:"#f00"},
+        {x:2,y:6,w:12,h:8,c:"#b84"},{x:1,y:6,w:3,h:8,c:"#852"},{x:12,y:6,w:3,h:8,c:"#852"},
+        {x:4,y:14,w:3,h:2,c:"#631"},{x:9,y:14,w:3,h:2,c:"#631"}
+    ]},
+    mimic: { color: "#d84", pixels: [
+        {x:2,y:3,w:12,h:10,c:"#852"},{x:3,y:4,w:10,h:8,c:"#a63"},{x:1,y:5,w:1,h:6,c:"#d84"},{x:14,y:5,w:1,h:6,c:"#d84"},
+        {x:4,y:8,w:8,h:2,c:"#600"},{x:5,y:8,w:1,h:1,c:"#fff"},{x:7,y:8,w:1,h:1,c:"#fff"},{x:9,y:8,w:1,h:1,c:"#fff"},{x:11,y:8,w:1,h:1,c:"#fff"},
+        {x:5,y:5,w:2,h:2,c:"#ff0"},{x:9,y:5,w:2,h:2,c:"#ff0"}
+    ]},
+
+    // --- ENEMIES: HIGH TIER ---
+    cerberus: { color: "#840", pixels: [
+        {x:1,y:4,w:4,h:5,c:"#620"},{x:6,y:2,w:4,h:6,c:"#840"},{x:11,y:4,w:4,h:5,c:"#620"},
+        {x:2,y:5,w:1,h:1,c:"#f00"},{x:7,y:4,w:1,h:1,c:"#f00"},{x:12,y:5,w:1,h:1,c:"#f00"},
+        {x:4,y:8,w:8,h:6,c:"#510"},{x:3,y:14,w:2,h:2,c:"#300"},{x:11,y:14,w:2,h:2,c:"#300"}
+    ]},
+    dullahan: { color: "#334", pixels: [
+        {x:6,y:5,w:8,h:10,c:"#223"},{x:1,y:7,w:4,h:5,c:"#eeb"},{x:2,y:8,w:1,h:1,c:"#000"},{x:4,y:8,w:1,h:1,c:"#000"},
+        {x:6,y:5,w:8,h:2,c:"#556"},{x:12,y:2,w:2,h:12,c:"#667"},{x:12,y:1,w:2,h:1,c:"#fff"}
+    ]},
+    chimera: { color: "#d84", pixels: [
+        {x:4,y:3,w:6,h:6,c:"#c62"},{x:10,y:2,w:4,h:5,c:"#282"},{x:12,y:3,w:1,h:1,c:"#ff0"},
+        {x:2,y:2,w:4,h:5,c:"#d84"},{x:3,y:3,w:1,h:1,c:"#000"},
+        {x:3,y:9,w:10,h:5,c:"#842"},{x:13,y:6,w:2,h:6,c:"#a00"}
+    ]},
+    demon: { color: "#a22", pixels: [
+        {x:5,y:1,w:6,h:6,c:"#800"},{x:4,y:2,w:1,h:3,c:"#fff"},{x:11,y:2,w:1,h:3,c:"#fff"},
+        {x:6,y:3,w:1,h:1,c:"#ff0"},{x:9,y:3,w:1,h:1,c:"#ff0"},
+        {x:3,y:7,w:10,h:7,c:"#600"},{x:1,y:4,w:4,h:6,c:"#303"},{x:11,y:4,w:4,h:6,c:"#303"}
+    ]},
+    dragon: { color: "#62a", pixels: [
+        {x:4,y:1,w:4,h:6,c:"#316"},{x:6,y:2,w:1,h:1,c:"#fc0"},
+        {x:5,y:7,w:7,h:7,c:"#428"},{x:0,y:2,w:5,h:8,c:"#84a"},{x:11,y:2,w:5,h:8,c:"#84a"},
+        {x:2,y:3,w:1,h:4,c:"#316"},{x:13,y:3,w:1,h:4,c:"#316"}
+    ]},
+    lich: { color: "#426", pixels: [
+        {x:6,y:2,w:4,h:4,c:"#eed"},{x:5,y:5,w:6,h:10,c:"#305"},
+        {x:3,y:3,w:2,h:12,c:"#a84"},{x:3,y:2,w:3,h:2,c:"#b4d"},
+        {x:6,y:6,w:4,h:6,c:"#203"},{x:6,y:3,w:1,h:1,c:"#0f0"},{x:9,y:3,w:1,h:1,c:"#0f0"}
+    ]},
+    fallen: { color: "#222", pixels: [
+        {x:6,y:2,w:4,h:4,c:"#ccc"},{x:5,y:6,w:6,h:8,c:"#111"},
+        {x:1,y:2,w:5,h:10,c:"#000"},{x:10,y:2,w:5,h:10,c:"#000"},
+        {x:7,y:3,w:2,h:1,c:"#f00"}
+    ]},
+    angel: { color: "#eea", pixels: [
+        {x:6,y:2,w:4,h:4,c:"#fcc"},{x:6,y:1,w:4,h:1,c:"#fe0"},
+        {x:5,y:6,w:6,h:8,c:"#eee"},{x:1,y:2,w:4,h:8,c:"#fff"},{x:11,y:2,w:4,h:8,c:"#fff"},
+        {x:7,y:3,w:2,h:1,c:"#0af"}
+    ]},
+    reaper: { color: "#222", pixels: [
+        {x:6,y:2,w:4,h:4,c:"#eee"},{x:5,y:4,w:6,h:10,c:"#111"},
+        {x:2,y:6,w:12,h:2,c:"#111"},{x:12,y:1,w:2,h:14,c:"#888"},
+        {x:12,y:1,w:3,h:3,c:"#ccc"}
+    ]},
+
+    // --- BOSSES ---
+    boss: { color: "#222", pixels: [
+        {x:5,y:1,w:6,h:6,c:"#ddd"},{x:4,y:0,w:2,h:3,c:"#808"},{x:10,y:0,w:2,h:3,c:"#808"},
+        {x:6,y:3,w:1,h:1,c:"#f00"},{x:9,y:3,w:1,h:1,c:"#f00"},
+        {x:3,y:7,w:10,h:8,c:"#222"},{x:4,y:8,w:8,h:6,c:"#404"},
+        {x:1,y:4,w:3,h:10,c:"#101"},{x:12,y:4,w:3,h:10,c:"#101"}
+    ]},
+    asura: { color: "#a4e", pixels: [
+        {x:6,y:1,w:4,h:5,c:"#c8c"},{x:4,y:6,w:8,h:8,c:"#626"},
+        {x:2,y:4,w:2,h:4,c:"#c8c"},{x:12,y:4,w:2,h:4,c:"#c8c"},{x:2,y:9,w:2,h:4,c:"#c8c"},{x:12,y:9,w:2,h:4,c:"#c8c"},
+        {x:2,y:3,w:1,h:4,c:"#888"},{x:13,y:3,w:1,h:4,c:"#888"}
+    ]},
+    general: { color: "#667", pixels: [
+        {x:5,y:0,w:6,h:6,c:"#223"},{x:6,y:2,w:4,h:2,c:"#000"},{x:6,y:2,w:1,h:1,c:"#f00"},{x:9,y:2,w:1,h:1,c:"#f00"},
+        {x:3,y:6,w:10,h:9,c:"#445"},{x:1,y:6,w:3,h:7,c:"#889"},{x:12,y:6,w:3,h:7,c:"#889"},
+        {x:5,y:8,w:6,h:6,c:"#223"}
+    ]},
+
+    // --- SPECIAL ---
+    goldman: { color: "#fd0", pixels: [
+        {x:4,y:2,w:8,h:6,c:"#fd0"},{x:5,y:3,w:6,h:4,c:"#ff8"},
+        {x:2,y:4,w:3,h:6,c:"#db0"},{x:11,y:4,w:3,h:6,c:"#db0"},
+        {x:5,y:9,w:2,h:5,c:"#b90"},{x:9,y:9,w:2,h:5,c:"#b90"},
+        {x:6,y:4,w:1,h:1,c:"#000"},{x:9,y:4,w:1,h:1,c:"#000"}
+    ]},
+    metal_s: { color: "#ccc", pixels: [
+        {x:5,y:8,w:6,h:4,c:"#aaa"},{x:4,y:9,w:8,h:4,c:"#ccc"},{x:2,y:11,w:12,h:3,c:"#eee"},
+        {x:6,y:10,w:1,h:1,c:"#000"},{x:9,y:10,w:1,h:1,c:"#000"},{x:5,y:9,w:1,h:1,c:"#fff"}
+    ]},
+
+    // --- NPC ---
+    npc_princess: { color: "#fca", pixels: [{x:5,y:2,w:6,h:5,c:"#fa8"},{x:6,y:1,w:4,h:2,c:"#f84"},{x:5,y:7,w:6,h:7,c:"#f8a"},{x:6,y:8,w:4,h:4,c:"#fce"},{x:4,y:7,w:2,h:4,c:"#fca"},{x:10,y:7,w:2,h:4,c:"#fca"}] },
+    npc_king: { color: "#fca", pixels: [{x:4,y:2,w:8,h:5,c:"#eee"},{x:5,y:0,w:6,h:3,c:"#fc0"},{x:4,y:7,w:8,h:8,c:"#b22"},{x:6,y:7,w:4,h:6,c:"#fff"},{x:5,y:6,w:6,h:4,c:"#ddd"}] },
+    npc_friend: { color: "#fca", pixels: [{x:5,y:2,w:6,h:5,c:"#642"},{x:5,y:1,w:6,h:2,c:"#420"},{x:5,y:7,w:6,h:6,c:"#468"},{x:6,y:8,w:4,h:4,c:"#68a"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
+    npc_healer: { color: "#fca", pixels: [{x:5,y:2,w:6,h:5,c:"#edb"},{x:5,y:1,w:6,h:2,c:"#dca"},{x:5,y:7,w:6,h:8,c:"#fff"},{x:7,y:8,w:2,h:4,c:"#8d8"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
 };
 
 const SKILLS = [
@@ -623,8 +730,8 @@ A_TYPES.forEach(t=>{
 });
 
 ITEMS.push(
-    { id: "hero_w", type:"w", name: "ラグナロク", atk: 80, prob: 0.005, sprite: "sword", color: "#48f", skillId: "gigadein" },
-    { id: "metal_w", type:"w", name: "<ruby>魔剣<rt>マケン</rt></ruby>オメガ", atk: 40, prob: 0.01, sprite: "sword", color: "#ccc", skillId: "falcon" },
+    { id: "hero_w", type:"w", name: "ラグナロク", atk: 80, prob: 0.005, sprite: "hero_w", color: "#48f", skillId: "gigadein" },
+    { id: "metal_w", type:"w", name: "<ruby>魔剣<rt>マケン</rt></ruby>オメガ", atk: 40, prob: 0.01, sprite: "metal_w", color: "#ccc", skillId: "falcon" },
 );
 
 // Soul Definitions
