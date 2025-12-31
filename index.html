@@ -16,8 +16,10 @@
             --accent-yellow: #fdd835;
             --accent-green: #43a047;
             --accent-purple: #9c27b0;
+            --accent-cyan: #00bcd4;
             --window-border: 2px solid #fff;
             --window-radius: 4px;
+            --anim-speed: 1; /* Speed multiplier for CSS */
         }
 
         body {
@@ -35,6 +37,9 @@
             transition: box-shadow 0.5s, border-color 0.5s;
         }
 
+        /* Speed Mode Class */
+        .speed-x2 { --anim-speed: 2; }
+
         /* Awakening Mode Style */
         .awakening-mode {
             border-color: var(--accent-red);
@@ -45,11 +50,12 @@
 
         /* Header & Progress */
         .header-row { display: flex; gap: 5px; align-items: center; margin-bottom: 5px; flex-shrink: 0; }
-        .help-btn {
-            width: 30px; height: 30px; border: 1px solid #fff; border-radius: 50%;
-            background: #222; color: #fff; font-weight: bold;
+        .icon-btn {
+            width: 30px; height: 30px; border: 1px solid #fff; border-radius: 4px;
+            background: #222; color: #fff; font-weight: bold; font-size: 0.8rem;
             cursor: pointer; display: flex; justify-content: center; align-items: center;
         }
+        .speed-btn { width: 50px; font-size: 0.7rem; color: var(--accent-cyan); border-color: var(--accent-cyan); }
         .progress-container {
             flex-grow: 1; height: 10px; background: #222; border: 1px solid #555;
             position: relative; overflow: hidden;
@@ -66,7 +72,7 @@
         .hud {
             display: flex; flex-direction: column; border: var(--window-border);
             border-radius: var(--window-radius); padding: 5px 10px; margin-bottom: 5px;
-            font-size: 0.9rem; background: #000; flex-shrink: 0;
+            font-size: 0.85rem; background: #000; flex-shrink: 0;
         }
         .status-row { display: flex; justify-content: space-between; align-items: center; line-height: 1.3; }
         .val-hp { color: var(--accent-green); font-weight: bold; }
@@ -77,11 +83,13 @@
         .chain-val { color: var(--accent-yellow); font-weight: bold; text-shadow: 0 0 5px orange; }
         .awakening-text { color: var(--accent-red); font-weight: bold; animation: blink 0.1s infinite; display: none; margin-left:5px; font-size:0.8rem;}
         .gen-info { 
-            font-size: 0.8rem; color: #aaa; border-top: 1px dashed #333; margin-top: 2px; padding-top: 2px;
-            display: flex; justify-content: space-between;
+            font-size: 0.75rem; color: #aaa; border-top: 1px dashed #333; margin-top: 2px; padding-top: 2px;
+            display: flex; flex-direction: column; gap: 1px;
         }
+        .equip-row { display: flex; justify-content: space-between; }
         .hp-danger { color: var(--accent-red); animation: blink 0.2s infinite alternate; }
         .aura-indicator { font-size: 0.9rem; font-weight: bold; color: #fff; }
+        .title-badge { color: var(--accent-purple); border: 1px solid var(--accent-purple); padding: 0 3px; font-size: 0.7rem; border-radius: 3px; margin-right: 5px; }
         @keyframes blink { from { opacity: 1; } to { opacity: 0.3; } }
 
         /* Stage */
@@ -95,7 +103,6 @@
             background-size: cover; box-shadow: inset 0 0 50px #000;
         }
         
-        /* Awakening Stage Effect */
         .awakening-mode .stage {
             background-image: radial-gradient(circle, rgba(50,0,0,0.2) 0%, rgba(0,0,0,0.9) 100%),
             repeating-linear-gradient(0deg, transparent 0, transparent 2px, #300 2px, #300 4px);
@@ -118,11 +125,11 @@
         @keyframes pulse-danger { from { opacity: 0.3; } to { opacity: 1; } }
         .cutin {
             position: absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
-            font-size: 3rem; color:var(--accent-yellow); -webkit-text-stroke: 2px #000;
+            font-size: 3rem; color:var(--accent-yellow); -webkit-text-stroke: 2px #000; font-style: italic;
             text-shadow: 4px 4px 0 #d32f2f; background:rgba(0,0,0,0.8); padding:10px 30px; border:2px solid #fff;
             z-index:100; transition: transform 0.1s; white-space: nowrap; pointer-events: none;
         }
-        .cutin.just { color: #88ffff; text-shadow: 0 0 10px #00ffff; border-color: #00ffff; }
+        .cutin.just { color: #88ffff; text-shadow: 0 0 10px #00ffff; border-color: #00ffff; font-family: sans-serif; letter-spacing: 5px; }
         .chain-pop {
              position: absolute; top:30%; left:50%; transform:translate(-50%,-50%) scale(0);
              font-size: 4rem; color:var(--accent-yellow); font-weight: bold; font-style: italic;
@@ -140,17 +147,17 @@
         .damage-pop.miss { top: 45%; font-size: 2rem; color: #aaa; }
         @keyframes pop-damage { 0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; } 15% { transform: translate(-50%, -30px) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -60px) scale(1); opacity: 0; } }
 
-        /* Chest Display (In Stage) */
+        /* Chest Display */
         #chest-display {
             position: absolute; top:0; left:0; width:100%; height:100%;
             display: none; justify-content: center; align-items: center;
-            z-index: 40; background: rgba(0,0,0,0.8);
+            z-index: 40; background: rgba(0,0,0,0.85);
             gap: 10px; padding: 10px; box-sizing: border-box;
         }
         .chest-card {
             background: #111; border: 2px solid #555; border-radius: 6px; padding: 10px;
             width: 45%; max-width: 200px; display: flex; flex-direction: column; align-items: center;
-            box-shadow: 0 0 10px #000;
+            box-shadow: 0 0 10px #000; position: relative;
         }
         .chest-card.new { border-color: var(--accent-yellow); background: #2a2200; box-shadow: 0 0 15px rgba(255,235,59,0.3); }
         .chest-label { font-size: 0.7rem; color: #aaa; background: #333; padding: 2px 5px; border-radius: 4px; margin-bottom: 5px; width: 100%; text-align: center; }
@@ -161,6 +168,15 @@
         .chest-sub { font-size: 0.7rem; color: #ccc; min-height: 1rem;}
         .chest-effect { font-size: 0.7rem; color: var(--accent-purple); font-weight: bold; margin-top: 2px; text-shadow: 0 0 3px #a0f;}
         .chest-arrow { font-size: 2rem; color: #888; }
+        
+        /* Event Display */
+        #event-display {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 40; background: rgba(0,0,0,0.9); text-align: center; color: #fff;
+        }
+        .event-title { font-size: 2rem; color: var(--accent-cyan); margin-bottom: 20px; text-shadow: 0 0 10px #0ff; }
+        .event-desc { font-size: 1rem; margin-bottom: 30px; line-height: 1.5; }
 
         /* Gauge */
         .gauge-area {
@@ -170,7 +186,6 @@
         }
         .gauge-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #1e88e5 0%, #fdd835 42%, #e53935 48%, #e53935 52%, #fdd835 58%, #1e88e5 100%); }
         .gauge-cursor { position: absolute; top: 0; bottom: 0; width: 4px; background: #fff; box-shadow: 0 0 8px #fff; left: 0%; }
-        .gauge-message { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); color: #f44; font-weight: bold; text-shadow: 1px 1px 0 #000; display: none; }
 
         /* Log */
         .log-area {
@@ -204,8 +219,8 @@
         
         /* Chest Command Buttons */
         #menu-chest { display: none; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; height: 100%; }
-        .btn-get { border-color: var(--accent-yellow); color: var(--accent-yellow); background: #332200; font-weight: bold; font-size: 1.3rem; }
-        .btn-discard { border-color: #666; color: #888; background: #111; font-size: 1rem; }
+        .btn-get { border-color: var(--accent-yellow); color: var(--accent-yellow); background: #332200; font-weight: bold; font-size: 1.3rem; opacity: 0; transition: opacity 0.5s; }
+        .btn-discard { border-color: #666; color: #888; background: #111; font-size: 1rem; opacity: 0; transition: opacity 0.5s; }
 
         /* Global Modals */
         .modal-overlay {
@@ -219,6 +234,8 @@
         .scroll-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 5px; max-height: 300px; overflow-y: auto; }
         .lib-item { border: 1px solid #555; padding: 2px; text-align: center; font-size: 0.6rem; opacity: 0.3; }
         .lib-item.got { border-color: var(--accent-yellow); opacity: 1; background: #111; }
+        .lib-item.soul { border-color: var(--accent-purple); box-shadow: inset 0 0 5px #f0f; }
+        
         .shop-btn { padding: 10px; border: 2px solid #fff; text-align: center; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 0.9rem;}
         
         /* Drama */
@@ -229,7 +246,6 @@
             flex-direction: row; align-items: center; gap: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.8);
         }
-        .drama-window::after { content: ""; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: #fff transparent transparent; }
         .drama-actor-box { width: 48px; height: 48px; border: 1px solid #555; background: #222; flex-shrink: 0; }
         .drama-text-box { flex-grow: 1; display: flex; flex-direction: column; text-align: left; }
         .drama-name-label { color: var(--accent-yellow); font-weight: bold; font-size: 0.8rem; margin-bottom: 2px; }
@@ -242,12 +258,6 @@
             padding: 20px; text-align: center; z-index: 60; width: 80%; box-shadow: 0 0 20px #000; transition: transform 0.3s;
         }
 
-        /* Help */
-        .help-content { text-align: left; height: 100%; overflow-y: auto; padding:10px; font-size: 0.9rem; line-height: 1.6; }
-        .help-section { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .help-title { color: var(--accent-yellow); font-weight: bold; margin-bottom: 5px; font-size: 1.1rem;}
-        .reset-btn { margin-top: 10px; border-color: var(--accent-red); color: var(--accent-red); width: 100%; padding: 10px; }
-        
         .anim-shake { animation: shake 0.4s; }
         .anim-lunge { animation: lunge 0.15s; }
         @keyframes shake { 0%{transform:translate(0,0)} 25%{transform:translate(-8px,8px)} 50%{transform:translate(8px,-8px)} 75%{transform:translate(-8px,8px)} 100%{transform:translate(0,0)} }
@@ -258,7 +268,8 @@
 
 <div class="game-container" id="game-container">
     <div class="header-row">
-        <button class="help-btn" onclick="game.openHelp()">?</button>
+        <button class="icon-btn" onclick="game.openHelp()">?</button>
+        <button class="icon-btn speed-btn" id="btn-speed" onclick="game.toggleSpeed()">x1</button>
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
             <div class="progress-text" id="progress-text">魔王城まで ???</div>
@@ -267,7 +278,7 @@
 
     <div class="hud">
         <div class="status-row">
-            <span>第<span id="disp-gen">1</span>代 (Lv<span id="disp-lv">1</span>)</span>
+            <span>第<span id="disp-gen">1</span>代 <span id="disp-title" class="title-badge" style="display:none"></span>(Lv<span id="disp-lv">1</span>)</span>
             <span class="gold-val"><span id="disp-gold">0</span> G</span>
         </div>
         <div class="status-row">
@@ -276,12 +287,12 @@
             <span>攻:<span id="disp-atk" class="val-atk">5</span> 守:<span id="disp-def" class="val-def">0</span></span>
         </div>
         <div class="gen-info">
-            <span>E:<span id="disp-weapon">素手</span> / <span id="disp-armor">服</span></span>
-            <span class="chain-val">CHAIN: <span id="disp-chain">0</span> <span id="awake-txt" class="awakening-text">AWAKENING!</span></span>
-        </div>
-        <div class="status-row" style="margin-top:2px;">
-            <span style="font-size:0.8rem; color:#888;">対: 第<span id="disp-dlv">1</span>代 魔王</span>
-            <span class="aura-indicator" id="disp-aura">READY</span>
+            <div class="equip-row"><span>E:<span id="disp-weapon">素手</span></span> <span>E:<span id="disp-armor">服</span></span></div>
+            <div class="equip-row" style="color:var(--accent-purple);"><span>A:<span id="disp-acc">なし</span></span></div>
+            <div class="status-row">
+                <span class="chain-val">CHAIN: <span id="disp-chain">0</span> <span id="awake-txt" class="awakening-text">AWAKENING!</span></span>
+                <span class="aura-indicator" id="disp-aura">READY</span>
+            </div>
         </div>
     </div>
 
@@ -303,7 +314,6 @@
         <div class="gauge-area" id="gauge-area">
             <div class="gauge-bar"></div>
             <div class="gauge-cursor" id="gauge-cursor"></div>
-            <div class="gauge-message" id="gauge-msg"></div>
         </div>
 
         <div id="damage-pop" class="damage-pop">0</div>
@@ -330,6 +340,13 @@
             </div>
         </div>
 
+        <!-- Event Display -->
+        <div id="event-display">
+            <div id="event-title" class="event-title">EVENT</div>
+            <div id="event-desc" class="event-desc">...</div>
+            <div id="event-choices" style="display:grid; gap:10px; width:100%; max-width:300px;"></div>
+        </div>
+
         <div id="item-pop" class="item-get-pop">
             <div class="item-name">GET!</div>
             <div id="item-icon-slot" class="character" style="margin: 0 auto 10px; width: 64px; height: 64px;"></div>
@@ -354,8 +371,8 @@
         
         <!-- Chest Menu (Displayed in controls area) -->
         <div id="menu-chest" class="command-menu">
-            <button class="btn-get" onclick="game.decideItem(true)">契約して装備</button>
-            <button class="btn-discard" onclick="game.decideItem(false)">拒絶して進む</button>
+            <button class="btn-get" id="btn-get" onclick="game.decideItem(true)">契約して装備</button>
+            <button class="btn-discard" id="btn-discard" onclick="game.decideItem(false)">拒絶して進む</button>
         </div>
 
         <div id="menu-skills" class="command-menu" style="display:none;"></div>
@@ -371,6 +388,7 @@
                 <span>冒険の記録</span>
                 <button style="width:auto; padding:5px 20px;" onclick="game.closeLibrary()">閉じる</button>
             </div>
+            <div style="font-size:0.8rem; margin-bottom:5px; color:#aaa;">※紫枠はソウル(装飾品)</div>
             <div id="lib-grid" class="scroll-grid"></div>
         </div>
     </div>
@@ -382,13 +400,12 @@
                 <span>冒険の心得</span>
                 <button style="width:auto; padding:5px 20px;" onclick="game.closeHelp()">閉じる</button>
             </div>
-            <div class="help-content">
-                <div class="help-section"><div class="help-title">目的</div>地下30階の魔王を討伐せよ。</div>
-                <div class="help-section"><div class="help-title">CHAIN / 覚醒</div>赤エリアで止めると攻撃力UP＆連鎖。<br>CHAIN 5以上で「覚醒(Awakening)」発動。<br>攻撃力2倍、防御力0の狂戦士モードへ。</div>
-                <div class="help-section"><div class="help-title">ジャストガード</div>敵の攻撃中、一瞬表示されるボタンを押せ。<br>成功すればダメージ0＆カウンター。</div>
-                <div class="help-section">
-                    <button class="reset-btn" onclick="game.resetSaveData()">セーブデータを削除して最初から</button>
-                </div>
+            <div style="text-align:left; height:300px; overflow-y:auto; font-size:0.9rem;">
+                <p><strong>[基本]</strong><br>地下30階の魔王を討伐せよ。<br>世代(周回)が進むほど敵は強大になる。</p>
+                <p><strong>[装飾品とソウル]</strong><br>3つ目の装備枠。敵が低確率で落とす「魂」は装飾品として装備可能。</p>
+                <p><strong>[覚醒 (Awakening)]</strong><br>CHAIN 5以上で発動。攻撃力2倍、防御力0。</p>
+                <p><strong>[ジャストガード]</strong><br>敵の攻撃モーション中にボタンを押して無効化。</p>
+                <button class="reset-btn" style="border:1px solid #f44; color:#f44; margin-top:20px; padding:10px; width:100%;" onclick="game.resetSaveData()">セーブデータを削除</button>
             </div>
         </div>
     </div>
@@ -416,7 +433,7 @@
     </div>
 
     <div class="click-start" id="click-start" onclick="game.initAudio()">
-        <div>ENDLESS QUEST XXVII<br>- 覚醒の刻 -</div>
+        <div>ENDLESS QUEST 2.0<br>- 覚醒の刻 -</div>
         <div style="font-size:1rem; margin-top:20px;">画面をクリックしてスタート<br>(※音が出ます)</div>
     </div>
 </div>
@@ -463,8 +480,7 @@ class SoundManager {
 }
 
 /** DATA */
-const SAVE_KEY = 'EQ_SAVE_V30_AWAKE';
-// Chu-ni-byou Weapon Prefixes
+const SAVE_KEY = 'EQ_SAVE_V200';
 const WEAPON_PREFIXES = ["朽ちた", "鉄塊の", "煉獄の", "名工の", "虚無の", "絶対零度の", "雷光の", "聖なる", "深淵の", "神話の"];
 const WEAPON_COLORS = ["#888", "#abc", "#fff", "#da8", "#f44", "#48f", "#fd0", "#ff8", "#808", "#4f4"];
 
@@ -493,6 +509,10 @@ const SPRITES = {
     a_steel: { color: "#fff", pixels: [{x:3,y:2,w:10,h:11},{x:1,y:3,w:14,h:4},{x:6,y:4,w:4,h:6,c:"#888"}] },
     a_dragon: { color: "#a44", pixels: [{x:2,y:2,w:12,h:12},{x:4,y:4,w:8,h:8,c:"#f84"},{x:6,y:6,w:4,h:4,c:"#fd0"}] },
     a_hero: { color: "#48f", pixels: [{x:2,y:2,w:12,h:12},{x:4,y:4,w:8,h:8,c:"#da0"},{x:6,y:6,w:4,h:4,c:"#f00"}] },
+    ring: { color: "#fd0", pixels: [{x:5,y:4,w:6,h:8,c:"#fd0"},{x:6,y:5,w:4,h:6,c:"#000"},{x:7,y:3,w:2,h:2,c:"#f00"}] },
+    amulet: { color: "#a8f", pixels: [{x:6,y:1,w:4,h:10,c:"#aaa"},{x:5,y:10,w:6,h:4,c:"#a8f"}] },
+    soul: { color: "#0ff", pixels: [{x:6,y:3,w:4,h:8,c:"#0ff"},{x:4,y:5,w:8,h:4,c:"#0ff"},{x:5,y:5,w:2,h:2,c:"#fff"},{x:9,y:5,w:2,h:2,c:"#fff"}] },
+    // Enemies
     slime: { color: "#48f", pixels: [{x:7,y:4,w:2,h:2},{x:5,y:6,w:6,h:3},{x:3,y:9,w:10,h:5},{x:2,y:12,w:12,h:2},{x:5,y:8,w:2,h:2,c:"#fff"},{x:6,y:9,w:1,h:1,c:"#000"},{x:9,y:8,w:2,h:2,c:"#fff"},{x:10,y:9,w:1,h:1,c:"#000"},{x:6,y:11,w:4,h:1,c:"#a00"}] },
     bat: { color: "#222", pixels: [{x:2,y:2,w:4,h:4,c:"#404"},{x:10,y:2,w:4,h:4,c:"#404"},{x:5,y:5,w:6,h:6},{x:6,y:6,w:1,h:2,c:"#fff"},{x:9,y:6,w:1,h:2,c:"#fff"}] },
     skeleton: { color: "#ddd", pixels: [{x:6,y:2,w:4,h:4,c:"#fff"},{x:6,y:3,w:1,h:1,c:"#000"},{x:9,y:3,w:1,h:1,c:"#000"},{x:7,y:7,w:2,h:5},{x:5,y:8,w:6,h:1},{x:12,y:5,w:2,h:7,c:"#888"}] },
@@ -515,9 +535,9 @@ const SPRITES = {
     npc_king: { color: "#fca", pixels: [{x:5,y:1,w:6,h:5,c:"#fff"},{x:6,y:0,w:4,h:2,c:"#fd0"},{x:4,y:6,w:8,h:8,c:"#a22"},{x:6,y:7,w:4,h:6,c:"#fff"}] },
     npc_friend: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#642"},{x:5,y:6,w:6,h:6,c:"#48a"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
     npc_healer: { color: "#fca", pixels: [{x:6,y:2,w:4,h:4,c:"#fcc"},{x:5,y:6,w:6,h:6,c:"#fff"},{x:7,y:8,w:2,h:2,c:"#8f8"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
+    npc_merchant: { color: "#da8", pixels: [{x:5,y:1,w:6,h:4,c:"#d84"},{x:4,y:5,w:8,h:8,c:"#642"},{x:3,y:5,w:2,h:6,c:"#da8"}] },
 };
 
-// Chu-ni-byou Skill Names
 const SKILLS = [
     { id: "fire", name: "紅蓮の腕", mp: 3, dmg: 2.0, msg: "焼き尽くせ！" },
     { id: "vac", name: "断空の太刀", mp: 5, dmg: 2.5, msg: "空を切る！" },
@@ -535,6 +555,12 @@ const ITEMS = [
     { id: "club", type:"w", name: "蛮族の棍棒", atk: 4, prob: 0.15, sprite: "club", color: "#953", skillId: "smash" },
     { id: "cloth", type:"a", name: "旅人の外套", def: 1, prob: 0.2, sprite: "a_cloth", color: "#dca" },
     { id: "leather", type:"a", name: "獣の皮鎧", def: 3, prob: 0.15, sprite: "a_leather", color: "#a64" },
+    // Artifacts
+    { id: "ring_str", type:"acc", name: "剛力の指輪", atk: 5, prob: 0.1, sprite: "ring", color: "#f44" },
+    { id: "amu_pro", type:"acc", name: "守護の護符", def: 5, prob: 0.1, sprite: "amulet", color: "#48f" },
+    { id: "acc_vamp", type:"acc", name: "吸血鬼の牙", atk: 10, prob: 0.05, sprite: "amulet", color: "#a00", effect: "drain", effectName: "吸血" },
+    { id: "acc_gold", type:"acc", name: "強欲の壺", def: 0, prob: 0.05, sprite: "ring", color: "#fd0", effect: "greed", effectName: "富豪" },
+    { id: "acc_revive", type:"acc", name: "フェニックスの尾", def: 2, prob: 0.01, sprite: "soul", color: "#f80", effect: "rebirth", effectName: "再誕" },
 ];
 const W_TYPES = [{id:"sword",name:"剣",base:8,sp:"sword",sk:"fire"},{id:"axe",name:"斧",base:10,sp:"axe",sk:"smash"},{id:"spear",name:"槍",base:9,sp:"spear",sk:"crit"},{id:"hammer",name:"槌",base:12,sp:"hammer",sk:"all"},{id:"wand",name:"杖",base:6,sp:"wand",sk:"magic"}];
 const A_TYPES = [{id:"chain",name:"鎖帷子",base:5,sp:"a_chain"},{id:"iron",name:"鉄の鎧",base:10,sp:"a_iron"},{id:"steel",name:"鋼の鎧",base:15,sp:"a_steel"},{id:"dragon",name:"竜の鎧",base:22,sp:"a_dragon"},{id:"hero",name:"光の鎧",base:30,sp:"a_hero"}];
@@ -545,19 +571,28 @@ A_TYPES.forEach(t=>{ WEAPON_PREFIXES.forEach((pre,i)=>{ ITEMS.push({id:`${t.id}_
 ITEMS.push(
     { id: "hero_w", type:"w", name: "ラグナロク", atk: 80, prob: 0.005, sprite: "sword", color: "#48f", skillId: "gigadein" },
     { id: "metal_w", type:"w", name: "魔剣オメガ", atk: 40, prob: 0.01, sprite: "sword", color: "#ccc", skillId: "falcon" },
-    
-    // NEW Special Items
-    { id: "sp_drain", type:"w", name: "ソウル・デバウアー", atk: 25, prob: 0.02, sprite: "sword", color: "#f00", effect: "drain", effectName: "吸血" },
-    { id: "sp_time", type:"w", name: "クロノス・ブレイカー", atk: 20, prob: 0.02, sprite: "sword", color: "#0ff", effect: "slow", effectName: "時間干渉" },
-    { id: "sp_scope", type:"w", name: "神眼のモノクル", atk: 18, prob: 0.02, sprite: "wand", color: "#fd0", effect: "scope", effectName: "領域拡大" },
-    { id: "sp_ref", type:"a", name: "嘆きの茨", def: 18, prob: 0.02, sprite: "a_chain", color: "#808", effect: "reflect", effectName: "呪詛反射" },
-    { id: "sp_reg", type:"a", name: "不死鳥の聖衣", def: 20, prob: 0.02, sprite: "a_hero", color: "#f88", effect: "regen", effectName: "不滅" },
-    { id: "sp_greed", type:"a", name: "アワリティア・プレート", def: 10, prob: 0.03, sprite: "a_iron", color: "#fd0", effect: "greed", effectName: "強欲" }
 );
+
+// Soul Definitions (Equippable as Accessories)
+const SOULS = {
+    slime: { name: "スライムの魂", effect: "regen", effectName: "再生", color: "#48f" },
+    bat: { name: "コウモリの魂", effect: "haste", effectName: "神速", color: "#222" },
+    goldman: { name: "黄金の魂", effect: "greed", effectName: "富豪", color: "#fd0" },
+    dragon: { name: "竜の魂", effect: "atk_up", effectName: "剛腕", color: "#62a", val: 50 },
+    mimic: { name: "人食い箱の魂", effect: "crit_up", effectName: "必殺", color: "#d84" },
+    boss: { name: "魔王の魂", effect: "all_up", effectName: "覇王", color: "#f00", val: 100 }
+};
 
 const FLAVOR_TEXTS = ["ククク…力が溢れてくる…", "右腕が疼く…", "魔力が共鳴している…", "この痛み…心地よい…", "我に潜む闇が騒ぐ…", "見えた…死の線が…", "封印が解けそうだ…"];
 const RATES = [ { name: "絶望", color: "#444", rate: 0.05 }, { name: "凡人", color: "#fff", rate: 0.10 }, { name: "修羅", color: "#48f", rate: 0.20 }, { name: "英雄", color: "#fd0", rate: 0.30 }, { name: "伝説", color: "#f44", rate: 0.50 }, { name: "神話", color: "magenta", rate: 0.65 } ];
 const ENEMY_LINES = ["貴様の命運は尽きた！", "その魂、我が糧となれ！", "絶望を教えてやろう", "フフフ…楽しませてくれよ？", "我が闇に平伏せ！", "この領域に踏み入るとは…", "死へのカウントダウンだ", "恐怖に歪む顔が見たい…"];
+const GUARD_TEXTS = ["PARRY", "VOID", "DENY", "断絶", "IMMUNE", "ZERO", "NULL"];
+const TITLES = [
+    { id: "t_survivor", name: "生存者", cond: (g)=>g.generation>2, eff: "HP+20%" },
+    { id: "t_godspeed", name: "神速", cond: (g)=>g.fastClears>5, eff: "AGI+10%" },
+    { id: "t_immortal", name: "不死者", cond: (g)=>g.reviveCount>0, eff: "REVIVE+" },
+    { id: "t_unscathed", name: "無傷の帝王", cond: (g)=>g.noDamageStreak>5, eff: "LUCK+" }
+];
 
 let game = null;
 
@@ -573,6 +608,12 @@ class Game {
         this.isAwakening = false;
         this.isGuardWindow = false;
         this.guardStart = 0;
+        this.timeScale = 1;
+        this.skipLottery = false;
+        this.acquiredTitles = new Set();
+        this.fastClears = 0;
+        this.reviveCount = 0;
+        this.noDamageStreak = 0;
     }
 
     bindDOM() {
@@ -580,9 +621,10 @@ class Game {
             container: document.getElementById('game-container'),
             hp: document.getElementById('disp-hp'), mp: document.getElementById('disp-mp'),
             lv: document.getElementById('disp-lv'), atk: document.getElementById('disp-atk'), def: document.getElementById('disp-def'),
-            gold: document.getElementById('disp-gold'), gen: document.getElementById('disp-gen'), dlv: document.getElementById('disp-dlv'),
-            weapon: document.getElementById('disp-weapon'), armor: document.getElementById('disp-armor'),
+            gold: document.getElementById('disp-gold'), gen: document.getElementById('disp-gen'),
+            weapon: document.getElementById('disp-weapon'), armor: document.getElementById('disp-armor'), acc: document.getElementById('disp-acc'),
             aura: document.getElementById('disp-aura'), chain: document.getElementById('disp-chain'), awakeTxt: document.getElementById('awake-txt'),
+            title: document.getElementById('disp-title'),
             log: document.getElementById('log'), stage: document.getElementById('stage'), enemy: document.getElementById('enemy-slot'),
             bar: document.getElementById('progress-bar'), txt: document.getElementById('progress-text'),
             
@@ -593,15 +635,20 @@ class Game {
             dangerOverlay: document.getElementById('danger-overlay'), itemPop: document.getElementById('item-pop'),
             
             menuBattle: document.getElementById('menu-battle'), menuSkills: document.getElementById('menu-skills'), menuChest: document.getElementById('menu-chest'),
-            gaugeArea: document.getElementById('gauge-area'), gaugeCursor: document.getElementById('gauge-cursor'), gaugeMsg: document.getElementById('gauge-msg'),
+            gaugeArea: document.getElementById('gauge-area'), gaugeCursor: document.getElementById('gauge-cursor'),
             
             btnMain: document.getElementById('btn-main'), btnStop: document.getElementById('btn-stop'),
+            btnSpeed: document.getElementById('btn-speed'),
             
             chestDisplay: document.getElementById('chest-display'),
             curI: { icon:document.getElementById('cur-icon'), name:document.getElementById('cur-name'), stat:document.getElementById('cur-stat'), sub:document.getElementById('cur-sub'), eff:document.getElementById('cur-effect') },
             newI: { icon:document.getElementById('new-icon'), name:document.getElementById('new-name'), stat:document.getElementById('new-stat'), sub:document.getElementById('new-sub'), eff:document.getElementById('new-effect') },
             
-            dramaActor: document.getElementById('drama-actor-box'), dramaName: document.getElementById('drama-name'), dramaText: document.getElementById('drama-text')
+            eventDisplay: document.getElementById('event-display'), eventTitle: document.getElementById('event-title'), eventDesc: document.getElementById('event-desc'), eventChoices: document.getElementById('event-choices'),
+
+            dramaActor: document.getElementById('drama-actor-box'), dramaName: document.getElementById('drama-name'), dramaText: document.getElementById('drama-text'),
+            
+            btnGet: document.getElementById('btn-get'), btnDiscard: document.getElementById('btn-discard')
         };
     }
     
@@ -609,6 +656,7 @@ class Game {
         let save = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
         this.boosts = save?.boosts || { hp: 0, mp: 0, atk: 0, def: 0, luck: 0 };
         this.clears = save?.clears || 1; 
+        this.acquiredTitles = new Set(save?.titles || []);
         if (save) {
             this.generation = save.generation || 1; this.gold = save.gold || 0; this.acquiredItems = new Set(save.library || []);
         } else {
@@ -618,16 +666,20 @@ class Game {
         this.maxHp = 25 + this.boosts.hp; this.hp = this.maxHp;
         this.maxMp = 10 + this.boosts.mp; this.mp = this.maxMp;
         this.baseAtk = 3 + this.boosts.atk;
-        this.weapon = null; this.armor = null;
+        this.weapon = null; this.armor = null; this.accessory = null;
         this.luckBonus = Math.min(0.30, this.boosts.luck * 0.02); 
         this.enemy = { name: "", hp: 0, maxHp: 0, atk: 0, type: "slime" };
         this.chain = 0;
         this.isAwakening = false;
+        
+        // Title Effects
+        if(this.acquiredTitles.has("t_survivor")) this.maxHp = Math.floor(this.maxHp * 1.2);
     }
     
     saveData() {
         localStorage.setItem(SAVE_KEY, JSON.stringify({
-            generation: this.generation + 1, gold: this.gold, library: Array.from(this.acquiredItems), boosts: this.boosts, clears: this.clears
+            generation: this.generation + 1, gold: this.gold, library: Array.from(this.acquiredItems),
+            boosts: this.boosts, clears: this.clears, titles: Array.from(this.acquiredTitles)
         }));
     }
 
@@ -655,15 +707,28 @@ class Game {
         this.el.btnMain.style.display = "block";
         this.log(`第${this.generation}代 勇者、冒険の書を開いた。`); this.updateHud();
     }
+    
+    toggleSpeed() {
+        if(this.timeScale === 1) {
+            this.timeScale = 2;
+            this.el.container.classList.add('speed-x2');
+            this.el.btnSpeed.textContent = "x2";
+            this.el.btnSpeed.style.background = "#044";
+        } else {
+            this.timeScale = 1;
+            this.el.container.classList.remove('speed-x2');
+            this.el.btnSpeed.textContent = "x1";
+            this.el.btnSpeed.style.background = "#222";
+        }
+        this.sound.playSE('select');
+    }
 
     log(msg, type = "") {
-        // Random Flavor Text
         if (Math.random() < 0.15 && type === "") {
             const flavor = FLAVOR_TEXTS[Math.floor(Math.random() * FLAVOR_TEXTS.length)];
             const fd = document.createElement('div'); fd.className = "log-entry flavor"; fd.innerHTML = flavor;
             this.el.log.prepend(fd);
         }
-
         const d = document.createElement('div'); d.className = `log-entry ${type}`; d.innerHTML = msg;
         this.el.log.prepend(d);
         if (this.el.log.children.length > 20) this.el.log.removeChild(this.el.log.lastChild);
@@ -679,13 +744,16 @@ class Game {
     }
 
     get totalAtk() { 
-        let a = this.baseAtk + (this.weapon ? this.weapon.atk : 0);
-        if (this.isAwakening) a *= 2; // Awakening Double Attack
+        let a = this.baseAtk + (this.weapon ? this.weapon.atk : 0) + (this.accessory ? (this.accessory.atk||0) : 0);
+        // Soul Effects
+        if(this.accessory && this.accessory.soulEffect === "atk_up") a += (this.accessory.val || 0);
+        if(this.accessory && this.accessory.soulEffect === "all_up") a += (this.accessory.val || 0);
+        if (this.isAwakening) a *= 2; 
         return Math.floor(a);
     }
     get totalDef() { 
-        if (this.isAwakening) return 0; // Awakening Zero Defense
-        return (this.armor ? this.armor.def : 0) + (this.boosts.def || 0); 
+        if (this.isAwakening) return 0; 
+        return (this.armor ? this.armor.def : 0) + (this.accessory ? (this.accessory.def||0) : 0) + (this.boosts.def || 0); 
     }
 
     checkAwakening() {
@@ -709,60 +777,144 @@ class Game {
         if(!this.el.hp) return;
         this.el.hp.textContent = this.hp; this.el.mp.textContent = this.mp;
         this.el.lv.textContent = this.lv; this.el.atk.textContent = this.totalAtk; this.el.def.textContent = this.totalDef;
-        this.el.gold.textContent = this.gold; this.el.gen.textContent = this.generation; this.el.dlv.textContent = this.clears;
+        this.el.gold.textContent = this.gold; this.el.gen.textContent = this.generation;
         this.el.weapon.textContent = this.weapon ? this.weapon.name : "素手";
-        this.el.armor.textContent = this.armor ? this.armor.name : "旅人の服";
+        this.el.armor.textContent = this.armor ? this.armor.name : "服";
+        this.el.acc.textContent = this.accessory ? this.accessory.name : "なし";
         this.el.chain.textContent = this.chain;
         this.el.hp.className = this.hp <= this.maxHp * 0.2 ? "val-hp hp-danger" : "val-hp";
         this.el.dangerOverlay.style.display = this.hp <= this.maxHp * 0.25 ? "block" : "none";
         const prog = Math.min(100, (this.lv / this.targetLv) * 100);
         this.el.bar.style.width = `${prog}%`;
         this.el.txt.textContent = this.lv >= this.targetLv ? "決戦！ 魔王の間" : `魔王城まで あと${this.targetLv - this.lv}階`;
+        
+        // Title
+        if(this.acquiredTitles.size > 0) {
+            const last = Array.from(this.acquiredTitles).pop();
+            const tData = TITLES.find(t=>t.id===last);
+            if(tData){ this.el.title.textContent = tData.name; this.el.title.style.display="inline"; }
+        }
     }
 
-    async delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+    async delay(ms) { return new Promise(r => setTimeout(r, ms / this.timeScale)); }
 
     // --- MAIN FLOW ---
-    handleMainBtn() { this.sound.playSE('select'); if (this.state === "INIT") this.startLottery(); else if (this.state === "BATTLE_WAIT") this.startBattle(); }
+    handleMainBtn() { 
+        this.sound.playSE('select'); 
+        if (this.state === "INIT") this.startLottery(); 
+        else if (this.state === "LOTTERY") this.skipLottery = true;
+        else if (this.state === "BATTLE_WAIT") this.decideEncounter(); 
+    }
 
     async startLottery() {
-        this.state = "LOTTERY"; this.el.btnMain.disabled = true;
-        this.log("運命の抽選を開始..."); this.sound.playBGM('boss');
+        this.state = "LOTTERY"; this.skipLottery = false;
+        this.log("運命の抽選を開始... (クリックでスキップ)"); this.sound.playBGM('boss');
         let sel = RATES[0];
-        for (let i = 0; i < 15; i++) {
+        
+        const rollCount = 15;
+        for (let i = 0; i < rollCount; i++) {
+            if (this.skipLottery) break; // Skip
             sel = RATES[Math.floor(Math.random() * RATES.length)];
             this.el.aura.textContent = `${Math.floor(Math.random()*99)}%`;
             this.el.aura.style.color = sel.color;
             if(i%4===0) this.sound.playSE('attack');
             await this.delay(50);
         }
+        
         const r = Math.random();
         if (r < 0.2) sel = RATES[0]; else if (r < 0.5) sel = RATES[1]; else if (r < 0.7) sel = RATES[2];
         else if (r < 0.9) sel = RATES[3]; else if (r < 0.98) sel = RATES[4]; else sel = RATES[5];
         this.revivalRate = Math.min(0.65, sel.rate + this.luckBonus); 
+        
+        // Title Bonus
+        if(this.acquiredTitles.has("t_unscathed")) this.revivalRate += 0.05;
+        
         this.el.aura.textContent = `${Math.floor(this.revivalRate*100)}%`;
+        this.el.aura.style.color = sel.color;
         this.el.stage.style.boxShadow = `inset 0 0 30px ${sel.color}`;
         this.showCutin(sel.name + " 確定"); this.sound.playSE('crit');
-        await this.delay(1000);
-        this.el.btnMain.textContent = "魔窟へ"; this.el.btnMain.disabled = false;
+        
+        if(!this.skipLottery) await this.delay(1000);
+        
+        this.el.btnMain.textContent = "魔窟へ"; 
         this.state = "BATTLE_WAIT"; this.sound.stopBGM();
+    }
+    
+    decideEncounter() {
+        // Dungeon Event Logic
+        const r = Math.random();
+        if (this.lv < this.targetLv && r < 0.15) {
+            this.triggerEvent();
+        } else {
+            this.startBattle();
+        }
+    }
+
+    triggerEvent() {
+        this.state = "EVENT"; this.el.btnMain.style.display="none";
+        this.el.eventDisplay.style.display = "flex"; this.el.eventChoices.innerHTML = "";
+        this.el.enemy.style.display = "none";
+        
+        const events = ["spring", "merchant", "devil"];
+        const type = events[Math.floor(Math.random()*events.length)];
+        
+        let title="", desc="";
+        
+        const createBtn = (txt, cb) => {
+            const b = document.createElement("button"); b.textContent = txt;
+            b.onclick = () => { this.sound.playSE('select'); cb(); this.endEvent(); };
+            this.el.eventChoices.appendChild(b);
+        };
+        
+        if (type === "spring") {
+            title = "回復の泉"; desc = "清らかな水が湧き出ている...";
+            createBtn("飲む (HP全回復)", () => { this.hp = this.maxHp; this.log("体力が全回復した！", "revive"); this.sound.playSE('revive'); });
+            createBtn("立ち去る", () => {});
+        } else if (type === "merchant") {
+            title = "謎の行商人"; desc = "「いい薬、あるよ...」";
+            const cost = 500 * this.generation;
+            createBtn(`薬を買う (${cost}G)`, () => {
+                if(this.gold >= cost) { this.gold -= cost; this.hp = Math.min(this.maxHp, this.hp+50); this.log("薬を飲んで回復した！"); }
+                else { this.log("お金が足りない..."); }
+            });
+            createBtn("立ち去る", () => {});
+        } else if (type === "devil") {
+            title = "悪魔の契約"; desc = "「HP最大値を捧げれば、力をやろう...」";
+            createBtn("契約 (最大HP-10 / 攻+5)", () => {
+                if(this.maxHp > 15) { this.maxHp -= 10; this.hp = Math.min(this.hp, this.maxHp); this.boosts.atk += 5; this.log("寿命を削り力を得た...", "damage"); this.sound.playSE('crit'); }
+            });
+            createBtn("拒絶", () => {});
+        }
+        
+        this.el.eventTitle.textContent = title;
+        this.el.eventDesc.textContent = desc;
+    }
+    
+    endEvent() {
+        this.el.eventDisplay.style.display = "none";
+        this.el.enemy.style.display = "block";
+        this.updateHud();
+        this.state = "BATTLE_WAIT"; this.el.btnMain.style.display = "block";
     }
 
     startBattle() {
         this.state = "BATTLE_CMD"; this.el.btnMain.style.display = "none"; this.el.menuBattle.style.display = "grid"; this.el.itemPop.style.transform = "scale(0)";
+        this.noDamageNow = true;
         if (this.lv >= this.targetLv) { this.startBossBattle("boss"); return; }
         if (this.lv === 10 || this.lv === 20) { this.startBossBattle("mid"); return; }
         if(!this.isAwakening) this.sound.playBGM('battle');
+        
         let type = "slime", eName = "スライム", gauge="normal", metal=false, goldMult=1, expMult=1;
         const tier = Math.floor((this.lv - 1) / 3);
+        
         if (Math.random() < 0.1) { 
             if (Math.random() < 0.5) { type="metal_s"; eName="メタルスライム"; gauge="fast"; metal=true; expMult=20; }
             else { type="goldman"; eName="ゴールドマン"; gauge="normal"; goldMult=30; }
         } else {
             const types = ["slime", "bat", "rabbit", "skeleton", "knight", "wizard", "golem", "demon", "dragon", "ghost", "mimic", "reaper"];
             type = types[Math.min(tier, types.length-1)] || "slime";
-            const pres = ["", "凶暴な", "歴戦の", "暗黒の", "真・"];
-            const pre = pres[Math.min(Math.floor(this.lv/6), 4)];
+            const pres = ["", "凶暴な", "歴戦の", "暗黒の", "真・", "極・", "獄炎の"];
+            const pre = pres[Math.min(Math.floor(this.lv/5) + Math.floor(this.generation/2), 6)];
             eName = pre + (type === "slime" ? "スライム" : (type==="mimic"?"人食い箱": (type==="reaper"?"死神": (type==="ghost"?"ゴースト":type))));
             gauge = tier > 2 ? (tier > 5 ? "super_fast" : "fast") : "normal";
             
@@ -771,8 +923,18 @@ class Game {
             if (type === "reaper") gauge = "reverse";
             if (tier > 7 && Math.random() < 0.3) gauge = "wavy";
         }
-        let diff = 1 + (this.clears * 0.2); 
-        this.enemy = { name: eName, type: type, maxHp: Math.floor((10+this.lv*5)*diff), hp: Math.floor((10+this.lv*5)*diff), atk: Math.floor((3+this.lv*2)*diff), gaugeType: gauge, isMetal: metal, expMult, goldMult };
+        
+        // INFLATION FORMULA
+        let diff = Math.pow(1.2, this.generation - 1) * (1 + (this.lv * 0.1));
+        
+        this.enemy = { 
+            name: eName, type: type, 
+            maxHp: Math.floor((20 + Math.pow(this.lv, 1.8)) * diff), 
+            hp: Math.floor((20 + Math.pow(this.lv, 1.8)) * diff),
+            atk: Math.floor((5 + Math.pow(this.lv, 1.5)) * diff), 
+            gaugeType: gauge, isMetal: metal, expMult, goldMult 
+        };
+        
         this.renderEnemy(type, metal);
         this.el.enemy.style.opacity = 0;
         this.el.enemy.style.transform = "scale(0.5)";
@@ -787,17 +949,28 @@ class Game {
             this.showBattleTalk(line, 2000);
         }
         
-        this.log(`${this.enemy.name} があらわれた！`);
+        this.log(`${this.enemy.name} (HP:${this.enemy.hp}) があらわれた！`);
     }
     
     async startBossBattle(type) {
         if(!this.isAwakening) this.sound.playBGM('boss');
         const isMaou = type === "boss";
-        const diff = 1 + (this.clears * 0.5); 
+        // INFLATION
+        const diff = Math.pow(1.3, this.generation - 1); 
+        
         let name = isMaou ? `第${this.clears}代 魔王` : "魔界の番人";
         let eType = isMaou ? "boss" : (Math.random() < 0.5 ? "asura" : "general");
         
-        this.enemy = { name: name, type: eType, maxHp: Math.floor((isMaou?500:250)*diff), hp: Math.floor((isMaou?500:250)*diff), atk: Math.floor((isMaou?50:35)*diff), gaugeType: "super_fast", isMetal: false, expMult: 3, goldMult: 100 };
+        const baseHp = isMaou ? 1000 : 500;
+        const baseAtk = isMaou ? 50 : 30;
+
+        this.enemy = { 
+            name: name, type: eType, 
+            maxHp: Math.floor(baseHp * diff * (1+this.lv*0.1)), 
+            hp: Math.floor(baseHp * diff * (1+this.lv*0.1)), 
+            atk: Math.floor(baseAtk * diff * (1+this.lv*0.05)), 
+            gaugeType: "super_fast", isMetal: false, expMult: 3, goldMult: 100 
+        };
         
         this.renderEnemy(this.enemy.type, false, true);
         this.el.stage.style.background = "#301";
@@ -851,7 +1024,6 @@ class Game {
         }
     }
 
-    // Single Handler for the big button
     handleActionBtn() {
         if(this.state === "GAUGE") this.stopGauge();
         else if(this.state === "ENEMY_TURN" && this.isGuardWindow) this.attemptGuard();
@@ -868,10 +1040,10 @@ class Game {
         this.gaugeSpeed = (2 + (this.lv*0.1)) * (this.enemy.gaugeType==="fast"?1.5:(this.enemy.gaugeType==="super_fast"?2.5:1));
         if(this.enemy.gaugeType === "slow") this.gaugeSpeed = 0.5;
         
-        // Item Effect: Clock Down
-        if(this.weapon && this.weapon.effect === "slow") {
-            this.gaugeSpeed *= 0.7;
-        }
+        if(this.weapon && this.weapon.effect === "slow") this.gaugeSpeed *= 0.7;
+        
+        // Haste Soul
+        if(this.accessory && this.accessory.effect === "haste") this.gaugeSpeed *= 0.8;
 
         this.el.gaugeCursor.style.opacity = 1;
         this.runGauge();
@@ -894,29 +1066,25 @@ class Game {
         this.sound.playSE('attack');
         let dist = Math.abs(50-this.gaugeVal), mult=1.0, isCrit=false;
         
-        // Item Effect: Scope (Widen perfect zone)
         let safeZone = 5;
         if (this.weapon && this.weapon.effect === "scope") safeZone = 10;
+        // Godspeed Title
+        if(this.acquiredTitles.has("t_godspeed")) safeZone += 2;
 
         if(dist <= safeZone) {
             this.chain++; 
             isCrit = true;
             mult = 1.2 + (this.chain * 0.3); 
+            // Crit Soul
+            if(this.accessory && this.accessory.effect === "crit_up") mult += 0.5;
             this.showChainPop(`${this.chain} CHAIN!`);
-            this.checkAwakening(); // Check awakening on chain increase
+            this.checkAwakening(); 
         } else if (dist <= 15) { 
-            if (this.enemy.isMetal && Math.random() < 0.5) {
-                isCrit = true; 
-                this.log("神速の剣閃！", "critical");
-            }
-            mult = 1.0; 
-            this.chain = 0;
-            this.checkAwakening(); // Check drop
+            if (this.enemy.isMetal && Math.random() < 0.5) { isCrit = true; this.log("神速の剣閃！", "critical"); }
+            mult = 1.0; this.chain = 0; this.checkAwakening(); 
         } else {
             if(this.chain > 0) this.log("集中力が途切れた...", "damage");
-            this.chain = 0;
-            mult = 0.5;
-            this.checkAwakening(); // Check drop
+            this.chain = 0; mult = 0.5; this.checkAwakening(); 
         }
         
         await this.delay(300); this.el.gaugeArea.style.display="none";
@@ -940,9 +1108,9 @@ class Game {
                 this.log(`${this.enemy.name}に ${dmg} のダメージ！`, isCrit ? "critical" : "");
                 this.showDamage(dmg, 'deal', isCrit); this.enemy.hp-=dmg; 
                 
-                // Item Effect: Drain
-                if (this.weapon && this.weapon.effect === "drain") {
-                     let drain = Math.floor(dmg * 0.3);
+                // Drain Effect
+                if ((this.weapon && this.weapon.effect === "drain") || (this.accessory && this.accessory.effect === "drain")) {
+                     let drain = Math.floor(dmg * 0.2);
                      if(drain > 0) {
                          this.hp = Math.min(this.maxHp, this.hp + drain);
                          this.log(`血を啜り ${drain} 回復！`, "revive");
@@ -966,17 +1134,13 @@ class Game {
             this.log(`${this.enemy.name}は逃げ出した！`, "system");
             this.el.enemy.style.opacity = 0;
             await this.delay(1000);
-            this.state = "BATTLE_WAIT"; 
-            this.el.btnMain.style.display = "block";
-            this.el.btnMain.textContent = "さらに奥へ";
+            this.state = "BATTLE_WAIT"; this.el.btnMain.style.display = "block"; this.el.btnMain.textContent = "さらに奥へ";
             return;
         }
 
-        // JUST GUARD Sequence
         this.log(`${this.enemy.name}の攻撃構え！`, "damage");
         this.el.enemy.classList.add("anim-lunge");
         
-        // Enable Guard Button
         this.el.btnStop.style.display = "block";
         this.el.btnStop.className = "main-btn btn-guard";
         this.el.btnStop.textContent = "防御！";
@@ -985,7 +1149,6 @@ class Game {
         this.guardStart = Date.now();
         this.guardSuccess = false;
         
-        // Wait for impact (0.6s)
         await this.delay(600);
         
         this.isGuardWindow = false;
@@ -993,7 +1156,6 @@ class Game {
         this.el.enemy.classList.remove("anim-lunge");
 
         if (this.guardSuccess) {
-            // Success Logic (Already handled visually in attemptGuard)
             let counterDmg = Math.floor(this.totalAtk * 1.5);
             this.log(`カウンター！ ${this.enemy.name}に ${counterDmg} のダメージ！`, "critical");
             this.showDamage(counterDmg, 'deal', true);
@@ -1001,16 +1163,12 @@ class Game {
             this.sound.playSE('hit');
             if(this.enemy.hp<=0) { this.winBattle(); return; }
         } else {
-            // Take Damage
+            this.noDamageNow = false;
             let dmg = Math.max(1, this.enemy.atk - Math.floor(Math.random()*3));
             
-            // Reflect Effect (Before Def Calc)
             if (this.armor && this.armor.effect === "reflect") {
                  let ref = Math.floor(dmg * 0.3);
-                 if(ref > 0) {
-                     this.enemy.hp -= ref;
-                     this.log(`呪詛返し！敵に ${ref} ダメージ！`, "damage");
-                 }
+                 if(ref > 0) { this.enemy.hp -= ref; this.log(`呪詛返し！敵に ${ref} ダメージ！`, "damage"); }
             }
 
             dmg = Math.max(1, Math.floor(dmg - (this.totalDef / 2)));
@@ -1021,44 +1179,61 @@ class Game {
             this.el.stage.style.transform = "translate(5px, 5px)"; setTimeout(() => this.el.stage.style.transform = "translate(0, 0)", 100);
         }
 
-        // Regen Effect (End of turn)
-        if (this.armor && this.armor.effect === "regen") {
+        // Regen Effect (Armor or Soul)
+        if ((this.armor && this.armor.effect === "regen") || (this.accessory && this.accessory.effect === "regen")) {
             let reg = Math.floor(this.maxHp * 0.05);
-            if(reg>0 && this.hp > 0) {
-                this.hp = Math.min(this.maxHp, this.hp+reg);
-                this.updateHud();
-            }
+            if(reg>0 && this.hp > 0) { this.hp = Math.min(this.maxHp, this.hp+reg); this.updateHud(); }
         }
 
         if (this.hp <= 0) {
-            this.sound.stopBGM();
-            await this.tryRevival();
+            // Rebirth Accessory
+            if(this.accessory && this.accessory.effect === "rebirth") {
+                this.hp = Math.floor(this.maxHp * 0.5);
+                this.log("フェニックスの尾が輝き、蘇る！", "revive");
+                this.accessory = null; // Consume
+                this.updateHud();
+                this.sound.playSE('revive');
+                this.showCutin("復 活");
+                this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "grid";
+            } else {
+                this.sound.stopBGM();
+                await this.tryRevival();
+            }
         } else {
-            this.state = "BATTLE_CMD";
-            this.el.menuBattle.style.display = "grid";
+            this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "grid";
         }
     }
     
     attemptGuard() {
         if(!this.isGuardWindow) return;
         const now = Date.now();
-        // Just Guard Window: 200ms
         if (now - this.guardStart <= 250) {
             this.guardSuccess = true;
-            this.isGuardWindow = false; // Prevent double trigger
+            this.isGuardWindow = false;
             this.sound.playSE('parry');
-            this.showCutin("J U S T");
+            const txt = GUARD_TEXTS[Math.floor(Math.random()*GUARD_TEXTS.length)];
+            this.showCutin(txt);
             this.el.cutin.classList.add("just");
             setTimeout(()=>this.el.cutin.classList.remove("just"), 1000);
             this.log("見切った！", "critical");
         } else {
-            // Fail (Too late)
             this.log("防御が遅れた！");
         }
     }
 
     // --- WIN & DROP ---
     async winBattle() {
+        if (this.noDamageNow) {
+            this.noDamageStreak++;
+            if (this.noDamageStreak >= 5 && !this.acquiredTitles.has("t_unscathed")) {
+                this.acquiredTitles.add("t_unscathed");
+                this.log("称号≪無傷の帝王≫を獲得！(運UP)", "critical");
+                this.saveData();
+            }
+        } else {
+            this.noDamageStreak = 0;
+        }
+
         if (this.enemy.type === "boss") {
             this.sound.stopBGM();
             this.sound.playBGM('clear');
@@ -1098,30 +1273,49 @@ class Game {
         this.maxMp += 2 * mult; 
         this.mp += 2 * mult;
         
-        // Item Effect: Greed
         let goldRate = 1.0;
-        if(this.armor && this.armor.effect === "greed") goldRate = 1.5;
-        if(this.weapon && this.weapon.effect === "greed") goldRate = 1.5;
+        if(this.armor && this.armor.effect === "greed") goldRate += 0.5;
+        if(this.weapon && this.weapon.effect === "greed") goldRate += 0.5;
+        if(this.accessory && this.accessory.effect === "greed") goldRate += 0.5;
 
         let g = Math.floor((10 + this.lv*2)*this.enemy.goldMult * goldRate); 
         this.gold+=g;
         
         this.updateHud(); 
-        if (mult > 1) {
-             this.log(`${g}G 強奪。莫大な経験値を得た。(Lv+1)`);
-        } else {
-             this.log(`${g}G 獲得。Lv${this.lv}に到達。`);
-        }
+        this.log(mult > 1 ? `${g}G 強奪。莫大な経験値を得た。(Lv+1)` : `${g}G 獲得。Lv${this.lv}に到達。`);
         this.sound.playSE('coin');
         await this.checkDrop();
     }
 
     async checkDrop() {
+        // Soul Drop Check (Only if not boss, low prob)
+        if (Math.random() < 0.05 && SOULS[this.enemy.type]) {
+            const soulData = SOULS[this.enemy.type];
+            const soulItem = { 
+                id: `soul_${this.enemy.type}`, type: "acc", 
+                name: soulData.name, atk: 0, def: 0, 
+                prob: 0, sprite: "soul", color: soulData.color,
+                soulEffect: soulData.effect, effectName: soulData.effectName, val: soulData.val
+            };
+            this.acquiredItems.add(soulItem.id);
+            this.pendingItem = soulItem;
+            this.log("敵の魂が具現化した...", "revive");
+            await this.showItemCompare(soulItem);
+            return;
+        }
+
         if (Math.random() < 0.4) { 
             let drop = ITEMS[Math.floor(Math.random()*ITEMS.length)]; 
+            
+            // Inflate Item Stats
+            let scale = Math.pow(1.15, this.lv/5) * (1 + this.generation * 0.5);
+            let newI = JSON.parse(JSON.stringify(drop)); // Clone
+            if(newI.atk) newI.atk = Math.floor(newI.atk * scale);
+            if(newI.def) newI.def = Math.floor(newI.def * scale);
+
             this.acquiredItems.add(drop.id);
-            this.pendingItem = drop;
-            await this.showItemCompare(drop);
+            this.pendingItem = newI;
+            await this.showItemCompare(newI);
         } else {
             this.state="BATTLE_WAIT"; this.el.btnMain.textContent="さらに奥へ"; this.el.btnMain.style.display="block"; 
             if(!this.isAwakening) this.sound.playBGM('battle');
@@ -1136,43 +1330,54 @@ class Game {
             
             this.el.menuChest.style.display = "grid";
             
-            const isArmor = item.type === "a";
-            const cur = isArmor ? (this.armor || {name:"旅人の服", def:0, sprite:"a_cloth", color:"#fff"}) : (this.weapon || {name:"素手", atk:0, skillId:null, sprite:"stick", color:"#fff"});
+            // Trap Prevention: Delay inputs
+            this.el.btnGet.style.opacity = 0.3; this.el.btnGet.style.pointerEvents = "none";
+            this.el.btnDiscard.style.opacity = 0.3; this.el.btnDiscard.style.pointerEvents = "none";
             
-            this.renderCard(this.el.curI, cur, isArmor);
-            this.renderCard(this.el.newI, item, isArmor);
+            setTimeout(()=>{
+                this.el.btnGet.style.opacity = 1; this.el.btnGet.style.pointerEvents = "auto";
+                this.el.btnDiscard.style.opacity = 1; this.el.btnDiscard.style.pointerEvents = "auto";
+            }, 800);
+
+            const isArmor = item.type === "a";
+            const isAcc = item.type === "acc";
+            
+            let cur;
+            if (isAcc) cur = this.accessory || {name:"なし", sprite:"soul", color:"#333"};
+            else if (isArmor) cur = this.armor || {name:"旅人の服", def:0, sprite:"a_cloth", color:"#fff"};
+            else cur = this.weapon || {name:"素手", atk:0, skillId:null, sprite:"stick", color:"#fff"};
+            
+            this.renderCard(this.el.curI, cur, item.type);
+            this.renderCard(this.el.newI, item, item.type);
             
             this.resolveItem = resolve;
         });
     }
     
-    renderCard(els, item, isArmor) {
+    renderCard(els, item, type) {
         if(!els.name) return;
         els.name.textContent = item.name;
-        els.icon.innerHTML = generateSVG(SPRITES[item.sprite], item.color);
-        if (isArmor) {
-            els.stat.textContent = `守+${item.def}`; els.stat.className = "chest-stat";
-        } else {
-            els.stat.textContent = `攻+${item.atk}`; els.stat.className = "chest-stat";
-        }
+        const sp = SPRITES[item.sprite] || SPRITES.stick;
+        els.icon.innerHTML = generateSVG(sp, item.color);
+        
+        let statTxt = "";
+        if (type === "acc") statTxt = `攻+${item.atk||0} 守+${item.def||0}`;
+        else if (type === "a") statTxt = `守+${item.def}`;
+        else statTxt = `攻+${item.atk}`;
+        els.stat.textContent = statTxt;
         
         let sText = "";
-        if (item.skillId) {
-            const s = SKILLS.find(k => k.id === item.skillId);
-            if (s) sText = `技:${s.name}`;
-        }
+        if (item.skillId) { const s = SKILLS.find(k => k.id === item.skillId); if (s) sText = `技:${s.name}`; }
         els.sub.textContent = sText;
-
-        if (item.effectName) {
-            els.eff.textContent = `★${item.effectName}`;
-        } else {
-            els.eff.textContent = "";
-        }
+        els.eff.textContent = item.effectName ? `★${item.effectName}` : "";
     }
     
     decideItem(take) {
+        this.sound.playSE('select');
         if(take) {
-            if (this.pendingItem.type === "a") this.armor = this.pendingItem; else this.weapon = this.pendingItem;
+            if (this.pendingItem.type === "acc") this.accessory = this.pendingItem;
+            else if (this.pendingItem.type === "a") this.armor = this.pendingItem; 
+            else this.weapon = this.pendingItem;
             this.log(`${this.pendingItem.name}と契約した。`, "item"); this.sound.playSE('revive');
         } else { this.log("宝箱を拒絶した。", "system"); }
         
@@ -1191,8 +1396,13 @@ class Game {
     async tryRevival() {
         this.state="REVIVAL"; this.log("勇者は力尽きた...","damage"); await this.delay(1500);
         this.log("運命の天秤が揺れる...", "system"); await this.delay(1000);
+        
         if (Math.random() < this.revivalRate) {
             await this.playRevivalDrama();
+            this.reviveCount++;
+            if(this.reviveCount >= 1 && !this.acquiredTitles.has("t_immortal")) {
+                this.acquiredTitles.add("t_immortal");
+            }
             this.hp = Math.floor(this.maxHp * 0.6);
             this.updateHud();
             if(!this.isAwakening) this.sound.playBGM('boss');
@@ -1273,10 +1483,18 @@ class Game {
     }
     openLibrary() {
         this.sound.playSE('select'); this.el.modalLib.style.display="flex"; document.getElementById('lib-grid').innerHTML="";
-        ITEMS.forEach(i=>{
+        const allItems = [...ITEMS];
+        // Add soul items dynamically
+        Object.keys(SOULS).forEach(key => {
+            const s = SOULS[key];
+            allItems.push({id:`soul_${key}`, type:"acc", name:s.name, prob:0, sprite:"soul", color:s.color, isSoul:true});
+        });
+
+        allItems.forEach(i=>{
             const div=document.createElement('div'); const has=this.acquiredItems.has(i.id);
-            div.className=`lib-item ${has?'got':''}`;
-            const label = i.type === "w" ? `攻${i.atk}` : `守${i.def}`;
+            div.className=`lib-item ${has?'got':''} ${i.isSoul?'soul':''}`;
+            let label = "";
+            if(i.type==="w") label=`攻${i.atk}`; else if(i.type==="a") label=`守${i.def}`; else label="装飾";
             div.innerHTML=`${has?generateSVG(SPRITES[i.sprite],i.color):generateSVG(SPRITES.stick,"#333")}<div>${has?i.name:"???"}</div><div>${label}</div>`;
             document.getElementById('lib-grid').appendChild(div);
         });
