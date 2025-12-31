@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ENDLESS QUEST - 覚醒の刻 - (Retro Style)</title>
+    <title>ENDLESS QUEST - 覚醒の刻 - (Ver 2.0)</title>
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Serif+JP:wght@700&display=swap" rel="stylesheet">
     <style>
         /* --- RESET & VARIABLES --- */
         :root {
             --bg-color: #000000;
             --win-bg: #000000;
-            --text-main: #f0f0f0; /* アイボリー */
+            --text-main: #f0f0f0;
             --text-dim: #a0a0a0;
             --border-color: #f0f0f0;
             --border-style: 4px double var(--border-color);
@@ -32,11 +32,11 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: #111; /* 余白用 */
+            background: #111;
             color: var(--text-main);
             font-family: var(--font-main);
             margin: 0;
-            height: 100dvh; /* Dynamic Viewport Height */
+            height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -53,14 +53,13 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            /* iPhone Home Bar area */
             padding-bottom: env(safe-area-inset-bottom); 
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
         }
 
         /* --- 1. STAGE VIEW (TOP HALF) --- */
         .view-port {
-            flex-grow: 1; /* 残りのスペースを埋める */
+            flex-grow: 1;
             position: relative;
             background: #000;
             border-bottom: var(--border-style);
@@ -68,7 +67,6 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            /* Retro Grid Background */
             background-image: 
                 linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
                 linear-gradient(0deg, transparent 24%, #222 25%, #222 26%, transparent 27%, transparent 74%, #222 75%, #222 76%, transparent 77%, transparent),
@@ -76,13 +74,11 @@
             background-size: 40px 40px;
         }
         
-        /* Defense Mode: Blue tint */
         .defense-mode .view-port {
             box-shadow: inset 0 0 50px var(--accent-blue);
             border-color: var(--accent-blue);
         }
 
-        /* Character & Effects */
         .character {
             width: 140px; height: 140px;
             position: relative;
@@ -91,7 +87,7 @@
             transition: transform 0.2s, opacity 0.3s;
         }
 
-        /* Drama Window (Enemy Talk) - Top Priority within Viewport */
+        /* Drama Window */
         .drama-window {
             position: absolute;
             top: 10px; left: 10px; right: 10px;
@@ -99,8 +95,8 @@
             border: var(--border-style);
             border-radius: var(--radius);
             padding: 10px;
-            z-index: 20; /* Above character */
-            display: none; /* JS toggles flex */
+            z-index: 20;
+            display: none;
             flex-direction: row;
             align-items: flex-start;
             gap: 12px;
@@ -153,8 +149,7 @@
             100% { transform: translate(-50%, -50px) scale(1); opacity: 0; } 
         }
 
-        /* --- 2. GAUGE AREA (SACRED ZONE) --- */
-        /* Placed between Viewport and Console to prevent overlap */
+        /* --- 2. GAUGE AREA --- */
         .gauge-container {
             height: var(--gauge-h);
             background: #000;
@@ -164,7 +159,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 100; /* Highest priority */
+            z-index: 100;
         }
         .gauge-area {
             width: 95%; height: 24px;
@@ -172,12 +167,11 @@
             border: 2px solid #fff;
             border-radius: 4px;
             position: relative;
-            display: none; /* JS toggles block */
+            display: none;
             overflow: hidden;
         }
         .gauge-bar {
             width: 100%; height: 100%;
-            /* Retro gradient */
             background: linear-gradient(90deg, 
                 #3498db 0%, #3498db 40%, 
                 #f1c40f 40%, #f1c40f 45%, 
@@ -203,38 +197,58 @@
             flex-shrink: 0;
         }
 
-        /* Status Window */
+        /* --- UPDATED STATUS WINDOW (Grid Layout) --- */
         .status-window {
             border: var(--border-style);
             border-radius: var(--radius);
-            padding: 8px 12px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            line-height: 1.4;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            line-height: 1.3;
+            background: #000;
         }
-        .status-col { display: flex; flex-direction: column; gap: 2px; }
+        /* Top Row: 3 cols */
+        .status-top-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
+            margin-bottom: 4px;
+        }
+        .status-cell { display: flex; flex-direction: column; }
+        .status-kv { display: flex; align-items: baseline; justify-content: space-between; margin-right: 5px; }
+        
+        /* Equip Row: Flex column */
+        .status-equip-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px;
+            border-top: 1px dashed #333;
+            padding-top: 4px;
+        }
+        .equip-box {
+            font-size: 0.7rem;
+            color: #ccc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .equip-icon { color: #888; font-size: 0.7rem; min-width: 14px; }
+
         .val-hp { color: var(--accent-green); }
         .val-mp { color: var(--accent-blue); }
         .val-gold { color: var(--accent-yellow); }
         .status-label { color: var(--text-dim); font-size: 0.7rem; margin-right: 4px; }
         
-        .chain-display {
-            font-family: var(--font-serif);
-            font-size: 1.1rem;
-            color: var(--accent-yellow);
-        }
-        .awakening-text {
-            font-size: 0.8rem; color: var(--accent-blue);
-            animation: blink 1s infinite;
-            display: none;
-        }
+        .chain-display { font-family: var(--font-serif); font-size: 1.1rem; color: var(--accent-yellow); }
+        .awakening-text { font-size: 0.8rem; color: var(--accent-blue); animation: blink 1s infinite; display: none; }
         @keyframes blink { 50% { opacity: 0.3; } }
 
         /* Log & Command Area */
         .action-row {
             display: flex;
-            height: 140px; /* Fixed height for consistency */
+            height: 140px;
             gap: 5px;
         }
 
@@ -245,7 +259,7 @@
             padding: 8px;
             overflow-y: hidden;
             font-size: 0.85rem;
-            line-height: 1.6; /* Increased for readability */
+            line-height: 1.5;
             display: flex;
             flex-direction: column-reverse;
             background: #000;
@@ -255,10 +269,12 @@
         .log-entry.critical { color: var(--accent-yellow); }
         .log-entry.revive { color: var(--accent-green); }
         .log-entry.system { color: var(--accent-cyan); }
-        .log-entry.flavor { color: #666; font-size: 0.75rem; }
+        .log-entry.item { color: var(--accent-purple); }
+        .log-entry.block { color: var(--accent-blue); }
+        .log-entry.flavor { color: #666; font-size: 0.75rem; font-style: italic; }
 
         .command-window {
-            width: 140px; /* Fixed width like DQ */
+            width: 140px;
             flex-shrink: 0;
             border: var(--border-style);
             border-radius: var(--radius);
@@ -273,7 +289,7 @@
         .cmd-btn {
             background: #000;
             color: #fff;
-            border: 2px solid transparent; /* Invisible border for sizing */
+            border: 2px solid transparent;
             border-radius: 4px;
             padding: 8px 4px;
             text-align: left;
@@ -281,23 +297,16 @@
             font-size: 1rem;
             cursor: pointer;
             position: relative;
-            padding-left: 15px; /* Space for cursor */
+            padding-left: 15px;
             transition: transform 0.05s;
         }
-        /* Cursor Indicator */
         .cmd-btn::before {
-            content: '▶';
-            position: absolute; left: 2px; top: 50%;
-            transform: translateY(-50%);
-            opacity: 0;
-            color: var(--accent-yellow);
-            font-size: 0.8rem;
+            content: '▶'; position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+            opacity: 0; color: var(--accent-yellow); font-size: 0.8rem;
         }
-        .cmd-btn:active {
-            transform: translateY(2px);
-            background: #222;
-        }
+        .cmd-btn:active { transform: translateY(2px); background: #222; }
         .cmd-btn:hover::before, .cmd-btn:active::before { opacity: 1; }
+        .cmd-btn:disabled { color: #444; pointer-events: none; }
         
         .main-btn-full {
             width: 100%; height: 100%;
@@ -313,26 +322,19 @@
 
         /* STOP / GUARD BIG BUTTON */
         .btn-action-overlay {
-            position: absolute;
-            bottom: 5px; right: 5px; left: 5px;
-            height: 140px; /* Covers action row */
-            z-index: 150;
-            display: none;
+            position: absolute; bottom: 5px; right: 5px; left: 5px;
+            height: 140px; z-index: 150; display: none;
         }
         .btn-big-action {
             width: 100%; height: 100%;
-            font-size: 2rem;
-            font-weight: bold;
-            font-family: var(--font-serif);
-            border: 4px double #fff;
-            border-radius: 8px;
-            text-shadow: 2px 2px 0 #000;
-            cursor: pointer;
+            font-size: 2rem; font-weight: bold; font-family: var(--font-serif);
+            border: 4px double #fff; border-radius: 8px;
+            text-shadow: 2px 2px 0 #000; cursor: pointer;
         }
         .btn-stop { background: rgba(180, 0, 0, 0.9); color: #fff; border-color: #f88; }
         .btn-guard { background: rgba(0, 50, 150, 0.9); color: #0ff; border-color: #0ff; }
 
-        /* Progress Header */
+        /* Header */
         .header-bar {
             display: flex; gap: 5px; align-items: center; padding: 5px;
             background: #000; border-bottom: 1px solid #333;
@@ -341,7 +343,7 @@
             width: 32px; height: 32px;
             border: 2px solid #fff; border-radius: 4px;
             background: #000; color: #fff;
-            display: flex; justify-content: center; align-items: center;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
         }
         .progress-container {
             flex-grow: 1; height: 12px; background: #222; border: 1px solid #555; position: relative;
@@ -349,21 +351,14 @@
         .progress-fill { height: 100%; background: #e74c3c; width: 0%; transition: width 0.5s; }
         .progress-text { position: absolute; top: -18px; right: 0; font-size: 0.7rem; color: #888; }
 
-        /* Ruby Fix */
         ruby { font-family: var(--font-main); }
-        rt { 
-            font-size: 0.5em; color: var(--text-dim); 
-            text-align: center;
-            /* Minimal visual adjustment */
-            transform: translateY(-2px);
-        }
+        rt { font-size: 0.5em; color: var(--text-dim); text-align: center; transform: translateY(-2px); }
 
-        /* Modals (Libraries, Shop, etc) */
+        /* Modals */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 200;
-            display: none;
-            justify-content: center; align-items: center;
+            display: none; justify-content: center; align-items: center;
             padding: 20px;
         }
         .modal-window {
@@ -381,11 +376,12 @@
         .grid-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; }
         .list-item { 
             border: 1px solid #444; padding: 4px; text-align: center; font-size: 0.7rem; color: #666; 
-            display: flex; flex-direction: column; align-items: center;
+            display: flex; flex-direction: column; align-items: center; min-height: 70px; justify-content: space-between;
         }
         .list-item.got { border-color: #fff; color: #fff; }
-        
-        /* Event & Chest Overlays in Viewport */
+        .list-item.soul { border-color: var(--accent-purple); }
+
+        /* Overlays */
         .overlay-center {
             position: absolute; top:0; left:0; width:100%; height:100%;
             background: rgba(0,0,0,0.9); z-index: 40;
@@ -398,16 +394,11 @@
         }
         .chest-card.new { border-color: var(--accent-yellow); background: #221; }
 
-        /* Effects */
-        .flash {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            background: #fff; opacity: 0; pointer-events: none; z-index: 90;
-            transition: opacity 0.1s;
+        .flash, .flash-invert {
+            position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; opacity: 0;
         }
-        .flash-invert {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            background: #fff; mix-blend-mode: difference; opacity: 0; pointer-events: none; z-index: 91;
-        }
+        .flash { background: #fff; z-index: 90; transition: opacity 0.1s; }
+        .flash-invert { background: #fff; mix-blend-mode: difference; z-index: 91; }
         .anim-invert { animation: invert-flash 0.15s; }
         @keyframes invert-flash { 0% { opacity: 0.8; } 100% { opacity: 0; } }
 
@@ -423,7 +414,7 @@
 
 <div class="game-wrapper" id="game-container">
     
-    <!-- HEADER: Progress & Util -->
+    <!-- HEADER -->
     <div class="header-bar">
         <button class="icon-btn" onclick="game.openHelp()">?</button>
         <button class="icon-btn" id="btn-speed" onclick="game.toggleSpeed()" style="font-size:0.7rem; width:40px;">x1</button>
@@ -433,13 +424,12 @@
         </div>
     </div>
 
-    <!-- MAIN STAGE (TOP) -->
+    <!-- MAIN STAGE -->
     <div class="view-port" id="stage">
         <div class="flash" id="flash"></div>
         <div class="flash-invert" id="flash-invert"></div>
         <div class="danger-overlay" id="danger-overlay" style="display:none; position:absolute; inset:0; box-shadow:inset 0 0 50px #500; pointer-events:none; z-index:5;"></div>
         
-        <!-- Drama Window moved to top of stage so it doesn't cover gauge -->
         <div id="drama-window" class="drama-window">
             <div id="drama-actor-box" class="drama-actor-box character" style="width:40px;height:40px;"></div>
             <div class="drama-text-box">
@@ -454,11 +444,11 @@
         
         <div id="enemy-slot" class="character"></div>
 
-        <!-- Overlays (Chest/Event) -->
+        <!-- Overlays -->
         <div id="chest-display" class="overlay-center">
             <div style="display:flex; align-items:center;">
                 <div class="chest-card current">
-                    <div style="font-size:0.7rem; color:#888;">装備中</div>
+                    <div style="font-size:0.7rem; color:#888;">装備中 (売却)</div>
                     <div id="cur-icon" style="width:48px;height:48px;"></div>
                     <div id="cur-name" style="font-size:0.8rem; height:2.5em; display:flex; align-items:center; justify-content:center;"></div>
                     <div id="cur-stat" style="font-weight:bold;"></div>
@@ -475,7 +465,6 @@
                     <div id="new-effect" style="font-size:0.7rem; color:var(--accent-purple);"></div>
                 </div>
             </div>
-            <!-- Chest Buttons moved to console area logically, but for simplicity kept in structure or controlled via JS -->
         </div>
 
         <div id="event-display" class="overlay-center">
@@ -492,7 +481,7 @@
         </div>
     </div>
 
-    <!-- GAUGE (MIDDLE STRIP) -->
+    <!-- GAUGE -->
     <div class="gauge-container" id="gauge-container-wrapper">
         <div class="gauge-area" id="gauge-area">
             <div class="gauge-bar"></div>
@@ -500,31 +489,36 @@
         </div>
     </div>
 
-    <!-- CONSOLE (BOTTOM) -->
+    <!-- CONSOLE -->
     <div class="console-panel">
         <div class="status-window">
-            <div class="status-col">
-                <div><span class="status-label">HP</span><span id="disp-hp" class="val-hp">30</span></div>
-                <div><span class="status-label">MP</span><span id="disp-mp" class="val-mp">10</span></div>
-            </div>
-            <div class="status-col">
-                <div><span class="status-label">LV</span><span id="disp-lv">1</span> <span id="disp-title" style="color:var(--accent-purple); font-size:0.7rem;"></span></div>
-                <div><span class="status-label">G</span><span id="disp-gold" class="val-gold">0</span></div>
-            </div>
-            <div class="status-col" style="text-align:right;">
-                <div>
-                    <span class="chain-display"><span style="font-size:0.7rem; color:#888;">連撃</span> <span id="disp-chain">0</span></span>
+            <div class="status-top-row">
+                <div class="status-cell">
+                    <div class="status-kv"><span class="status-label">HP</span><span id="disp-hp" class="val-hp">30</span></div>
+                    <div class="status-kv"><span class="status-label">攻</span><span id="disp-atk">0</span></div>
                 </div>
-                <div id="awake-txt" class="awakening-text">≪絶対防御界≫</div>
-                <div id="disp-aura" style="font-size:0.8rem; color:#555;">READY</div>
+                <div class="status-cell">
+                    <div class="status-kv"><span class="status-label">MP</span><span id="disp-mp" class="val-mp">10</span></div>
+                    <div class="status-kv"><span class="status-label">守</span><span id="disp-def">0</span></div>
+                </div>
+                <div class="status-cell" style="text-align:right;">
+                    <div><span class="status-label">LV</span><span id="disp-lv">1</span></div>
+                    <div><span class="status-label">G</span><span id="disp-gold" class="val-gold">0</span></div>
+                </div>
             </div>
-            <!-- Hidden elements required by JS logic -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                <span class="chain-display"><span style="font-size:0.7rem; color:#888;">連撃</span> <span id="disp-chain">0</span></span>
+                <span id="awake-txt" class="awakening-text">≪絶対防御界≫</span>
+                <span id="disp-aura" style="font-size:0.8rem; color:#555;">READY</span>
+            </div>
+            <!-- Expanded Equipment Display -->
+            <div class="status-equip-row">
+                <div class="equip-box" title="武器"><span class="equip-icon">⚔️</span><span id="disp-weapon">素手</span></div>
+                <div class="equip-box" title="防具"><span class="equip-icon">🛡️</span><span id="disp-armor">服</span></div>
+                <div class="equip-box" title="装飾"><span class="equip-icon">💍</span><span id="disp-acc">なし</span></div>
+            </div>
+            <span id="disp-title" style="display:none;"></span>
             <span id="disp-gen" style="display:none;"></span>
-            <span id="disp-atk" style="display:none;"></span>
-            <span id="disp-def" style="display:none;"></span>
-            <span id="disp-weapon" style="display:none;"></span>
-            <span id="disp-armor" style="display:none;"></span>
-            <span id="disp-acc" style="display:none;"></span>
         </div>
 
         <div class="action-row">
@@ -532,12 +526,10 @@
                 <div class="log-entry system">第1代 勇者、<ruby>冒険の書<rt>クロニクル</rt></ruby>を開く</div>
             </div>
 
-            <!-- Command Menu (Right Bottom) -->
+            <!-- Command Menu -->
             <div class="command-window">
-                <!-- Main Button (Start/Next) -->
                 <button id="btn-main" class="main-btn-full" onclick="game.handleMainBtn()">開始</button>
                 
-                <!-- Battle Menu -->
                 <div id="menu-battle" style="display:none; flex-direction:column; gap:4px; height:100%;">
                     <button class="cmd-btn" onclick="game.selectAttack()">たたかう</button>
                     <button class="cmd-btn" onclick="game.openSkills()">呪文・特技</button>
@@ -545,18 +537,16 @@
                     <button class="cmd-btn" style="color:var(--text-dim);" onclick="game.openLibrary()">記録を見る</button>
                 </div>
 
-                <!-- Chest Menu -->
                 <div id="menu-chest" style="display:none; flex-direction:column; gap:4px; height:100%;">
+                    <div style="font-size:0.6rem; color:#888; text-align:center;">古い装備は売却されます</div>
                     <button id="btn-get" class="cmd-btn" style="color:var(--accent-yellow);" onclick="game.decideItem(true)">手に入れる</button>
                     <button id="btn-discard" class="cmd-btn" onclick="game.decideItem(false)">あきらめる</button>
                 </div>
 
-                <!-- Skill Menu Placeholder -->
                 <div id="menu-skills" style="display:none; flex-direction:column; gap:4px; height:100%; overflow-y:auto;"></div>
             </div>
         </div>
         
-        <!-- Big Action Button Overlay (Stop/Guard) -->
         <div class="btn-action-overlay" id="btn-stop-wrapper" style="display:none;">
              <button id="btn-stop" class="btn-big-action btn-stop" onmousedown="game.handleActionBtn()" ontouchstart="game.handleActionBtn()">STOP!</button>
         </div>
@@ -565,7 +555,7 @@
     <!-- MODALS -->
     <div id="lib-modal" class="modal-overlay">
         <div class="modal-window">
-            <div class="modal-title">冒険の記録</div>
+            <div class="modal-title">冒険の記録 <span id="lib-comp" style="font-size:0.8rem; color:#888; margin-left:10px;"></span></div>
             <div id="lib-grid" class="grid-list"></div>
             <button class="cmd-btn" style="text-align:center; margin-top:10px;" onclick="game.closeLibrary()">閉じる</button>
         </div>
@@ -579,7 +569,10 @@
                 <p><strong>[絶対防御界]</strong><br>連撃5以上で自動発動。MPを消費してダメージを無効化。</p>
                 <p><strong>[見切り (Just Guard)]</strong><br>敵攻撃に合わせて防御ボタンを押せ。</p>
             </div>
-            <button class="cmd-btn" style="text-align:center; margin-top:10px;" onclick="game.closeHelp()">閉じる</button>
+            <div style="display:flex; gap:5px;">
+                <button class="cmd-btn" style="flex:1; text-align:center;" onclick="game.openLibrary()">図鑑を見る</button>
+                <button class="cmd-btn" style="flex:1; text-align:center;" onclick="game.closeHelp()">閉じる</button>
+            </div>
             <button style="background:#300; border:1px solid #f00; color:#f88; padding:5px; margin-top:20px;" onclick="game.resetSaveData()">記録消去</button>
         </div>
     </div>
@@ -612,10 +605,6 @@
 </div>
 
 <script>
-/** * LOGIC PRESERVED FROM ORIGINAL
- * Game Class & SoundManager (Content unchanged, structural bindings updated where necessary)
- */
-
 class SoundManager {
     constructor() { this.ctx = null; this.bgmOscs = []; }
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -655,7 +644,6 @@ class SoundManager {
     stopBGM() { this.bgmOscs.forEach(obj=>{try{obj.o.stop();obj.o.disconnect();}catch(e){}}); this.bgmOscs=[]; }
 }
 
-/** DATA (Unchanged) */
 const SAVE_KEY = 'EQ_SAVE_V300';
 const WEAPON_PREFIXES = [
     {t:"朽ちた",r:"クチタ"}, {t:"鉄塊の",r:"テッカイノ"}, {t:"煉獄の",r:"レンゴクノ"}, {t:"名工の",r:"メイコウノ"}, 
@@ -675,7 +663,6 @@ function generateSVG(data, colorOverride=null, metal=false) {
 }
 
 const SPRITES = {
-    // --- WEAPONS ---
     stick: { color: "#a84", pixels: [{x:6,y:11,w:4,h:4,c:"#753"},{x:7,y:3,w:2,h:10,c:"#964"},{x:8,y:2,w:1,h:2,c:"#bd6"}] },
     club: { color: "#953", pixels: [{x:6,y:11,w:4,h:4,c:"#531"},{x:7,y:8,w:2,h:3,c:"#853"},{x:5,y:2,w:6,h:6,c:"#742"},{x:5,y:2,w:2,h:2,c:"#b86"},{x:9,y:5,w:2,h:2,c:"#421"}] },
     sword: { color:"#ccc", pixels:[{x:6,y:12,w:4,h:4,c:"#531"},{x:4,y:11,w:8,h:1,c:"#daa520"},{x:7,y:11,w:2,h:2,c:"#daa520"},{x:6,y:1,w:4,h:10,c:"#aaa"},{x:6,y:1,w:2,h:10,c:"#eee"},{x:7,y:2,w:1,h:8,c:"#fff"}] },
@@ -686,8 +673,6 @@ const SPRITES = {
     scythe: { color:"#a4e", pixels:[{x:8,y:3,w:2,h:13,c:"#422"},{x:2,y:2,w:10,h:2,c:"#ccc"},{x:2,y:2,w:2,h:8,c:"#eee"},{x:3,y:3,w:1,h:6,c:"#fff"}]},
     hero_w: { color: "#48f", pixels: [{x:6,y:11,w:4,h:5,c:"#222"},{x:3,y:10,w:10,h:2,c:"#d4af37"},{x:5,y:1,w:6,h:10,c:"#005"},{x:6,y:1,w:2,h:9,c:"#48f"},{x:6,y:2,w:1,h:8,c:"#aaf"},{x:7,y:10,w:2,h:2,c:"#f00"}] },
     metal_w: { color: "#444", pixels: [{x:7,y:11,w:2,h:5,c:"#111"},{x:4,y:10,w:8,h:2,c:"#444"},{x:6,y:1,w:4,h:10,c:"#666"},{x:6,y:1,w:2,h:10,c:"#aaa"},{x:5,y:7,w:6,h:1,c:"#f00"},{x:5,y:8,w:6,h:1,c:"#300"}] },
-
-    // --- ARMOR ---
     a_cloth: { color: "#dca", pixels: [{x:3,y:3,w:10,h:11,c:"#b86"},{x:5,y:3,w:6,h:4,c:"#eeb"},{x:4,y:4,w:2,h:8,c:"#964"},{x:10,y:4,w:2,h:8,c:"#964"}] },
     a_leather: { color: "#a64", pixels: [{x:3,y:3,w:10,h:11,c:"#742"},{x:4,y:4,w:8,h:8,c:"#964"},{x:2,y:3,w:3,h:4,c:"#531"},{x:11,y:3,w:3,h:4,c:"#531"},{x:6,y:5,w:4,h:4,c:"#b86"}] },
     a_chain: { color: "#888", pixels: [{x:3,y:2,w:10,h:12,c:"#444"},{x:2,y:3,w:12,h:4,c:"#666"},{x:4,y:6,w:8,h:8,c:"#888"},{x:5,y:7,w:1,h:1,c:"#ccc"},{x:7,y:7,w:1,h:1,c:"#ccc"},{x:9,y:7,w:1,h:1,c:"#ccc"}] },
@@ -695,13 +680,9 @@ const SPRITES = {
     a_steel: { color: "#fff", pixels: [{x:2,y:2,w:12,h:12,c:"#789"},{x:3,y:3,w:10,h:10,c:"#abc"},{x:5,y:4,w:6,h:8,c:"#fff"},{x:6,y:5,w:2,h:4,c:"#eef"}] },
     a_dragon: { color: "#a44", pixels: [{x:1,y:2,w:14,h:12,c:"#500"},{x:3,y:3,w:10,h:10,c:"#900"},{x:5,y:5,w:6,h:6,c:"#d22"},{x:6,y:6,w:4,h:2,c:"#fb0"}] },
     a_hero: { color: "#48f", pixels: [{x:1,y:1,w:14,h:14,c:"#004"},{x:3,y:3,w:10,h:10,c:"#248"},{x:5,y:4,w:6,h:8,c:"#48c"},{x:6,y:6,w:4,h:4,c:"#fd0"},{x:7,y:7,w:2,h:2,c:"#f00"}] },
-
-    // --- ACCESSORIES ---
     ring: { color: "#fd0", pixels: [{x:4,y:3,w:8,h:10,c:"#d4af37"},{x:5,y:4,w:6,h:8,c:"#000"},{x:6,y:2,w:4,h:3,c:"#f00"},{x:7,y:3,w:1,h:1,c:"#fff"}] },
     amulet: { color: "#a8f", pixels: [{x:6,y:0,w:4,h:8,c:"#ccc"},{x:5,y:8,w:6,h:6,c:"#62a"},{x:6,y:9,w:4,h:4,c:"#a4d"},{x:7,y:10,w:2,h:2,c:"#fff"}] },
     soul: { color: "#0ff", pixels: [{x:6,y:2,w:4,h:8,c:"#0aa"},{x:4,y:5,w:8,h:6,c:"#0cc"},{x:7,y:4,w:2,h:2,c:"#fff"},{x:5,y:6,w:2,h:2,c:"#fff"},{x:9,y:6,w:2,h:2,c:"#fff"}] },
-
-    // --- ENEMIES ---
     slime: { color: "#48f", pixels: [{x:4,y:6,w:8,h:8,c:"#005"},{x:3,y:8,w:10,h:6,c:"#249"},{x:4,y:7,w:8,h:6,c:"#48f"},{x:5,y:9,w:1,h:2,c:"#000"},{x:10,y:9,w:1,h:2,c:"#000"},{x:6,y:9,w:1,h:1,c:"#fff"},{x:5,y:7,w:2,h:1,c:"#bef"},{x:11,y:9,w:1,h:1,c:"#fff"}]},
     bat: { color: "#222", pixels: [{x:1,y:2,w:6,h:4,c:"#404"},{x:9,y:2,w:6,h:4,c:"#404"},{x:5,y:5,w:6,h:6,c:"#222"},{x:4,y:4,w:2,h:3,c:"#111"},{x:10,y:4,w:2,h:3,c:"#111"},{x:6,y:7,w:1,h:1,c:"#f00"},{x:9,y:7,w:1,h:1,c:"#f00"},{x:7,y:9,w:2,h:1,c:"#fff"}]},
     rabbit: { color: "#da8", pixels: [{x:5,y:2,w:2,h:5,c:"#da8"},{x:9,y:2,w:2,h:5,c:"#da8"},{x:4,y:6,w:8,h:7,c:"#c96"},{x:6,y:8,w:1,h:2,c:"#000"},{x:9,y:8,w:1,h:2,c:"#000"},{x:7,y:10,w:2,h:2,c:"#fcc"}]},
@@ -720,17 +701,11 @@ const SPRITES = {
     fallen: { color: "#222", pixels: [{x:6,y:2,w:4,h:4,c:"#ccc"},{x:5,y:6,w:6,h:8,c:"#111"},{x:1,y:2,w:5,h:10,c:"#000"},{x:10,y:2,w:5,h:10,c:"#000"},{x:7,y:3,w:2,h:1,c:"#f00"}]},
     angel: { color: "#eea", pixels: [{x:6,y:2,w:4,h:4,c:"#fcc"},{x:6,y:1,w:4,h:1,c:"#fe0"},{x:5,y:6,w:6,h:8,c:"#eee"},{x:1,y:2,w:4,h:8,c:"#fff"},{x:11,y:2,w:4,h:8,c:"#fff"},{x:7,y:3,w:2,h:1,c:"#0af"}]},
     reaper: { color: "#222", pixels: [{x:6,y:2,w:4,h:4,c:"#eee"},{x:5,y:4,w:6,h:10,c:"#111"},{x:2,y:6,w:12,h:2,c:"#111"},{x:12,y:1,w:2,h:14,c:"#888"},{x:12,y:1,w:3,h:3,c:"#ccc"}]},
-
-    // --- BOSSES ---
     boss: { color: "#222", pixels: [{x:5,y:1,w:6,h:6,c:"#ddd"},{x:4,y:0,w:2,h:3,c:"#808"},{x:10,y:0,w:2,h:3,c:"#808"},{x:6,y:3,w:1,h:1,c:"#f00"},{x:9,y:3,w:1,h:1,c:"#f00"},{x:3,y:7,w:10,h:8,c:"#222"},{x:4,y:8,w:8,h:6,c:"#404"},{x:1,y:4,w:3,h:10,c:"#101"},{x:12,y:4,w:3,h:10,c:"#101"}]},
     asura: { color: "#a4e", pixels: [{x:6,y:1,w:4,h:5,c:"#c8c"},{x:4,y:6,w:8,h:8,c:"#626"},{x:2,y:4,w:2,h:4,c:"#c8c"},{x:12,y:4,w:2,h:4,c:"#c8c"},{x:2,y:9,w:2,h:4,c:"#c8c"},{x:12,y:9,w:2,h:4,c:"#c8c"},{x:2,y:3,w:1,h:4,c:"#888"},{x:13,y:3,w:1,h:4,c:"#888"}]},
     general: { color: "#667", pixels: [{x:5,y:0,w:6,h:6,c:"#223"},{x:6,y:2,w:4,h:2,c:"#000"},{x:6,y:2,w:1,h:1,c:"#f00"},{x:9,y:2,w:1,h:1,c:"#f00"},{x:3,y:6,w:10,h:9,c:"#445"},{x:1,y:6,w:3,h:7,c:"#889"},{x:12,y:6,w:3,h:7,c:"#889"},{x:5,y:8,w:6,h:6,c:"#223"}]},
-
-    // --- SPECIAL ---
     goldman: { color: "#fd0", pixels: [{x:4,y:2,w:8,h:6,c:"#fd0"},{x:5,y:3,w:6,h:4,c:"#ff8"},{x:2,y:4,w:3,h:6,c:"#db0"},{x:11,y:4,w:3,h:6,c:"#db0"},{x:5,y:9,w:2,h:5,c:"#b90"},{x:9,y:9,w:2,h:5,c:"#b90"},{x:6,y:4,w:1,h:1,c:"#000"},{x:9,y:4,w:1,h:1,c:"#000"}]},
     metal_s: { color: "#ccc", pixels: [{x:5,y:8,w:6,h:4,c:"#aaa"},{x:4,y:9,w:8,h:4,c:"#ccc"},{x:2,y:11,w:12,h:3,c:"#eee"},{x:6,y:10,w:1,h:1,c:"#000"},{x:9,y:10,w:1,h:1,c:"#000"},{x:5,y:9,w:1,h:1,c:"#fff"}]},
-
-    // --- NPC ---
     npc_princess: { color: "#fca", pixels: [{x:5,y:2,w:6,h:5,c:"#fa8"},{x:6,y:1,w:4,h:2,c:"#f84"},{x:5,y:7,w:6,h:7,c:"#f8a"},{x:6,y:8,w:4,h:4,c:"#fce"},{x:4,y:7,w:2,h:4,c:"#fca"},{x:10,y:7,w:2,h:4,c:"#fca"}] },
     npc_king: { color: "#fca", pixels: [{x:4,y:2,w:8,h:5,c:"#eee"},{x:5,y:0,w:6,h:3,c:"#fc0"},{x:4,y:7,w:8,h:8,c:"#b22"},{x:6,y:7,w:4,h:6,c:"#fff"},{x:5,y:6,w:6,h:4,c:"#ddd"}] },
     npc_friend: { color: "#fca", pixels: [{x:5,y:2,w:6,h:5,c:"#642"},{x:5,y:1,w:6,h:2,c:"#420"},{x:5,y:7,w:6,h:6,c:"#468"},{x:6,y:8,w:4,h:4,c:"#68a"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
@@ -754,7 +729,6 @@ const ITEMS = [
     { id: "club", type:"w", name: "<ruby>蛮族<rt>バンゾク</rt></ruby>の<ruby>棍棒<rt>コンボウ</rt></ruby>", atk: 4, prob: 0.15, sprite: "club", color: "#953", skillId: "smash" },
     { id: "cloth", type:"a", name: "<ruby>旅人<rt>タビビト</rt></ruby>の<ruby>外套<rt>ガイトウ</rt></ruby>", def: 1, prob: 0.2, sprite: "a_cloth", color: "#dca" },
     { id: "leather", type:"a", name: "<ruby>獣<rt>ケモノ</rt></ruby>の<ruby>皮鎧<rt>カワヨロイ</rt></ruby>", def: 3, prob: 0.15, sprite: "a_leather", color: "#a64" },
-    // Artifacts
     { id: "ring_str", type:"acc", name: "<ruby>剛力<rt>ゴウリキ</rt></ruby>の<ruby>指輪<rt>リング</rt></ruby>", atk: 5, prob: 0.1, sprite: "ring", color: "#f44" },
     { id: "amu_pro", type:"acc", name: "<ruby>守護<rt>シュゴ</rt></ruby>の<ruby>護符<rt>アミュレット</rt></ruby>", def: 5, prob: 0.1, sprite: "amulet", color: "#48f" },
     { id: "acc_vamp", type:"acc", name: "<ruby>吸血鬼<rt>ヴァンパイア</rt></ruby>の<ruby>牙<rt>キバ</rt></ruby>", atk: 10, prob: 0.05, sprite: "amulet", color: "#a00", effect: "drain", effectName: "吸血" },
@@ -782,7 +756,6 @@ ITEMS.push(
     { id: "metal_w", type:"w", name: "<ruby>魔剣<rt>マケン</rt></ruby>オメガ", atk: 40, prob: 0.01, sprite: "metal_w", color: "#ccc", skillId: "falcon" },
 );
 
-// Soul Definitions
 const SOULS = {
     slime: { name: "スライムの<ruby>魂<rt>ソウル</rt></ruby>", effect: "regen", effectName: "再生", color: "#48f" },
     bat: { name: "コウモリの<ruby>魂<rt>ソウル</rt></ruby>", effect: "haste", effectName: "神速", color: "#222" },
@@ -796,11 +769,7 @@ const SOULS = {
 const FLAVOR_TEXTS = ["ククク…<ruby>力<rt>フォース</rt></ruby>が溢れてくる…", "右腕が…<ruby>疼<rt>ウズ</rt></ruby>く…", "<ruby>魔力<rt>マナ</rt></ruby>が共鳴している…", "この痛み…心地よい…", "我に潜む<ruby>闇<rt>ダークネス</rt></ruby>が騒ぐ…", "見えた…死の<ruby>線<rt>ライン</rt></ruby>が…", "<ruby>封印<rt>シール</rt></ruby>が解けそうだ…", "世界が…私を拒絶しているのか？"];
 const RATES = [ { name: "絶望", color: "#444", rate: 0.05 }, { name: "凡人", color: "#fff", rate: 0.10 }, { name: "修羅", color: "#48f", rate: 0.20 }, { name: "英雄", color: "#fd0", rate: 0.30 }, { name: "伝説", color: "#f44", rate: 0.50 }, { name: "神話", color: "magenta", rate: 0.65 } ];
 
-// New Text Data
-const GUARD_TEXTS = [
-    {t:"見切",r:"ミキリ"},{t:"瞬断",r:"シュンダン"},{t:"絶無",r:"ゼツム"},
-    {t:"相殺",r:"ソウサイ"},{t:"虚空",r:"コクウ"},{t:"凪",r:"ナギ"}
-];
+const GUARD_TEXTS = [{t:"見切",r:"ミキリ"},{t:"瞬断",r:"シュンダン"},{t:"絶無",r:"ゼツム"},{t:"相殺",r:"ソウサイ"},{t:"虚空",r:"コクウ"},{t:"凪",r:"ナギ"}];
 const TITLES = [
     { id: "t_survivor", name: "<ruby>生存者<rt>サバイバー</rt></ruby>", cond: (g)=>g.generation>2, eff: "HP+20%" },
     { id: "t_godspeed", name: "<ruby>神速<rt>ソニック</rt></ruby>", cond: (g)=>g.fastClears>5, eff: "AGI+10%" },
@@ -808,12 +777,28 @@ const TITLES = [
     { id: "t_unscathed", name: "<ruby>無傷<rt>パーフェクト</rt></ruby>の<ruby>帝王<rt>カイザー</rt></ruby>", cond: (g)=>g.noDamageStreak>5, eff: "LUCK+" }
 ];
 
-// Expanded Dialogues
+// --- EXPANDED DIALOGUE ---
 const TALK_PATTERNS = {
-    start: ["貴様の命運は尽きた！", "その魂、我が糧となれ！", "絶望を教えてやろう", "フフフ…楽しませてくれよ？", "我が闇に平伏せ！", "この領域に踏み入るとは…", "死へのカウントダウンだ", "恐怖に歪む顔が見たい…"],
-    hit: ["貴様…やるな？", "計算外だ…", "効かぬわ！", "ふん、小賢しい", "バカな…", "この私が…押されている？"],
-    pinch: ["まだだ…まだ終わらんよ！", "本気を出させるとは…", "後悔するぞ…", "闇の力よ！我に集え！", "貴様を道連れにしてやる！"],
-    die: ["バカな…私が敗れるとは…", "見事だ…", "これが…敗北の味か…", "第二形態への布石に過ぎん…", "闇は…滅びぬ…", "グフッ…！"]
+    start: [
+        "貴様の命運は尽きた！", "その魂、我が糧となれ！", "絶望を教えてやろう", "フフフ…楽しませてくれよ？", "我が闇に平伏せ！", 
+        "この領域に踏み入るとは…", "死へのカウントダウンだ", "恐怖に歪む顔が見たい…", "ククク…飛んで火に入る夏の虫とはな",
+        "貴様の絶望、最高のご馳走だ！", "我が眠りを妨げる愚か者め", "闇の炎に抱かれて消えろ！", "貴様の存在など、塵に等しい"
+    ],
+    hit: [
+        "貴様…やるな？", "計算外だ…", "効かぬわ！", "ふん、小賢しい", "バカな…", "この私が…押されている？",
+        "ぐああっ！貴様、何者だ！？", "ほう、私のATフィールドを破るとは", "チッ、計算が狂ったわ！", "その力…まさか勇者か？",
+        "遊びは終わりだ！", "なぜだ…なぜ動きが読める！？", "生意気な…！"
+    ],
+    pinch: [
+        "まだだ…まだ終わらんよ！", "本気を出させるとは…", "後悔するぞ…", "闇の力よ！我に集え！", "貴様を道連れにしてやる！",
+        "私の真の姿を見せてやろう", "リミッター解除！", "面白い…実に面白いぞ！", "貴様だけは…地獄へ送る！",
+        "我ガ魔力、暴走ス…！"
+    ],
+    die: [
+        "バカな…私が敗れるとは…", "見事だ…", "これが…敗北の味か…", "第二形態への布石に過ぎん…", "闇は…滅びぬ…", "グフッ…！",
+        "貴様の顔…覚えたぞ…", "光ある所に…影またあり…", "我が屍を越えてゆけ…", "まさか…よもや…",
+        "見事だ人間よ…", "次は…勝つ…", "無念…"
+    ]
 };
 
 let game = null;
@@ -840,12 +825,10 @@ class Game {
     }
 
     bindDOM() {
-        // Updated IDs based on new HTML structure
         this.el = {
             container: document.getElementById('game-container'),
             stage: document.getElementById('stage'),
             
-            // HUD
             hp: document.getElementById('disp-hp'), mp: document.getElementById('disp-mp'),
             lv: document.getElementById('disp-lv'), atk: document.getElementById('disp-atk'), def: document.getElementById('disp-def'),
             gold: document.getElementById('disp-gold'), gen: document.getElementById('disp-gen'),
@@ -854,40 +837,28 @@ class Game {
             title: document.getElementById('disp-title'),
             bar: document.getElementById('progress-bar'), txt: document.getElementById('progress-text'),
 
-            // Windows
-            log: document.getElementById('log'), 
-            enemy: document.getElementById('enemy-slot'),
+            log: document.getElementById('log'), enemy: document.getElementById('enemy-slot'),
             
-            // Modals
             modalGo: document.getElementById('modal-go'), modalShop: document.getElementById('shop-modal'), modalLib: document.getElementById('lib-modal'),
             modalHelp: document.getElementById('help-modal'),
             
-            // Overlays
             drama: document.getElementById('drama-window'), flash: document.getElementById('flash'), flashInv: document.getElementById('flash-invert'), cutin: document.getElementById('cutin'),
             damagePop: document.getElementById('damage-pop'), chainPop: document.getElementById('chain-pop'),
             dangerOverlay: document.getElementById('danger-overlay'), itemPop: document.getElementById('item-pop'),
             
-            // Menus
             menuBattle: document.getElementById('menu-battle'), menuSkills: document.getElementById('menu-skills'), menuChest: document.getElementById('menu-chest'),
             
-            // Gauge
             gaugeArea: document.getElementById('gauge-area'), gaugeCursor: document.getElementById('gauge-cursor'),
             
-            // Buttons
-            btnMain: document.getElementById('btn-main'), 
-            btnStopWrapper: document.getElementById('btn-stop-wrapper'), // New Wrapper
-            btnStop: document.getElementById('btn-stop'),
+            btnMain: document.getElementById('btn-main'), btnStopWrapper: document.getElementById('btn-stop-wrapper'), btnStop: document.getElementById('btn-stop'),
             btnSpeed: document.getElementById('btn-speed'),
             
-            // Chest
             chestDisplay: document.getElementById('chest-display'),
             curI: { icon:document.getElementById('cur-icon'), name:document.getElementById('cur-name'), stat:document.getElementById('cur-stat'), sub:document.getElementById('cur-sub'), eff:document.getElementById('cur-effect') },
             newI: { icon:document.getElementById('new-icon'), name:document.getElementById('new-name'), stat:document.getElementById('new-stat'), sub:document.getElementById('new-sub'), eff:document.getElementById('new-effect') },
             btnGet: document.getElementById('btn-get'), btnDiscard: document.getElementById('btn-discard'),
             
-            // Events
             eventDisplay: document.getElementById('event-display'), eventTitle: document.getElementById('event-title'), eventDesc: document.getElementById('event-desc'), eventChoices: document.getElementById('event-choices'),
-
             dramaActor: document.getElementById('drama-actor-box'), dramaName: document.getElementById('drama-name'), dramaText: document.getElementById('drama-text'),
         };
     }
@@ -911,9 +882,11 @@ class Game {
         this.enemy = { name: "", hp: 0, maxHp: 0, atk: 0, type: "slime" };
         this.chain = 0;
         this.isDefenseMode = false;
-        if(this.defenseTimer) clearInterval(this.defenseTimer);
         
-        // Title Effects
+        // Clear all timers
+        if(this.defenseTimer) clearInterval(this.defenseTimer);
+        if(this.dramaTimer) clearTimeout(this.dramaTimer);
+        
         if(this.acquiredTitles.has("t_survivor")) this.maxHp = Math.floor(this.maxHp * 1.2);
     }
     
@@ -932,13 +905,28 @@ class Game {
     }
     
     softReset() {
+        // --- FIX: Soft Reset Logic ---
         this.resetInternalState();
+        
+        // Reset UI States
+        this.el.modalGo.style.display = "none";
+        this.el.modalShop.style.display = "none";
+        this.el.chestDisplay.style.display = "none";
+        this.el.eventDisplay.style.display = "none";
+        this.el.menuBattle.style.display = "none";
+        this.el.btnStopWrapper.style.display = "none";
+        this.el.gaugeArea.style.display = "none";
+        this.el.enemy.innerHTML = "";
+        
         this.el.log.innerHTML = `<div class='log-entry system'>第${this.generation}代 勇者、運命の地へ。</div>`;
-        this.el.modalGo.style.display = "none"; this.el.modalShop.style.display = "none";
-        this.el.btnMain.textContent = "抽選へ"; this.el.btnMain.disabled = false;
-        this.el.menuBattle.style.display = "none"; this.el.enemy.innerHTML = "";
-        this.el.dangerOverlay.style.display = "none"; this.updateHud();
-        this.el.aura.textContent = "READY"; this.el.aura.style.color = "#555";
+        this.el.btnMain.textContent = "抽選へ"; 
+        this.el.btnMain.style.display = "block";
+        this.el.btnMain.disabled = false;
+        this.el.dangerOverlay.style.display = "none"; 
+        this.el.aura.textContent = "READY"; 
+        this.el.aura.style.color = "#555";
+        
+        this.updateHud();
         this.sound.playSE('select');
     }
 
@@ -949,17 +937,10 @@ class Game {
     }
     
     toggleSpeed() {
-        if(this.timeScale === 1) {
-            this.timeScale = 2;
-            this.el.container.classList.add('speed-x2');
-            this.el.btnSpeed.textContent = "x2";
-            this.el.btnSpeed.style.background = "#044";
-        } else {
-            this.timeScale = 1;
-            this.el.container.classList.remove('speed-x2');
-            this.el.btnSpeed.textContent = "x1";
-            this.el.btnSpeed.style.background = "#000";
-        }
+        this.timeScale = this.timeScale === 1 ? 2 : 1;
+        this.el.container.classList.toggle('speed-x2', this.timeScale === 2);
+        this.el.btnSpeed.textContent = this.timeScale === 2 ? "x2" : "x1";
+        this.el.btnSpeed.style.background = this.timeScale === 2 ? "#044" : "#000";
         this.sound.playSE('select');
     }
 
@@ -986,7 +967,6 @@ class Game {
 
     get totalAtk() { 
         let a = this.baseAtk + (this.weapon ? this.weapon.atk : 0) + (this.accessory ? (this.accessory.atk||0) : 0);
-        // Soul Effects
         if(this.accessory && this.accessory.soulEffect === "atk_up") a += (this.accessory.val || 0);
         if(this.accessory && this.accessory.soulEffect === "all_up") a += (this.accessory.val || 0);
         return Math.floor(a);
@@ -1000,11 +980,10 @@ class Game {
             this.isDefenseMode = true;
             this.el.container.classList.add('defense-mode');
             this.el.awakeTxt.style.display = "inline";
-            this.sound.playSE('revive'); // Use revive sound for activation
+            this.sound.playSE('revive');
             this.log("≪絶対防御界≫ 展開！", "block");
             this.showCutin("A. DEFENSE");
             
-            // MP Drain Timer (1 per sec)
             if(this.defenseTimer) clearInterval(this.defenseTimer);
             this.defenseTimer = setInterval(() => {
                 if(!this.isDefenseMode) return;
@@ -1041,7 +1020,6 @@ class Game {
         this.el.bar.style.width = `${prog}%`;
         this.el.txt.textContent = this.lv >= this.targetLv ? "決戦！ 魔王の間" : `地下 ${this.lv} / ${this.targetLv} 階`;
         
-        // Title
         if(this.acquiredTitles.size > 0) {
             const last = Array.from(this.acquiredTitles).pop();
             const tData = TITLES.find(t=>t.id===last);
@@ -1051,7 +1029,6 @@ class Game {
 
     async delay(ms) { return new Promise(r => setTimeout(r, ms / this.timeScale)); }
 
-    // --- MAIN FLOW ---
     handleMainBtn() { 
         this.sound.playSE('select'); 
         if (this.state === "INIT") this.startLottery(); 
@@ -1066,7 +1043,7 @@ class Game {
         
         const rollCount = 15;
         for (let i = 0; i < rollCount; i++) {
-            if (this.skipLottery) break; // Skip
+            if (this.skipLottery) break; 
             sel = RATES[Math.floor(Math.random() * RATES.length)];
             this.el.aura.textContent = `${Math.floor(Math.random()*99)}%`;
             this.el.aura.style.color = sel.color;
@@ -1079,12 +1056,10 @@ class Game {
         else if (r < 0.9) sel = RATES[3]; else if (r < 0.98) sel = RATES[4]; else sel = RATES[5];
         this.revivalRate = Math.min(0.65, sel.rate + this.luckBonus); 
         
-        // Title Bonus
         if(this.acquiredTitles.has("t_unscathed")) this.revivalRate += 0.05;
         
         this.el.aura.textContent = `${Math.floor(this.revivalRate*100)}%`;
         this.el.aura.style.color = sel.color;
-        // Effect on stage background in Retro Mode
         this.el.stage.style.boxShadow = `inset 0 0 30px ${sel.color}`;
         this.showCutin(sel.name + " 確定"); this.sound.playSE('crit');
         
@@ -1095,7 +1070,6 @@ class Game {
     }
     
     decideEncounter() {
-        // Dungeon Event Logic
         const r = Math.random();
         if (this.lv < this.targetLv && r < 0.15) {
             this.triggerEvent();
@@ -1111,7 +1085,6 @@ class Game {
         
         const events = ["spring", "merchant", "devil"];
         const type = events[Math.floor(Math.random()*events.length)];
-        
         let title="", desc="";
         
         const createBtn = (txt, cb) => {
@@ -1173,7 +1146,6 @@ class Game {
             const pres = ["", "<ruby>凶暴<rt>マッド</rt></ruby>な", "<ruby>歴戦<rt>ベテラン</rt></ruby>の", "<ruby>暗黒<rt>ダーク</rt></ruby>の", "<ruby>真<rt>シン</rt></ruby>・", "<ruby>極<rt>アルティメット</rt></ruby>・", "<ruby>獄炎<rt>インフェルノ</rt></ruby>の"];
             const pre = pres[Math.min(Math.floor(this.lv/5) + Math.floor(this.generation/2), 6)];
             
-            // Name mapping with Ruby
             const nameMap = {
                 slime: "スライム", bat: "バット", rabbit: "ラビット", skeleton: "スケルトン", ghost: "ゴースト",
                 knight: "ナイト", wizard: "ウィザード", golem: "ゴーレム", mimic: "<ruby>人食い箱<rt>ミミック</rt></ruby>",
@@ -1190,7 +1162,6 @@ class Game {
             if (tier > 7 && Math.random() < 0.3) gauge = "wavy";
         }
         
-        // INFLATION FORMULA
         let diff = Math.pow(1.2, this.generation - 1) * (1 + (this.lv * 0.1));
         
         this.enemy = { 
@@ -1220,7 +1191,6 @@ class Game {
     async startBossBattle(type) {
         if(!this.isDefenseMode) this.sound.playBGM('boss');
         const isMaou = type === "boss";
-        // INFLATION
         const diff = Math.pow(1.3, this.generation - 1); 
         
         let name = isMaou ? `第${this.clears}代 <ruby>魔王<rt>ダークロード</rt></ruby>` : "<ruby>魔界<rt>アビス</rt></ruby>の<ruby>番人<rt>ガーディアン</rt></ruby>";
@@ -1245,7 +1215,6 @@ class Game {
              this.el.enemy.style.transform = "scale(1.2)";
         });
         
-        // Boss Talk
         const line = isMaou ? "よくぞここまで来た…褒めてやろう" : "ここを通すわけにはいかん…";
         setTimeout(() => this.showBattleTalk(line, 3000), 1000);
 
@@ -1263,7 +1232,6 @@ class Game {
         this.dramaTimer = setTimeout(() => { this.el.drama.style.display = "none"; }, duration);
     }
 
-    // --- COMBAT ---
     selectAttack() { this.sound.playSE('select'); this.selectedSkill = null; this.el.menuBattle.style.display = "none"; this.startGauge(); }
     selectHeal() { this.sound.playSE('select'); if(this.mp<5){this.log("MP不足！");return;} this.useSkill(SKILLS.find(s=>s.id==="heal")); }
     
@@ -1312,8 +1280,6 @@ class Game {
         if(this.enemy.gaugeType === "slow") this.gaugeSpeed = 0.5;
         
         if(this.weapon && this.weapon.effect === "slow") this.gaugeSpeed *= 0.7;
-        
-        // Haste Soul
         if(this.accessory && this.accessory.effect === "haste") this.gaugeSpeed *= 0.8;
 
         this.el.gaugeCursor.style.opacity = 1;
@@ -1339,16 +1305,12 @@ class Game {
         
         let safeZone = 5;
         if (this.weapon && this.weapon.effect === "scope") safeZone = 10;
-        // Godspeed Title
-        if(this.acquiredTitles.has("t_godspeed")) safeZone += 2;
+        if (this.acquiredTitles.has("t_godspeed")) safeZone += 2;
 
         if(dist <= safeZone) {
-            this.chain++; 
-            isCrit = true;
-            mult = 1.2 + (this.chain * 0.3); 
-            // Crit Soul
+            this.chain++; isCrit = true; mult = 1.2 + (this.chain * 0.3); 
             if(this.accessory && this.accessory.effect === "crit_up") mult += 0.5;
-            this.showChainPop(`${this.chain}連撃`); // Changed text to JP
+            this.showChainPop(`${this.chain}連撃`);
             this.checkDefenseMode(); 
         } else if (dist <= 15) { 
             if (this.enemy.isMetal && Math.random() < 0.5) { isCrit = true; this.log("神速の剣閃！", "critical"); }
@@ -1379,14 +1341,12 @@ class Game {
                 this.log(`${this.enemy.name}に ${dmg} のダメージ！`, isCrit ? "critical" : "");
                 this.showDamage(dmg, 'deal', isCrit); this.enemy.hp-=dmg; 
                 
-                // Enemy React Talk
                 if (this.enemy.hp < this.enemy.maxHp * 0.3 && Math.random() < 0.4) {
                     this.showBattleTalk(TALK_PATTERNS.pinch[Math.floor(Math.random()*TALK_PATTERNS.pinch.length)], 1000);
                 } else if (Math.random() < 0.2) {
                     this.showBattleTalk(TALK_PATTERNS.hit[Math.floor(Math.random()*TALK_PATTERNS.hit.length)], 1000);
                 }
 
-                // Drain Effect
                 if ((this.weapon && this.weapon.effect === "drain") || (this.accessory && this.accessory.effect === "drain")) {
                      let drain = Math.floor(dmg * 0.2);
                      if(drain > 0) {
@@ -1394,7 +1354,6 @@ class Game {
                          this.log(`血を啜り ${drain} 回復！`, "revive");
                      }
                 }
-
             } else { 
                 this.log(`ミス！ ${this.enemy.name}にダメージを与えられない！`); this.showDamage("Miss", 'miss', false); 
             }
@@ -1434,21 +1393,18 @@ class Game {
         this.el.btnStopWrapper.style.display = "none";
         this.el.enemy.style.transform = "scale(1)";
 
-        // CHECK DEFENSE MODE
         if (this.isDefenseMode) {
              this.sound.playSE('metal');
              this.log(`絶対防御界がダメージを無効化した！`, "block");
              this.showDamage("BLOCK", 'block', false);
-             // Extra MP cost for block
              this.mp = Math.max(0, this.mp - 2); 
              if(this.mp <= 0) this.breakDefenseMode();
              this.updateHud();
              this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "flex";
-             return; // No damage taken
+             return;
         }
 
         if (this.guardSuccess) {
-            // JUST GUARD SUCCESS
             let counterDmg = Math.floor(this.totalAtk * 1.5);
             this.log(`カウンター！ ${this.enemy.name}に ${counterDmg} のダメージ！`, "critical");
             this.showDamage(counterDmg, 'deal', true);
@@ -1472,18 +1428,16 @@ class Game {
             this.el.stage.style.transform = "translate(5px, 5px)"; setTimeout(() => this.el.stage.style.transform = "translate(0, 0)", 100);
         }
 
-        // Regen Effect (Armor or Soul)
         if ((this.armor && this.armor.effect === "regen") || (this.accessory && this.accessory.effect === "regen")) {
             let reg = Math.floor(this.maxHp * 0.05);
             if(reg>0 && this.hp > 0) { this.hp = Math.min(this.maxHp, this.hp+reg); this.updateHud(); }
         }
 
         if (this.hp <= 0) {
-            // Rebirth Accessory
             if(this.accessory && this.accessory.effect === "rebirth") {
                 this.hp = Math.floor(this.maxHp * 0.5);
                 this.log("フェニックスの尾が輝き、蘇る！", "revive");
-                this.accessory = null; // Consume
+                this.accessory = null;
                 this.updateHud();
                 this.sound.playSE('revive');
                 this.showCutin("復 活");
@@ -1504,31 +1458,25 @@ class Game {
             this.guardSuccess = true;
             this.isGuardWindow = false;
             this.sound.playSE('parry');
-            
-            // Just Guard Effect
             this.el.flashInv.classList.add("anim-invert");
             setTimeout(() => this.el.flashInv.classList.remove("anim-invert"), 300);
-
-            // Kanji + Ruby Text
+            
             const txtObj = GUARD_TEXTS[Math.floor(Math.random()*GUARD_TEXTS.length)];
             const rubyHtml = `<ruby>${txtObj.t}<rt>${txtObj.r}</rt></ruby>`;
             
             this.el.cutin.innerHTML = rubyHtml;
             this.el.cutin.classList.add("just");
             this.el.cutin.style.transform="translate(-50%,-50%) scale(1)";
-            
             setTimeout(()=>{
                 this.el.cutin.style.transform="translate(-50%,-50%) scale(0)";
                 this.el.cutin.classList.remove("just");
             }, 1000);
-
             this.log("見切った！", "critical");
         } else {
             this.log("防御が遅れた！");
         }
     }
 
-    // --- WIN & DROP ---
     async winBattle() {
         if (this.noDamageNow) {
             this.noDamageStreak++;
@@ -1566,8 +1514,6 @@ class Game {
         }
 
         this.log(`${this.enemy.name}を倒した。`, "critical");
-        
-        // Random Death Talk
         if (Math.random() < 0.3) {
             this.showBattleTalk(TALK_PATTERNS.die[Math.floor(Math.random()*TALK_PATTERNS.die.length)], 1000);
         }
@@ -1579,13 +1525,9 @@ class Game {
         await this.delay(1000);
         
         this.lv += 1;
-        
         const mult = this.enemy.expMult;
-        this.maxHp += 4 * mult; 
-        this.hp = Math.min(this.maxHp, this.hp + 20);
-        this.baseAtk += 1 * mult; 
-        this.maxMp += 2 * mult; 
-        this.mp += 2 * mult;
+        this.maxHp += 4 * mult; this.hp = Math.min(this.maxHp, this.hp + 20);
+        this.baseAtk += 1 * mult; this.maxMp += 2 * mult; this.mp += 2 * mult;
         
         let goldRate = 1.0;
         if(this.armor && this.armor.effect === "greed") goldRate += 0.5;
@@ -1602,7 +1544,6 @@ class Game {
     }
 
     async checkDrop() {
-        // Soul Drop Check (Only if not boss, low prob)
         if (Math.random() < 0.05 && SOULS[this.enemy.type]) {
             const soulData = SOULS[this.enemy.type];
             const soulItem = { 
@@ -1620,10 +1561,8 @@ class Game {
 
         if (Math.random() < 0.4) { 
             let drop = ITEMS[Math.floor(Math.random()*ITEMS.length)]; 
-            
-            // Inflate Item Stats
             let scale = Math.pow(1.15, this.lv/5) * (1 + this.generation * 0.5);
-            let newI = JSON.parse(JSON.stringify(drop)); // Clone
+            let newI = JSON.parse(JSON.stringify(drop)); 
             if(newI.atk) newI.atk = Math.floor(newI.atk * scale);
             if(newI.def) newI.def = Math.floor(newI.def * scale);
 
@@ -1643,8 +1582,6 @@ class Game {
             this.el.enemy.style.display = "none";
             
             this.el.menuChest.style.display = "flex";
-            
-            // Trap Prevention: Delay inputs
             this.el.btnGet.style.opacity = 0.3; this.el.btnGet.style.pointerEvents = "none";
             this.el.btnDiscard.style.opacity = 0.3; this.el.btnDiscard.style.pointerEvents = "none";
             
@@ -1663,14 +1600,13 @@ class Game {
             
             this.renderCard(this.el.curI, cur, item.type);
             this.renderCard(this.el.newI, item, item.type);
-            
             this.resolveItem = resolve;
         });
     }
     
     renderCard(els, item, type) {
         if(!els.name) return;
-        els.name.innerHTML = item.name; // Use innerHTML for ruby
+        els.name.innerHTML = item.name;
         const sp = SPRITES[item.sprite] || SPRITES.stick;
         els.icon.innerHTML = generateSVG(sp, item.color);
         
@@ -1686,14 +1622,45 @@ class Game {
         els.eff.textContent = item.effectName ? `★${item.effectName}` : "";
     }
     
+    calcPrice(item) {
+        if(!item || !item.id) return 0;
+        let base = (item.atk || 0) + (item.def || 0);
+        return Math.floor(Math.max(10, base * 15) * (1 + this.generation * 0.1));
+    }
+
     decideItem(take) {
         this.sound.playSE('select');
+        let soldPrice = 0;
+        let soldName = "";
+
         if(take) {
+            // Sell old
+            let old;
+            if(this.pendingItem.type === "acc") old = this.accessory;
+            else if(this.pendingItem.type === "a") old = this.armor;
+            else old = this.weapon;
+
+            if(old) {
+                soldPrice = this.calcPrice(old);
+                soldName = old.name.replace(/<rt>.*?<\/rt>/g,"");
+                this.gold += soldPrice;
+                this.log(`${soldName}を下取り (+${soldPrice}G)`, "system");
+                this.sound.playSE('coin');
+            }
+
             if (this.pendingItem.type === "acc") this.accessory = this.pendingItem;
             else if (this.pendingItem.type === "a") this.armor = this.pendingItem; 
             else this.weapon = this.pendingItem;
-            this.log(`${this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"")}を装備した。`, "item"); this.sound.playSE('revive');
-        } else { this.log("宝箱を無視した。", "system"); }
+            this.log(`${this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"")}を装備！`, "item"); 
+            this.sound.playSE('revive');
+        } else { 
+            // Sell new (discarded)
+            soldPrice = this.calcPrice(this.pendingItem);
+            soldName = this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"");
+            this.gold += soldPrice;
+            this.log(`${soldName}を売却 (+${soldPrice}G)`, "system");
+            this.sound.playSE('coin');
+        }
         
         this.el.chestDisplay.style.display = "none"; 
         this.el.menuChest.style.display = "none";
@@ -1739,7 +1706,6 @@ class Game {
         const scene = dramas[Math.floor(Math.random() * dramas.length)];
         
         this.el.drama.style.display = "flex";
-        
         for (const step of scene) {
              this.el.dramaActor.innerHTML = generateSVG(SPRITES[step.a] || SPRITES.slime);
              this.el.dramaName.textContent = step.n;
@@ -1747,7 +1713,6 @@ class Game {
              this.sound.playSE('select');
              await this.delay(2500);
         }
-        
         this.el.drama.style.display = "none";
         this.el.flash.style.opacity = 1; 
         this.sound.playSE('revive'); 
@@ -1801,21 +1766,36 @@ class Game {
         
         if(this.gold>=c){this.gold-=c;this.boosts[t]+=i;document.getElementById('shop-gold').textContent=this.gold;this.sound.playSE('coin');this.saveData();} else this.sound.playSE('hit');
     }
+    
     openLibrary() {
-        this.sound.playSE('select'); this.el.modalLib.style.display="flex"; document.getElementById('lib-grid').innerHTML="";
+        this.sound.playSE('select'); 
+        this.el.modalHelp.style.display = "none"; // Close help if coming from there
+        this.el.modalLib.style.display="flex"; 
+        document.getElementById('lib-grid').innerHTML="";
+        
         const allItems = [...ITEMS];
-        // Add soul items dynamically
         Object.keys(SOULS).forEach(key => {
             const s = SOULS[key];
             allItems.push({id:`soul_${key}`, type:"acc", name:s.name, prob:0, sprite:"soul", color:s.color, isSoul:true});
         });
+
+        const total = allItems.length;
+        const current = this.acquiredItems.size;
+        const percent = Math.floor((current / total) * 100);
+        document.getElementById('lib-comp').textContent = `収集率: ${percent}%`;
 
         allItems.forEach(i=>{
             const div=document.createElement('div'); const has=this.acquiredItems.has(i.id);
             div.className=`list-item ${has?'got':''} ${i.isSoul?'soul':''}`;
             let label = "";
             if(i.type==="w") label=`攻${i.atk}`; else if(i.type==="a") label=`守${i.def}`; else label="装飾";
-            div.innerHTML=`${has?generateSVG(SPRITES[i.sprite],i.color):generateSVG(SPRITES.stick,"#333")}<div>${has?i.name.replace(/<rt>.*?<\/rt>/g,""):"???"}</div><div>${label}</div>`;
+            
+            // Masking
+            const name = has ? i.name.replace(/<rt>.*?<\/rt>/g,"") : "？？？";
+            const icon = has ? generateSVG(SPRITES[i.sprite], i.color) : generateSVG(SPRITES.stick, "#222");
+            const stat = has ? label : "---";
+
+            div.innerHTML=`${icon}<div>${name}</div><div>${stat}</div>`;
             document.getElementById('lib-grid').appendChild(div);
         });
     }
