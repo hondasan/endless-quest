@@ -1304,6 +1304,16 @@ class Game {
         
         this.el.eventTitle.textContent = title;
         this.el.eventDesc.textContent = desc;
+
+        // MODIFIED: Auto Event
+        if (this.isAutoMode) {
+            setTimeout(() => {
+                // Ensure state is still EVENT (user didn't manually click)
+                if (this.state === "EVENT" && this.el.eventChoices.children.length > 0) {
+                    this.el.eventChoices.children[0].click();
+                }
+            }, 1000);
+        }
     }
     
     endEvent() {
@@ -1312,6 +1322,15 @@ class Game {
         this.updateHud();
         if(this.state !== "BATTLE_CMD") {
             this.state = "BATTLE_WAIT"; this.el.btnMain.style.display = "block";
+            
+            // MODIFIED: Auto Event
+            if (this.isAutoMode) {
+                setTimeout(() => {
+                    if (this.state === "BATTLE_WAIT") {
+                        this.handleMainBtn();
+                    }
+                }, 800);
+            }
         }
     }
 
