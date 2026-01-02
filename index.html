@@ -352,6 +352,10 @@
             border: 2px solid #fff; border-radius: 4px;
             background: #000; color: #fff;
             display: flex; justify-content: center; align-items: center; cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .icon-btn.active {
+            background: #044; color: var(--accent-cyan); border-color: var(--accent-cyan);
         }
         .progress-container {
             flex-grow: 1; height: 12px; background: #222; border: 1px solid #555; position: relative;
@@ -441,7 +445,12 @@
     <!-- HEADER -->
     <div class="header-bar">
         <button class="icon-btn" onclick="game.openHelp()">?</button>
+        <!-- ADDED: Mute Button -->
+        <button class="icon-btn" id="btn-mute" onclick="game.toggleMute()">🔊</button>
         <button class="icon-btn" id="btn-speed" onclick="game.toggleSpeed()" style="font-size:0.7rem; width:40px;">x1</button>
+        <!-- ADDED: Auto Button -->
+        <button class="icon-btn" id="btn-auto" onclick="game.toggleAutoMode()" style="font-size:0.6rem; width:44px;">AUTO</button>
+        
         <div class="progress-container">
             <div class="progress-fill" id="progress-bar"></div>
             <div class="progress-text" id="progress-text">魔王城まで ???</div>
@@ -596,6 +605,7 @@
             <div class="modal-title">冒険の心得</div>
             <div style="font-size:0.9rem; line-height:1.6; color:#ccc;">
                 <p>地下30階の魔王を討伐せよ。<br>周回するごとに敵は強大になる。</p>
+                <p><strong>[AUTOモード]</strong><br>戦闘と装備選択を自動化します。<br>※魔王戦では自動で解除されます。<br>※運(LUCK)が高いほど精度が向上します。</p>
                 <p><strong>[絶対防御界]</strong><br>連撃5以上で自動発動。MPを消費してダメージを無効化。</p>
                 <p><strong>[見切り (Just Guard)]</strong><br>敵攻撃に合わせて防御ボタンを押せ。</p>
             </div>
@@ -645,10 +655,22 @@
 
 <script>
 class SoundManager {
-    constructor() { this.ctx = null; this.bgmOscs = []; }
+    constructor() { 
+        this.ctx = null; 
+        this.bgmOscs = []; 
+        this.muted = false; // ADDED: Mute flag
+    }
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+    
+    // ADDED: Mute toggle method
+    toggleMute() {
+        this.muted = !this.muted;
+        if(this.muted) this.stopBGM();
+        return this.muted;
+    }
+
     playSE(type) {
-        if (!this.ctx) return;
+        if (!this.ctx || this.muted) return; // CHANGED: Check mute
         const t = this.ctx.currentTime; const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
         o.connect(g); g.connect(this.ctx.destination);
         if (type==='select') { o.type='square'; o.frequency.setValueAtTime(440,t); o.frequency.exponentialRampToValueAtTime(880,t+0.05); g.gain.setValueAtTime(0.1,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.05); o.start(t); o.stop(t+0.05); }
@@ -669,7 +691,8 @@ class SoundManager {
         else if (type==='metal') { o.type='square'; o.frequency.setValueAtTime(1500,t); g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.05); o.start(t); o.stop(t+0.05); }
     }
     playBGM(type) {
-        if (!this.ctx) return; this.stopBGM();
+        if (!this.ctx || this.muted) return; // CHANGED: Check mute
+        this.stopBGM();
         const o = this.ctx.createOscillator(); const g = this.ctx.createGain(); const f = this.ctx.createBiquadFilter();
         o.connect(f); f.connect(g); g.connect(this.ctx.destination);
         o.type='sawtooth'; f.type='lowpass'; f.frequency.value=300;
@@ -864,6 +887,7 @@ class Game {
         this.reviveCount = 0;
         this.noDamageStreak = 0;
         this.shopMultiplier = 1; // Default x1
+        this.isAutoMode = false; // ADDED: Auto mode flag
     }
 
     bindDOM() {
@@ -897,6 +921,8 @@ class Game {
             
             btnMain: document.getElementById('btn-main'), btnStopWrapper: document.getElementById('btn-stop-wrapper'), btnStop: document.getElementById('btn-stop'),
             btnSpeed: document.getElementById('btn-speed'),
+            // ADDED: Buttons
+            btnAuto: document.getElementById('btn-auto'), btnMute: document.getElementById('btn-mute'),
             
             chestDisplay: document.getElementById('chest-display'),
             curI: { icon:document.getElementById('cur-icon'), name:document.getElementById('cur-name'), stat:document.getElementById('cur-stat'), sub:document.getElementById('cur-sub'), eff:document.getElementById('cur-effect') },
@@ -999,6 +1025,31 @@ class Game {
         this.el.btnSpeed.textContent = this.timeScale === 2 ? "x2" : "x1";
         this.el.btnSpeed.style.background = this.timeScale === 2 ? "#044" : "#000";
         this.sound.playSE('select');
+    }
+
+    // ADDED: Auto Toggle
+    toggleAutoMode(forceVal = null) {
+        if (forceVal !== null) {
+            this.isAutoMode = forceVal;
+        } else {
+            this.isAutoMode = !this.isAutoMode;
+        }
+        
+        this.el.btnAuto.classList.toggle('active', this.isAutoMode);
+        if(this.isAutoMode) {
+            this.log("[AUTO] 戦闘・装備選択を自動化", "system");
+        } else {
+            this.log("[AUTO] 解除", "system");
+        }
+        this.sound.playSE('select');
+    }
+
+    // ADDED: Mute Toggle
+    toggleMute() {
+        const isMuted = this.sound.toggleMute();
+        this.el.btnMute.textContent = isMuted ? "🔇" : "🔊";
+        this.el.btnMute.style.color = isMuted ? "#888" : "#fff";
+        this.el.btnMute.style.borderColor = isMuted ? "#888" : "#fff";
     }
 
     log(msg, type = "") {
@@ -1326,6 +1377,16 @@ class Game {
         }
         
         this.log(`${this.enemy.name} があらわれた！`);
+        
+        // ADDED: Auto Attack Logic
+        if(this.isAutoMode) {
+             setTimeout(() => {
+                 // Check if still in battle command state (player didn't manually intervene)
+                 if(this.state === "BATTLE_CMD") {
+                     this.selectAttack();
+                 }
+             }, 400); // Small delay to let animations finish
+        }
     }
 
     // Special Battle for Mimic Trap
@@ -1346,9 +1407,20 @@ class Game {
         this.el.enemy.style.display = "block";
         this.showCutin("TRAP!!");
         this.log("ミミックが襲いかかってきた！");
+        
+        // ADDED: Auto Attack Logic
+        if(this.isAutoMode) {
+             setTimeout(() => { if(this.state === "BATTLE_CMD") this.selectAttack(); }, 800);
+        }
     }
     
     async startBossBattle(type) {
+        // ADDED: Safety Stop for Boss (Demon King)
+        if(type === 'boss' && this.isAutoMode) {
+            this.toggleAutoMode(false);
+            this.log("魔王の気迫に圧倒され、AUTOモードが解除された！", "damage");
+        }
+
         if(!this.isDefenseMode) this.sound.playBGM('boss');
         const isMaou = type === "boss";
         
@@ -1382,6 +1454,11 @@ class Game {
         setTimeout(() => this.showBattleTalk(line, 3000), 1000);
 
         this.showCutin(isMaou ? "魔王 降臨" : "強敵 出現");
+
+        // ADDED: Auto Attack Logic (For Mid-Boss only, as Boss stops auto)
+        if(this.isAutoMode) {
+             setTimeout(() => { if(this.state === "BATTLE_CMD") this.selectAttack(); }, 1200);
+        }
     }
     
     showBattleTalk(text, duration, actorKey = null, nameOverride = null) {
@@ -1446,6 +1523,22 @@ class Game {
         if(this.accessory && this.accessory.effect === "haste") this.gaugeSpeed *= 0.8;
 
         this.el.gaugeCursor.style.opacity = 1;
+
+        // ADDED: Calculate Auto Target
+        if (this.isAutoMode) {
+            // Luck influences precision. High Luck -> closer to 50.
+            // Variance: 15 (Great) ~ 2 (Perfect)
+            const baseVariance = Math.max(2, 15 - (this.boosts.luck * 0.5) - (this.accessory?.effect === 'lucky' ? 5 : 0));
+            const randomVariance = Math.random() * baseVariance;
+            const sign = Math.random() < 0.5 ? 1 : -1;
+            this.autoTarget = 50 + (randomVariance * sign);
+            
+            // Limit target to reasonable bounds (e.g. 35-65) to avoid misses if variance is high
+            this.autoTarget = Math.max(35, Math.min(65, this.autoTarget));
+        } else {
+            this.autoTarget = null;
+        }
+
         this.runGauge();
     }
     runGauge() {
@@ -1458,7 +1551,19 @@ class Game {
         if (t === "reverse") { if (this.gaugeDir === 1) this.gaugeVal -= spd; else this.gaugeVal += spd; } else { this.gaugeVal += spd * this.gaugeDir; }
 
         if(this.gaugeVal>=100){this.gaugeVal=100;this.gaugeDir=-1;} if(this.gaugeVal<=0){this.gaugeVal=0;this.gaugeDir=1;}
-        this.el.gaugeCursor.style.left = this.gaugeVal+"%"; requestAnimationFrame(()=>this.runGauge());
+        this.el.gaugeCursor.style.left = this.gaugeVal+"%"; 
+        
+        // ADDED: Auto Trigger
+        if (this.isAutoMode && this.autoTarget !== null) {
+            // Since we usually hit on the way UP (dir=1), trigger if we cross the target
+            // Only trigger if we are in the "sweet spot" range (30-70) to avoid early misfires if target is weird
+            if (this.gaugeDir === 1 && this.gaugeVal >= this.autoTarget) {
+                this.stopGauge();
+                return; // Stop recursion
+            }
+        }
+        
+        requestAnimationFrame(()=>this.runGauge());
     }
     
     async stopGauge() {
@@ -1535,7 +1640,11 @@ class Game {
             this.log(`${this.enemy.name}は逃げ出した！`, "system");
             this.el.enemy.style.opacity = 0;
             await this.delay(1000);
-            this.state = "BATTLE_WAIT"; this.el.btnMain.style.display = "block"; this.el.btnMain.textContent = "さらに奥へ";
+            this.state = "BATTLE_WAIT"; 
+            this.el.btnMain.style.display = "block"; 
+            this.el.btnMain.textContent = "さらに奥へ";
+            // Auto Continue
+            if (this.isAutoMode) { setTimeout(()=>this.handleMainBtn(), 500); }
             return;
         }
 
@@ -1549,6 +1658,10 @@ class Game {
         this.isGuardWindow = true;
         this.guardStart = Date.now();
         this.guardSuccess = false;
+        
+        // Auto Guard Logic (Simple: 50% chance, or higher based on luck/speed?)
+        // Let's make Auto Guard 50% chance to be fair, or it becomes too OP.
+        // Or make it rely on Titles. For now, no Auto Guard requested, so just let it take damage or rely on Defense Mode.
         
         await this.delay(600);
         
@@ -1564,6 +1677,8 @@ class Game {
              if(this.mp <= 0) this.breakDefenseMode();
              this.updateHud();
              this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "flex";
+             // Auto Attack Next Round
+             if (this.isAutoMode) setTimeout(() => this.selectAttack(), 500);
              return;
         }
 
@@ -1605,12 +1720,14 @@ class Game {
                 this.sound.playSE('revive');
                 this.showCutin("復 活");
                 this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "flex";
+                if(this.isAutoMode) setTimeout(() => this.selectAttack(), 500);
             } else {
                 this.sound.stopBGM();
                 await this.tryRevival();
             }
         } else {
             this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "flex";
+            if(this.isAutoMode) setTimeout(() => this.selectAttack(), 500);
         }
     }
     
@@ -1720,7 +1837,13 @@ class Game {
             this.acquiredItems.add(soulItem.id);
             this.pendingItem = soulItem;
             this.log("敵の魂が具現化した...", "revive");
-            await this.showItemCompare(soulItem);
+            
+            // Auto Equip check for Soul
+            if (this.isAutoMode) {
+                 await this.autoEquipCheck(soulItem);
+            } else {
+                 await this.showItemCompare(soulItem);
+            }
             return;
         }
 
@@ -1737,11 +1860,43 @@ class Game {
 
             this.acquiredItems.add(drop.id);
             this.pendingItem = newI;
-            await this.showItemCompare(newI);
+            
+            // ADDED: Auto Equip Check
+            if (this.isAutoMode) {
+                 await this.autoEquipCheck(newI);
+            } else {
+                 await this.showItemCompare(newI);
+            }
         } else {
-            this.state="BATTLE_WAIT"; this.el.btnMain.textContent="さらに奥へ"; this.el.btnMain.style.display="block"; 
+            this.state="BATTLE_WAIT"; 
+            this.el.btnMain.textContent="さらに奥へ"; 
+            this.el.btnMain.style.display="block"; 
             if(!this.isDefenseMode) this.sound.playBGM('battle');
+            // Auto Continue
+            if (this.isAutoMode) { setTimeout(()=>this.handleMainBtn(), 500); }
         }
+    }
+
+    // ADDED: Auto Equip Logic
+    async autoEquipCheck(item) {
+        let cur = null;
+        if (item.type === "acc") cur = this.accessory;
+        else if (item.type === "a") cur = this.armor;
+        else cur = this.weapon;
+
+        const getStat = (i) => (i ? (i.atk||0) + (i.def||0) : 0);
+        const curVal = getStat(cur);
+        const newVal = getStat(item);
+
+        // Simple logic: If new item is stronger or equal, take it. Else sell.
+        // Also prioritize Souls if slot is empty or weak? 
+        // For simplicity, stick to raw stat sum.
+        const take = newVal >= curVal;
+        
+        this.decideItem(take);
+        
+        // No promise resolve needed as decideItem continues flow, but for consistency:
+        return Promise.resolve();
     }
     
     showItemCompare(item) {
@@ -1798,7 +1953,10 @@ class Game {
     }
 
     decideItem(take) {
-        this.sound.playSE('select');
+        // Only play sound if UI is shown (manual mode) or just force it (auto mode)
+        // Actually sound is fine in auto too for feedback
+        if (!this.isAutoMode) this.sound.playSE('select');
+        
         let soldPrice = 0;
         let soldName = "";
 
@@ -1814,21 +1972,21 @@ class Game {
                 soldName = old.name.replace(/<rt>.*?<\/rt>/g,"");
                 this.gold += soldPrice;
                 this.log(`${soldName}を下取り (+${soldPrice}G)`, "system");
-                this.sound.playSE('coin');
+                if(!this.isAutoMode) this.sound.playSE('coin');
             }
 
             if (this.pendingItem.type === "acc") this.accessory = this.pendingItem;
             else if (this.pendingItem.type === "a") this.armor = this.pendingItem; 
             else this.weapon = this.pendingItem;
             this.log(`${this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"")}を装備！`, "item"); 
-            this.sound.playSE('revive');
+            if(!this.isAutoMode) this.sound.playSE('revive');
         } else { 
             // Sell new (discarded)
             soldPrice = this.calcPrice(this.pendingItem);
             soldName = this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"");
             this.gold += soldPrice;
             this.log(`${soldName}を売却 (+${soldPrice}G)`, "system");
-            this.sound.playSE('coin');
+            if(!this.isAutoMode) this.sound.playSE('coin');
         }
         
         this.el.chestDisplay.style.display = "none"; 
@@ -1837,8 +1995,13 @@ class Game {
         
         this.updateHud(); 
         
-        this.state="BATTLE_WAIT"; this.el.btnMain.textContent="さらに奥へ"; this.el.btnMain.style.display="block"; 
+        this.state="BATTLE_WAIT"; 
+        this.el.btnMain.textContent="さらに奥へ"; 
+        this.el.btnMain.style.display="block"; 
         if(!this.isDefenseMode) this.sound.playBGM('battle');
+        
+        // Auto Continue
+        if (this.isAutoMode) { setTimeout(()=>this.handleMainBtn(), 500); }
         
         if(this.resolveItem) this.resolveItem();
     }
@@ -1858,6 +2021,7 @@ class Game {
             if(!this.isDefenseMode) this.sound.playBGM('boss');
             this.state = "BATTLE_CMD";
             this.el.menuBattle.style.display = "flex";
+            if(this.isAutoMode) setTimeout(() => this.selectAttack(), 500);
         } else {
             this.log("......", "system");
             await this.delay(1000);
