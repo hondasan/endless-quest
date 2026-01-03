@@ -2113,7 +2113,9 @@ class Game {
 
         if (forceDrop || Math.random() < 0.4) { 
             let drop = ITEMS[Math.floor(Math.random()*ITEMS.length)]; 
-            const inflation = Math.pow(1.5, this.clears);
+            // 魔王の強化係数に合わせて、装備も指数関数的に強くする
+            const inflationBase = 1.5 + (this.clears * 0.1);
+            const inflation = Math.pow(inflationBase, this.clears);
             let scale = Math.pow(1.15, this.lv/5) * (1 + this.generation * 0.5) * inflation;
             let newI = JSON.parse(JSON.stringify(drop)); 
             if(newI.atk) newI.atk = Math.floor(newI.atk * scale);
