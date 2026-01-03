@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ENDLESS QUEST - 覚醒の刻 - (Inflation Ver)</title>
+    <title>ENDLESS QUEST - 覚醒の刻 - (Strategy Ver)</title>
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Serif+JP:wght@700&display=swap" rel="stylesheet">
     <style>
         /* --- RESET & VARIABLES --- */
@@ -23,6 +23,7 @@
             --accent-purple: #9b59b6;
             --accent-cyan: #1abc9c;
             --accent-gold: #ffd700;
+            --accent-orange: #e67e22;
             
             --font-main: 'DotGothic16', sans-serif;
             --font-serif: 'Noto Serif JP', serif;
@@ -85,8 +86,55 @@
             position: relative;
             z-index: 10;
             filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.5));
-            transition: transform 0.2s, opacity 0.3s;
+            transition: transform 0.2s, opacity 0.3s, filter 0.3s;
         }
+        
+        /* Mutant Effect */
+        .character.mutant {
+            filter: drop-shadow(0 0 8px #f00) hue-rotate(-50deg) contrast(1.3) !important;
+        }
+
+        /* Enemy Info Panel (New) */
+        .enemy-info-panel {
+            position: absolute;
+            top: 60px; /* Below Generation Bar/Drama */
+            left: 0; right: 0;
+            text-align: center;
+            z-index: 15;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-shadow: 2px 2px 0 #000;
+        }
+        .enemy-name-disp {
+            font-size: 1.2rem;
+            color: #ccc;
+            margin-bottom: 2px;
+        }
+        .enemy-name-disp.boss { color: var(--accent-red); font-weight: bold; font-size: 1.4rem; }
+        .enemy-name-disp.mutant { color: #f88; text-shadow: 0 0 5px #f00; }
+        
+        .enemy-traits-row {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .trait-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid #666;
+            color: #ddd;
+        }
+        .trait-badge.active {
+            border-color: var(--accent-yellow);
+            color: var(--accent-yellow);
+            animation: pulse-border 1s infinite;
+        }
+        @keyframes pulse-border { 50% { border-color: #fff; } }
 
         /* Drama Window */
         .drama-window {
@@ -198,7 +246,7 @@
             flex-shrink: 0;
         }
 
-        /* --- UPDATED STATUS WINDOW (Grid Layout) --- */
+        /* --- STATUS WINDOW --- */
         .status-window {
             border: var(--border-style);
             border-radius: var(--radius);
@@ -207,7 +255,6 @@
             line-height: 1.3;
             background: #000;
         }
-        /* Top Row: 3 cols */
         .status-top-row {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -217,7 +264,6 @@
         .status-cell { display: flex; flex-direction: column; }
         .status-kv { display: flex; align-items: baseline; justify-content: space-between; margin-right: 5px; }
         
-        /* Equip Row: Flex column */
         .status-equip-row {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -272,6 +318,7 @@
         .log-entry.system { color: var(--accent-cyan); }
         .log-entry.item { color: var(--accent-purple); }
         .log-entry.block { color: var(--accent-blue); }
+        .log-entry.trait { color: var(--accent-orange); font-weight: bold; }
         .log-entry.flavor { color: #666; font-size: 0.75rem; font-style: italic; }
 
         .command-window {
@@ -309,7 +356,6 @@
         .cmd-btn:hover::before, .cmd-btn:active::before { opacity: 1; }
         .cmd-btn:disabled { color: #444; pointer-events: none; }
         
-        /* Selected State for Shop Multiplier */
         .cmd-btn.selected {
             background: #222;
             border-color: var(--accent-cyan);
@@ -328,7 +374,6 @@
         }
         .main-btn-full:active { background: #333; }
 
-        /* STOP / GUARD BIG BUTTON */
         .btn-action-overlay {
             position: absolute; bottom: 5px; right: 5px; left: 5px;
             height: 140px; z-index: 150; display: none;
@@ -363,7 +408,6 @@
         .progress-fill { height: 100%; background: #e74c3c; width: 0%; transition: width 0.5s; }
         .progress-text { position: absolute; top: -18px; right: 0; font-size: 0.7rem; color: #888; }
 
-        /* UI UPDATE: Generation Bar */
         .generation-bar {
             background: #100;
             border-bottom: var(--border-style);
@@ -445,10 +489,8 @@
     <!-- HEADER -->
     <div class="header-bar">
         <button class="icon-btn" onclick="game.openHelp()">?</button>
-        <!-- ADDED: Mute Button -->
         <button class="icon-btn" id="btn-mute" onclick="game.toggleMute()">🔊</button>
         <button class="icon-btn" id="btn-speed" onclick="game.toggleSpeed()" style="font-size:0.7rem; width:40px;">x1</button>
-        <!-- ADDED: Auto Button -->
         <button class="icon-btn" id="btn-auto" onclick="game.toggleAutoMode()" style="font-size:0.6rem; width:44px;">AUTO</button>
         
         <div class="progress-container">
@@ -457,7 +499,7 @@
         </div>
     </div>
 
-    <!-- UI UPDATE: GENERATION INFO -->
+    <!-- GENERATION INFO -->
     <div class="generation-bar">
         <span class="gen-hero">第<span id="gen-hero-num">1</span>代 勇者</span>
         <span style="font-size:0.7rem; color:#555;">VS</span>
@@ -470,6 +512,12 @@
         <div class="flash-invert" id="flash-invert"></div>
         <div class="danger-overlay" id="danger-overlay" style="display:none; position:absolute; inset:0; box-shadow:inset 0 0 50px #500; pointer-events:none; z-index:5;"></div>
         
+        <!-- ENEMY INFO PANEL -->
+        <div class="enemy-info-panel" id="enemy-info-panel" style="display:none;">
+            <div id="enemy-name-disp" class="enemy-name-disp">Enemy Name</div>
+            <div id="enemy-traits-row" class="enemy-traits-row"></div>
+        </div>
+
         <div id="drama-window" class="drama-window">
             <div id="drama-actor-box" class="drama-actor-box character" style="width:40px;height:40px;"></div>
             <div class="drama-text-box">
@@ -551,7 +599,6 @@
                 <span id="awake-txt" class="awakening-text">≪絶対防御界≫</span>
                 <span id="disp-aura" style="font-size:0.8rem; color:#555;">READY</span>
             </div>
-            <!-- Expanded Equipment Display -->
             <div class="status-equip-row">
                 <div class="equip-box" title="武器"><span class="equip-icon">⚔️</span><span id="disp-weapon">素手</span></div>
                 <div class="equip-box" title="防具"><span class="equip-icon">🛡️</span><span id="disp-armor">服</span></div>
@@ -606,8 +653,7 @@
             <div style="font-size:0.9rem; line-height:1.6; color:#ccc;">
                 <p>地下30階の魔王を討伐せよ。<br>周回するごとに敵は強大になる。</p>
                 <p><strong>[AUTOモード]</strong><br>戦闘と装備選択を自動化します。<br>※魔王戦では自動で解除されます。<br>※運(LUCK)が高いほど精度が向上します。</p>
-                <p><strong>[絶対防御界]</strong><br>連撃5以上で自動発動。MPを消費してダメージを無効化。</p>
-                <p><strong>[見切り (Just Guard)]</strong><br>敵攻撃に合わせて防御ボタンを押せ。</p>
+                <p><strong>[変異種と特性]</strong><br>赤黒いオーラを纏う敵は「変異種」です。<br>強力ですが報酬も弾みます。<br>特性(パッシブ)に注意して戦ってください。</p>
             </div>
             <div style="display:flex; gap:5px;">
                 <button class="cmd-btn" style="flex:1; text-align:center;" onclick="game.openLibrary()">図鑑を見る</button>
@@ -617,13 +663,11 @@
         </div>
     </div>
 
-    <!-- UI UPDATE: Shop with Multiplier -->
     <div id="shop-modal" class="modal-overlay">
         <div class="modal-window">
             <div class="modal-title">闇市</div>
             <div style="text-align:center; margin-bottom:5px;">所持金: <span id="shop-gold" style="color:var(--accent-yellow)">0</span> G</div>
             
-            <!-- Bulk Buy Toggles -->
             <div style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;">
                 <button class="cmd-btn selected" id="shop-mult-1" onclick="game.setShopMultiplier(1)" style="flex:1; text-align:center;">x1</button>
                 <button class="cmd-btn" id="shop-mult-10" onclick="game.setShopMultiplier(10)" style="flex:1; text-align:center;">x10</button>
@@ -655,22 +699,12 @@
 
 <script>
 class SoundManager {
-    constructor() { 
-        this.ctx = null; 
-        this.bgmOscs = []; 
-        this.muted = false; // ADDED: Mute flag
-    }
+    constructor() { this.ctx = null; this.bgmOscs = []; this.muted = false; }
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
-    
-    // ADDED: Mute toggle method
-    toggleMute() {
-        this.muted = !this.muted;
-        if(this.muted) this.stopBGM();
-        return this.muted;
-    }
+    toggleMute() { this.muted = !this.muted; if(this.muted) this.stopBGM(); return this.muted; }
 
     playSE(type) {
-        if (!this.ctx || this.muted) return; // CHANGED: Check mute
+        if (!this.ctx || this.muted) return;
         const t = this.ctx.currentTime; const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
         o.connect(g); g.connect(this.ctx.destination);
         if (type==='select') { o.type='square'; o.frequency.setValueAtTime(440,t); o.frequency.exponentialRampToValueAtTime(880,t+0.05); g.gain.setValueAtTime(0.1,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.05); o.start(t); o.stop(t+0.05); }
@@ -678,6 +712,7 @@ class SoundManager {
         else if (type==='hit') { o.type='square'; o.frequency.setValueAtTime(100,t); g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.1); o.start(t); o.stop(t+0.1); }
         else if (type==='parry') { o.type='triangle'; o.frequency.setValueAtTime(800,t); o.frequency.linearRampToValueAtTime(1600,t+0.05); g.gain.setValueAtTime(0.3,t); g.gain.linearRampToValueAtTime(0,t+0.2); o.start(t); o.stop(t+0.2); }
         else if (type==='crit') { o.type='square'; o.frequency.setValueAtTime(880,t); o.frequency.setValueAtTime(1760,t+0.1); g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.3); o.start(t); o.stop(t+0.3); }
+        else if (type==='barrier') { o.type='sine'; o.frequency.setValueAtTime(400,t); g.gain.setValueAtTime(0.2,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.3); o.start(t); o.stop(t+0.3); }
         else if (type === 'revive') {
             const freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51, 2093.00]; 
             freqs.forEach((f, i) => {
@@ -691,7 +726,7 @@ class SoundManager {
         else if (type==='metal') { o.type='square'; o.frequency.setValueAtTime(1500,t); g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.05); o.start(t); o.stop(t+0.05); }
     }
     playBGM(type) {
-        if (!this.ctx || this.muted) return; // CHANGED: Check mute
+        if (!this.ctx || this.muted) return;
         this.stopBGM();
         const o = this.ctx.createOscillator(); const g = this.ctx.createGain(); const f = this.ctx.createBiquadFilter();
         o.connect(f); f.connect(g); g.connect(this.ctx.destination);
@@ -706,7 +741,7 @@ class SoundManager {
     stopBGM() { this.bgmOscs.forEach(obj=>{try{obj.o.stop();obj.o.disconnect();}catch(e){}}); this.bgmOscs=[]; }
 }
 
-const SAVE_KEY = 'EQ_SAVE_INFLATION_V1';
+const SAVE_KEY = 'EQ_SAVE_INFLATION_V2'; // Version bumped
 const WEAPON_PREFIXES = [
     {t:"朽ちた",r:"クチタ"}, {t:"鉄塊の",r:"テッカイノ"}, {t:"煉獄の",r:"レンゴクノ"}, {t:"名工の",r:"メイコウノ"}, 
     {t:"虚無の",r:"ヴォイド"}, {t:"絶対零度",r:"アブソリュート"}, {t:"雷光の",r:"ライトニング"}, {t:"聖なる",r:"ホーリー"}, 
@@ -772,9 +807,22 @@ const SPRITES = {
     npc_king: { color: "#fca", pixels: [{x:4,y:2,w:8,h:5,c:"#eee"},{x:5,y:0,w:6,h:3,c:"#fc0"},{x:4,y:7,w:8,h:8,c:"#b22"},{x:6,y:7,w:4,h:6,c:"#fff"},{x:5,y:6,w:6,h:4,c:"#ddd"}] },
     npc_friend: { color: "#fca", pixels: [{x:5,y:2,w:6,h:5,c:"#642"},{x:5,y:1,w:6,h:2,c:"#420"},{x:5,y:7,w:6,h:6,c:"#468"},{x:6,y:8,w:4,h:4,c:"#68a"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
     npc_healer: { color: "#fca", pixels: [{x:5,y:2,w:6,h:5,c:"#edb"},{x:5,y:1,w:6,h:2,c:"#dca"},{x:5,y:7,w:6,h:8,c:"#fff"},{x:7,y:8,w:2,h:4,c:"#8d8"},{x:4,y:7,w:2,h:4,c:"#fca"}] },
-    npc_smith: { color: "#aaa", pixels: [{x:4,y:3,w:8,h:6,c:"#b86"},{x:3,y:3,w:2,h:4,c:"#531"},{x:11,y:3,w:2,h:4,c:"#531"},{x:5,y:2,w:6,h:2,c:"#ddd"},{x:4,y:9,w:8,h:5,c:"#642"},{x:6,y:10,w:4,h:3,c:"#864"}] },
-    npc_gambler: { color: "#e6e", pixels: [{x:5,y:2,w:6,h:5,c:"#eac"},{x:4,y:1,w:8,h:3,c:"#606"},{x:5,y:7,w:6,h:7,c:"#808"},{x:6,y:8,w:1,h:1,c:"#ff0"},{x:9,y:8,w:1,h:1,c:"#ff0"},{x:3,y:7,w:2,h:4,c:"#eac"}] },
 };
+
+// --- NEW: Enemy Traits ---
+const ENEMY_TRAITS = {
+    guts: { name: "剛毅", desc: "致死ダメ耐え" },
+    pierce: { name: "貫通", desc: "防御50%無視" },
+    regen: { name: "再生", desc: "HP回復" },
+    reflect: { name: "反射", desc: "ダメ反射" },
+    drain: { name: "吸血", desc: "攻撃回復" },
+    double: { name: "連撃", desc: "2回行動" },
+    barrier: { name: "障壁", desc: "初回無効" },
+    poison: { name: "猛毒", desc: "追加ダメ" },
+    iron: { name: "鉄壁", desc: "被ダメ-20%" },
+    rage: { name: "激昂", desc: "ピンチ強" }
+};
+const TRAIT_KEYS = Object.keys(ENEMY_TRAITS);
 
 const SKILLS = [
     { id: "fire", name: "<ruby>紅蓮<rt>グレン</rt></ruby>の<ruby>腕<rt>カイナ</rt></ruby>", mp: 3, dmg: 2.0, msg: "焼き尽くせ！" },
@@ -841,28 +889,11 @@ const TITLES = [
     { id: "t_unscathed", name: "<ruby>無傷<rt>パーフェクト</rt></ruby>の<ruby>帝王<rt>カイザー</rt></ruby>", cond: (g)=>g.noDamageStreak>5, eff: "LUCK+" }
 ];
 
-// --- EXPANDED DIALOGUE ---
 const TALK_PATTERNS = {
-    start: [
-        "貴様の命運は尽きた！", "その魂、我が糧となれ！", "絶望を教えてやろう", "フフフ…楽しませてくれよ？", "我が闇に平伏せ！", 
-        "この領域に踏み入るとは…", "死へのカウントダウンだ", "恐怖に歪む顔が見たい…", "ククク…飛んで火に入る夏の虫とはな",
-        "貴様の絶望、最高のご馳走だ！", "我が眠りを妨げる愚か者め", "闇の炎に抱かれて消えろ！", "貴様の存在など、塵に等しい"
-    ],
-    hit: [
-        "貴様…やるな？", "計算外だ…", "効かぬわ！", "ふん、小賢しい", "バカな…", "この私が…押されている？",
-        "ぐああっ！貴様、何者だ！？", "ほう、私のATフィールドを破るとは", "チッ、計算が狂ったわ！", "その力…まさか勇者か？",
-        "遊びは終わりだ！", "なぜだ…なぜ動きが読める！？", "生意気な…！"
-    ],
-    pinch: [
-        "まだだ…まだ終わらんよ！", "本気を出させるとは…", "後悔するぞ…", "闇の力よ！我に集え！", "貴様を道連れにしてやる！",
-        "私の真の姿を見せてやろう", "リミッター解除！", "面白い…実に面白いぞ！", "貴様だけは…地獄へ送る！",
-        "我ガ魔力、暴走ス…！"
-    ],
-    die: [
-        "バカな…私が敗れるとは…", "見事だ…", "これが…敗北の味か…", "第二形態への布石に過ぎん…", "闇は…滅びぬ…", "グフッ…！",
-        "貴様の顔…覚えたぞ…", "光ある所に…影またあり…", "我が屍を越えてゆけ…", "まさか…よもや…",
-        "見事だ人間よ…", "次は…勝つ…", "無念…"
-    ]
+    start: [ "貴様の命運は尽きた！", "その魂、我が糧となれ！", "絶望を教えてやろう", "フフフ…楽しませてくれよ？", "我が闇に平伏せ！" ],
+    hit: [ "貴様…やるな？", "計算外だ…", "効かぬわ！", "ふん、小賢しい", "バカな…", "この私が…押されている？" ],
+    pinch: [ "まだだ…まだ終わらんよ！", "本気を出させるとは…", "後悔するぞ…", "闇の力よ！我に集え！", "貴様を道連れにしてやる！" ],
+    die: [ "バカな…私が敗れるとは…", "見事だ…", "これが…敗北の味か…", "第二形態への布石に過ぎん…", "闇は…滅びぬ…" ]
 };
 
 let game = null;
@@ -886,8 +917,8 @@ class Game {
         this.fastClears = 0;
         this.reviveCount = 0;
         this.noDamageStreak = 0;
-        this.shopMultiplier = 1; // Default x1
-        this.isAutoMode = false; // ADDED: Auto mode flag
+        this.shopMultiplier = 1;
+        this.isAutoMode = false;
     }
 
     bindDOM() {
@@ -898,7 +929,6 @@ class Game {
             hp: document.getElementById('disp-hp'), mp: document.getElementById('disp-mp'),
             lv: document.getElementById('disp-lv'), atk: document.getElementById('disp-atk'), def: document.getElementById('disp-def'),
             gold: document.getElementById('disp-gold'), 
-            // New Gen UI
             genHero: document.getElementById('gen-hero-num'), genDemon: document.getElementById('gen-demon-num'),
 
             weapon: document.getElementById('disp-weapon'), armor: document.getElementById('disp-armor'), acc: document.getElementById('disp-acc'),
@@ -920,9 +950,7 @@ class Game {
             gaugeArea: document.getElementById('gauge-area'), gaugeCursor: document.getElementById('gauge-cursor'),
             
             btnMain: document.getElementById('btn-main'), btnStopWrapper: document.getElementById('btn-stop-wrapper'), btnStop: document.getElementById('btn-stop'),
-            btnSpeed: document.getElementById('btn-speed'),
-            // ADDED: Buttons
-            btnAuto: document.getElementById('btn-auto'), btnMute: document.getElementById('btn-mute'),
+            btnSpeed: document.getElementById('btn-speed'), btnAuto: document.getElementById('btn-auto'), btnMute: document.getElementById('btn-mute'),
             
             chestDisplay: document.getElementById('chest-display'),
             curI: { icon:document.getElementById('cur-icon'), name:document.getElementById('cur-name'), stat:document.getElementById('cur-stat'), sub:document.getElementById('cur-sub'), eff:document.getElementById('cur-effect') },
@@ -932,25 +960,20 @@ class Game {
             eventDisplay: document.getElementById('event-display'), eventTitle: document.getElementById('event-title'), eventDesc: document.getElementById('event-desc'), eventChoices: document.getElementById('event-choices'),
             dramaActor: document.getElementById('drama-actor-box'), dramaName: document.getElementById('drama-name'), dramaText: document.getElementById('drama-text'),
 
-            shopMultBtns: {
-                1: document.getElementById('shop-mult-1'),
-                10: document.getElementById('shop-mult-10'),
-                MAX: document.getElementById('shop-mult-max')
-            },
-            shopCostLabels: {
-                hp: document.getElementById('cost-hp'),
-                mp: document.getElementById('cost-mp'),
-                atk: document.getElementById('cost-atk'),
-                def: document.getElementById('cost-def'),
-                luck: document.getElementById('cost-luck'),
-            }
+            shopMultBtns: { 1: document.getElementById('shop-mult-1'), 10: document.getElementById('shop-mult-10'), MAX: document.getElementById('shop-mult-max') },
+            shopCostLabels: { hp: document.getElementById('cost-hp'), mp: document.getElementById('cost-mp'), atk: document.getElementById('cost-atk'), def: document.getElementById('cost-def'), luck: document.getElementById('cost-luck') },
+            
+            // NEW: Enemy Info
+            enemyInfoPanel: document.getElementById('enemy-info-panel'),
+            enemyNameDisp: document.getElementById('enemy-name-disp'),
+            enemyTraitsRow: document.getElementById('enemy-traits-row')
         };
     }
     
     resetInternalState() {
         let save = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
         this.boosts = save?.boosts || { hp: 0, mp: 0, atk: 0, def: 0, luck: 0 };
-        this.clears = save?.clears || 0; // Starts at 0 clears (Gen 1 Demon)
+        this.clears = save?.clears || 0;
         this.acquiredTitles = new Set(save?.titles || []);
         if (save) {
             this.generation = save.generation || 1; this.gold = save.gold || 0; this.acquiredItems = new Set(save.library || []);
@@ -963,14 +986,12 @@ class Game {
         this.baseAtk = 3 + this.boosts.atk;
         this.weapon = null; this.armor = null; this.accessory = null;
         this.luckBonus = Math.min(0.30, this.boosts.luck * 0.02); 
-        this.enemy = { name: "", hp: 0, maxHp: 0, atk: 0, type: "slime" };
+        this.enemy = { name: "", hp: 0, maxHp: 0, atk: 0, type: "slime", traits: [] };
         this.chain = 0;
         this.isDefenseMode = false;
         
-        // Clear all timers
         if(this.defenseTimer) clearInterval(this.defenseTimer);
         if(this.dramaTimer) clearTimeout(this.dramaTimer);
-        
         if(this.acquiredTitles.has("t_survivor")) this.maxHp = Math.floor(this.maxHp * 1.2);
     }
     
@@ -990,8 +1011,6 @@ class Game {
     
     softReset() {
         this.resetInternalState();
-        
-        // Reset UI States
         this.el.modalGo.style.display = "none";
         this.el.modalShop.style.display = "none";
         this.el.chestDisplay.style.display = "none";
@@ -1000,6 +1019,7 @@ class Game {
         this.el.btnStopWrapper.style.display = "none";
         this.el.gaugeArea.style.display = "none";
         this.el.enemy.innerHTML = "";
+        this.el.enemyInfoPanel.style.display = "none";
         
         this.el.log.innerHTML = `<div class='log-entry system'>第${this.generation}代 勇者、運命の地へ。</div>`;
         this.el.btnMain.textContent = "抽選へ"; 
@@ -1027,24 +1047,13 @@ class Game {
         this.sound.playSE('select');
     }
 
-    // ADDED: Auto Toggle
     toggleAutoMode(forceVal = null) {
-        if (forceVal !== null) {
-            this.isAutoMode = forceVal;
-        } else {
-            this.isAutoMode = !this.isAutoMode;
-        }
-        
+        if (forceVal !== null) { this.isAutoMode = forceVal; } else { this.isAutoMode = !this.isAutoMode; }
         this.el.btnAuto.classList.toggle('active', this.isAutoMode);
-        if(this.isAutoMode) {
-            this.log("[AUTO] 戦闘・装備選択を自動化", "system");
-        } else {
-            this.log("[AUTO] 解除", "system");
-        }
+        if(this.isAutoMode) { this.log("[AUTO] 戦闘・装備選択を自動化", "system"); } else { this.log("[AUTO] 解除", "system"); }
         this.sound.playSE('select');
     }
 
-    // ADDED: Mute Toggle
     toggleMute() {
         const isMuted = this.sound.toggleMute();
         this.el.btnMute.textContent = isMuted ? "🔇" : "🔊";
@@ -1070,7 +1079,27 @@ class Game {
         if (t === "asura" || t === "demon") color = "#f0f"; 
         if (t === "general" || t === "knight") color = "#8af"; 
         if (boss && t === "boss") color = this.clears > 5 ? "#a00" : "#d44"; 
+        
+        // Remove old classes
+        this.el.enemy.classList.remove("mutant");
+        if (this.enemy.isMutant) this.el.enemy.classList.add("mutant");
+        
         this.el.enemy.innerHTML = generateSVG({...d, color: color}, null, metal);
+
+        // Update Info Panel
+        this.el.enemyInfoPanel.style.display = "flex";
+        this.el.enemyNameDisp.innerHTML = this.enemy.name;
+        this.el.enemyNameDisp.className = "enemy-name-disp" + (boss ? " boss" : "") + (this.enemy.isMutant ? " mutant" : "");
+        this.el.enemyTraitsRow.innerHTML = "";
+        
+        this.enemy.traits.forEach(tKey => {
+            const t = ENEMY_TRAITS[tKey];
+            const badge = document.createElement("div");
+            badge.className = "trait-badge";
+            badge.id = `trait-${tKey}`;
+            badge.textContent = t.name;
+            this.el.enemyTraitsRow.appendChild(badge);
+        });
     }
 
     get totalAtk() { 
@@ -1119,7 +1148,6 @@ class Game {
         this.el.lv.textContent = this.lv; this.el.atk.textContent = this.totalAtk; this.el.def.textContent = this.totalDef;
         this.el.gold.textContent = this.gold; 
         
-        // UI UPDATE: Gen Info
         this.el.genHero.textContent = this.generation;
         this.el.genDemon.textContent = this.clears + 1;
 
@@ -1184,18 +1212,18 @@ class Game {
     
     decideEncounter() {
         const r = Math.random();
-        if (this.lv < this.targetLv && r < 0.20) { // Slight bump to event rate
+        if (this.lv < this.targetLv && r < 0.20) {
             this.triggerEvent();
         } else {
             this.startBattle();
         }
     }
 
-    // --- EXPANDED EVENTS ---
     triggerEvent() {
         this.state = "EVENT"; this.el.btnMain.style.display="none";
         this.el.eventDisplay.style.display = "flex"; this.el.eventChoices.innerHTML = "";
         this.el.enemy.style.display = "none";
+        this.el.enemyInfoPanel.style.display = "none";
         
         const events = ["spring", "merchant", "devil", "blacksmith", "gambler", "mimic_trap", "altar"];
         const type = events[Math.floor(Math.random()*events.length)];
@@ -1203,9 +1231,7 @@ class Game {
         
         const createBtn = (txt, cb) => {
             const b = document.createElement("button"); 
-            b.className = "cmd-btn";
-            b.style.textAlign = "center";
-            b.textContent = txt;
+            b.className = "cmd-btn"; b.style.textAlign = "center"; b.textContent = txt;
             b.onclick = () => { this.sound.playSE('select'); cb(); if(this.state !== "BATTLE_CMD") this.endEvent(); };
             this.el.eventChoices.appendChild(b);
         };
@@ -1216,31 +1242,24 @@ class Game {
             createBtn("立ち去る", () => {});
         } else if (type === "merchant") {
             title = "謎の行商人"; desc = "「いい薬、あるよ...」";
-            // BALANCE UPDATE: Percentage based heal
             const healAmount = Math.floor(this.maxHp * 0.5);
             const cost = 500 * (1 + this.clears);
             createBtn(`薬を買う (${cost}G)`, () => {
                 if(this.gold >= cost) { 
-                    this.gold -= cost; 
-                    this.hp = Math.min(this.maxHp, this.hp + healAmount); 
+                    this.gold -= cost; this.hp = Math.min(this.maxHp, this.hp + healAmount); 
                     this.log(`怪しい薬を飲んで体力が ${healAmount} 回復した！`); 
                 } else { this.log("お金が足りない..."); }
             });
             createBtn("立ち去る", () => {});
         } else if (type === "devil") {
             title = "悪魔の契約"; desc = "「HP最大値を捧げれば、力をやろう...」";
-            // BALANCE UPDATE: Percentage based cost & scaling gain
             const hpCost = Math.floor(this.maxHp * 0.1);
             const atkGain = Math.floor(this.lv * 0.5) + 5;
             createBtn(`契約 (最大HP -${hpCost} / 攻+${atkGain})`, () => {
                 if(this.maxHp > hpCost * 1.5) { 
-                    this.maxHp -= hpCost; 
-                    this.hp = Math.min(this.hp, this.maxHp); 
-                    this.boosts.atk += atkGain; 
+                    this.maxHp -= hpCost; this.hp = Math.min(this.hp, this.maxHp); this.boosts.atk += atkGain; 
                     this.log("寿命を削り力を得た...", "damage"); this.sound.playSE('crit'); 
-                } else {
-                    this.log("これ以上命を削れない...");
-                }
+                } else { this.log("これ以上命を削れない..."); }
             });
             createBtn("拒絶", () => {});
         } else if (type === "blacksmith") {
@@ -1253,9 +1272,7 @@ class Game {
                         const boost = Math.floor(this.weapon.atk * 0.2) + 2;
                         this.weapon.atk += boost;
                         this.log(`武器の攻撃力が +${boost} 上昇！`, "critical"); this.sound.playSE('metal');
-                    } else {
-                        this.log("武器を持っていない！");
-                    }
+                    } else { this.log("武器を持っていない！"); }
                 } else { this.log("金が足りないようだ。"); }
             });
             createBtn("立ち去る", () => {});
@@ -1265,11 +1282,9 @@ class Game {
             if(bet > 0) {
                 createBtn(`勝負する (賭け金:${bet}G)`, () => {
                     if(Math.random() < 0.5) {
-                        this.gold += bet;
-                        this.log(`勝った！ ${bet}G 増えた！`, "critical"); this.sound.playSE('coin');
+                        this.gold += bet; this.log(`勝った！ ${bet}G 増えた！`, "critical"); this.sound.playSE('coin');
                     } else {
-                        this.gold -= bet;
-                        this.log(`負けた... ${bet}G 失った...`, "damage");
+                        this.gold -= bet; this.log(`負けた... ${bet}G 失った...`, "damage");
                     }
                 });
             } else { desc = "「金が無い奴に用はないな」"; }
@@ -1280,11 +1295,10 @@ class Game {
                 if(Math.random() < 0.7) {
                     this.el.eventDisplay.style.display = "none";
                     this.log("宝箱はミミックだった！", "damage");
-                    this.startMimicBattle(); // Start special battle
+                    this.startMimicBattle(); 
                 } else {
                     this.log("中身はアイテムだった！");
-                    this.checkDrop(true); // Force drop
-                    this.endEvent();
+                    this.checkDrop(true); this.endEvent();
                 }
             });
             createBtn("無視する", () => {});
@@ -1305,14 +1319,8 @@ class Game {
         this.el.eventTitle.textContent = title;
         this.el.eventDesc.textContent = desc;
 
-        // MODIFIED: Auto Event
         if (this.isAutoMode) {
-            setTimeout(() => {
-                // Ensure state is still EVENT (user didn't manually click)
-                if (this.state === "EVENT" && this.el.eventChoices.children.length > 0) {
-                    this.el.eventChoices.children[0].click();
-                }
-            }, 1000);
+            setTimeout(() => { if (this.state === "EVENT" && this.el.eventChoices.children.length > 0) this.el.eventChoices.children[0].click(); }, 1000);
         }
     }
     
@@ -1322,16 +1330,20 @@ class Game {
         this.updateHud();
         if(this.state !== "BATTLE_CMD") {
             this.state = "BATTLE_WAIT"; this.el.btnMain.style.display = "block";
-            
-            // MODIFIED: Auto Event
-            if (this.isAutoMode) {
-                setTimeout(() => {
-                    if (this.state === "BATTLE_WAIT") {
-                        this.handleMainBtn();
-                    }
-                }, 800);
-            }
+            if (this.isAutoMode) { setTimeout(() => { if (this.state === "BATTLE_WAIT") this.handleMainBtn(); }, 800); }
         }
+    }
+
+    pickRandomTraits(count) {
+        const traits = [];
+        const pool = [...TRAIT_KEYS];
+        for(let i=0; i<count; i++) {
+            if(pool.length === 0) break;
+            const idx = Math.floor(Math.random() * pool.length);
+            traits.push(pool[idx]);
+            pool.splice(idx, 1);
+        }
+        return traits;
     }
 
     startBattle() {
@@ -1344,6 +1356,9 @@ class Game {
         let type = "slime", eName = "スライム", gauge="normal", metal=false, goldMult=1, expMult=1;
         const tier = Math.floor((this.lv - 1) / 3);
         
+        let isMutant = false;
+        let traits = [];
+
         if (Math.random() < 0.1) { 
             if (Math.random() < 0.5) { type="metal_s"; eName="メタルスライム"; gauge="fast"; metal=true; expMult=20; }
             else { type="goldman"; eName="ゴールドマン"; gauge="normal"; goldMult=30; }
@@ -1367,74 +1382,90 @@ class Game {
             if (type === "mimic" || type === "dullahan") gauge = "stop_go";
             if (type === "reaper" || type === "lich") gauge = "reverse";
             if (tier > 7 && Math.random() < 0.3) gauge = "wavy";
+
+            // --- 2. MUTANT CHECK ---
+            if (Math.random() < 0.05) { // 5% Chance
+                isMutant = true;
+                eName = `<ruby>異形<rt>ミュータント</rt></ruby>・` + eName.replace(/<rt>.*?<\/rt>/g,"");
+                gauge = "super_fast";
+                expMult = 5; goldMult = 5;
+                // Add 1-2 traits
+                traits = this.pickRandomTraits(Math.random() < 0.5 ? 1 : 2);
+            }
         }
         
-        // BALANCE UPDATE: Inflation based on Clears (Demon Gen)
-        const inflation = Math.pow(1.5, this.clears);
+        // --- 3. INFLATION CALCULATION ---
+        // Base: 1.5, Increases by 0.1 per clear. Ex: 1.5 -> 1.6 -> 1.7
+        const inflationBase = 1.5 + (this.clears * 0.1);
+        const inflation = Math.pow(inflationBase, this.clears);
         let diff = inflation * (1 + (this.lv * 0.1));
         
+        // Mutant Stats
+        if (isMutant) { diff *= 2; } // HP will be x5 (2.5 * 2), Atk x2
+
         this.enemy = { 
             name: eName, type: type, 
-            maxHp: Math.floor((20 + Math.pow(this.lv, 1.8)) * diff), 
-            hp: Math.floor((20 + Math.pow(this.lv, 1.8)) * diff),
+            maxHp: Math.floor((20 + Math.pow(this.lv, 1.8)) * diff * (isMutant ? 2.5 : 1)), 
+            hp: Math.floor((20 + Math.pow(this.lv, 1.8)) * diff * (isMutant ? 2.5 : 1)),
             atk: Math.floor((5 + Math.pow(this.lv, 1.5)) * diff), 
-            gaugeType: gauge, isMetal: metal, expMult, goldMult 
+            gaugeType: gauge, isMetal: metal, expMult, goldMult,
+            isMutant: isMutant, traits: traits
         };
         
         this.renderEnemy(type, metal);
         this.el.enemy.style.opacity = 0;
         this.el.enemy.style.transform = "scale(0.5)";
-        this.el.enemy.style.display = "block"; // Ensure visible
+        this.el.enemy.style.display = "block";
         requestAnimationFrame(() => { 
              this.el.enemy.style.opacity = 1; 
              this.el.enemy.style.transform = "scale(1)";
         });
         
-        if (Math.random() < 0.6) { 
+        if (isMutant) {
+            this.log("強烈な殺気を感じる...", "damage");
+            this.showCutin("強敵 出現");
+        } else if (Math.random() < 0.6) { 
             const line = TALK_PATTERNS.start[Math.floor(Math.random() * TALK_PATTERNS.start.length)];
             this.showBattleTalk(line, 2000);
         }
         
         this.log(`${this.enemy.name} があらわれた！`);
-        
-        // ADDED: Auto Attack Logic
+        if (traits.length > 0) {
+             const tNames = traits.map(k => ENEMY_TRAITS[k].name).join("・");
+             this.log(`特性: [${tNames}]`, "trait");
+        }
+
         if(this.isAutoMode) {
-             setTimeout(() => {
-                 // Check if still in battle command state (player didn't manually intervene)
-                 if(this.state === "BATTLE_CMD") {
-                     this.selectAttack();
-                 }
-             }, 400); // Small delay to let animations finish
+             setTimeout(() => { if(this.state === "BATTLE_CMD") this.selectAttack(); }, 400);
         }
     }
 
-    // Special Battle for Mimic Trap
     startMimicBattle() {
         this.state = "BATTLE_CMD"; this.el.btnMain.style.display = "none"; this.el.menuBattle.style.display = "flex";
         this.noDamageNow = true;
         
-        const inflation = Math.pow(1.5, this.clears) * 2; // Stronger than normal
+        const inflationBase = 1.5 + (this.clears * 0.1);
+        const inflation = Math.pow(inflationBase, this.clears) * 2;
+        
         this.enemy = {
             name: "<ruby>貪欲<rt>グリード</rt></ruby>ミミック", type: "mimic",
             maxHp: Math.floor((50 + Math.pow(this.lv, 1.9)) * inflation),
             hp: Math.floor((50 + Math.pow(this.lv, 1.9)) * inflation),
             atk: Math.floor((10 + Math.pow(this.lv, 1.6)) * inflation),
-            gaugeType: "stop_go", isMetal: false, expMult: 5, goldMult: 5, isMimicEvent: true
+            gaugeType: "stop_go", isMetal: false, expMult: 5, goldMult: 5, isMimicEvent: true,
+            traits: ["double", "drain"], isMutant: true
         };
         
         this.renderEnemy("mimic", false);
         this.el.enemy.style.display = "block";
         this.showCutin("TRAP!!");
         this.log("ミミックが襲いかかってきた！");
+        this.log("特性: [連撃・吸血]", "trait");
         
-        // ADDED: Auto Attack Logic
-        if(this.isAutoMode) {
-             setTimeout(() => { if(this.state === "BATTLE_CMD") this.selectAttack(); }, 800);
-        }
+        if(this.isAutoMode) { setTimeout(() => { if(this.state === "BATTLE_CMD") this.selectAttack(); }, 800); }
     }
     
     async startBossBattle(type) {
-        // ADDED: Safety Stop for Boss (Demon King)
         if(type === 'boss' && this.isAutoMode) {
             this.toggleAutoMode(false);
             this.log("魔王の気迫に圧倒され、AUTOモードが解除された！", "damage");
@@ -1443,8 +1474,9 @@ class Game {
         if(!this.isDefenseMode) this.sound.playBGM('boss');
         const isMaou = type === "boss";
         
-        // BALANCE UPDATE: Boss Inflation
-        const inflation = Math.pow(1.5, this.clears);
+        // --- 3. BOSS INFLATION ---
+        const inflationBase = 1.5 + (this.clears * 0.1);
+        const inflation = Math.pow(inflationBase, this.clears);
         
         let name = isMaou ? `第${this.clears+1}代 <ruby>魔王<rt>ダークロード</rt></ruby>` : "<ruby>魔界<rt>アビス</rt></ruby>の<ruby>番人<rt>ガーディアン</rt></ruby>";
         let eType = isMaou ? "boss" : (Math.random() < 0.5 ? "asura" : "general");
@@ -1452,12 +1484,26 @@ class Game {
         const baseHp = isMaou ? 1000 : 500;
         const baseAtk = isMaou ? 50 : 30;
 
+        // Boss Traits Logic
+        let traits = [];
+        if (isMaou) {
+            // Demon King gets more traits per loop
+            const count = Math.min(4, 2 + Math.floor(this.clears / 2));
+            traits = this.pickRandomTraits(count);
+            // Always give 'guts' to high level Maou
+            if (this.clears > 2 && !traits.includes('guts')) traits.push('guts');
+        } else {
+            // Mid Boss gets 1-2 traits
+            traits = this.pickRandomTraits(1 + (this.clears > 2 ? 1 : 0));
+        }
+
         this.enemy = { 
             name: name, type: eType, 
             maxHp: Math.floor(baseHp * inflation * (1+this.lv*0.1)), 
             hp: Math.floor(baseHp * inflation * (1+this.lv*0.1)), 
             atk: Math.floor(baseAtk * inflation * (1+this.lv*0.05)), 
-            gaugeType: "super_fast", isMetal: false, expMult: 3, goldMult: 100 
+            gaugeType: "super_fast", isMetal: false, expMult: 3, goldMult: 100,
+            traits: traits, isMutant: true // Bosses treated as mutants for visual intensity
         };
         
         this.renderEnemy(this.enemy.type, false, true);
@@ -1473,11 +1519,12 @@ class Game {
         setTimeout(() => this.showBattleTalk(line, 3000), 1000);
 
         this.showCutin(isMaou ? "魔王 降臨" : "強敵 出現");
-
-        // ADDED: Auto Attack Logic (For Mid-Boss only, as Boss stops auto)
-        if(this.isAutoMode) {
-             setTimeout(() => { if(this.state === "BATTLE_CMD") this.selectAttack(); }, 1200);
+        if (traits.length > 0) {
+             const tNames = traits.map(k => ENEMY_TRAITS[k].name).join("・");
+             this.log(`特性: [${tNames}]`, "trait");
         }
+
+        if(this.isAutoMode) { setTimeout(() => { if(this.state === "BATTLE_CMD") this.selectAttack(); }, 1200); }
     }
     
     showBattleTalk(text, duration, actorKey = null, nameOverride = null) {
@@ -1543,16 +1590,11 @@ class Game {
 
         this.el.gaugeCursor.style.opacity = 1;
 
-        // ADDED: Calculate Auto Target
         if (this.isAutoMode) {
-            // Luck influences precision. High Luck -> closer to 50.
-            // Variance: 15 (Great) ~ 2 (Perfect)
             const baseVariance = Math.max(2, 15 - (this.boosts.luck * 0.5) - (this.accessory?.effect === 'lucky' ? 5 : 0));
             const randomVariance = Math.random() * baseVariance;
             const sign = Math.random() < 0.5 ? 1 : -1;
             this.autoTarget = 50 + (randomVariance * sign);
-            
-            // Limit target to reasonable bounds (e.g. 35-65) to avoid misses if variance is high
             this.autoTarget = Math.max(35, Math.min(65, this.autoTarget));
         } else {
             this.autoTarget = null;
@@ -1572,13 +1614,9 @@ class Game {
         if(this.gaugeVal>=100){this.gaugeVal=100;this.gaugeDir=-1;} if(this.gaugeVal<=0){this.gaugeVal=0;this.gaugeDir=1;}
         this.el.gaugeCursor.style.left = this.gaugeVal+"%"; 
         
-        // ADDED: Auto Trigger
         if (this.isAutoMode && this.autoTarget !== null) {
-            // Since we usually hit on the way UP (dir=1), trigger if we cross the target
-            // Only trigger if we are in the "sweet spot" range (30-70) to avoid early misfires if target is weird
             if (this.gaugeDir === 1 && this.gaugeVal >= this.autoTarget) {
-                this.stopGauge();
-                return; // Stop recursion
+                this.stopGauge(); return; 
             }
         }
         
@@ -1611,27 +1649,69 @@ class Game {
         await this.performAttack(mult, isCrit);
     }
 
+    // --- 1. PLAYER ATTACK MODIFIED FOR ENEMY TRAITS ---
     async performAttack(mult, isCrit) {
         this.el.enemy.classList.add("anim-shake"); 
         let dmgBase = this.totalAtk * (this.selectedSkill ? this.selectedSkill.dmg : 1.0);
         let times = this.selectedSkill && this.selectedSkill.times ? this.selectedSkill.times : 1;
         
+        const traits = this.enemy.traits || [];
+
+        // Check Barrier (First hit nullified)
+        if (traits.includes("barrier") && !this.enemy.barrierBroken) {
+            this.enemy.barrierBroken = true;
+            this.log("敵の障壁が攻撃を無効化した！", "block");
+            this.showDamage("BLOCK", "block", false);
+            this.sound.playSE('barrier');
+            document.getElementById('trait-barrier')?.classList.remove('active'); // Visually deactivate
+            await this.delay(500);
+            this.updateHud();
+            setTimeout(() => this.el.enemy.classList.remove("anim-shake"), 200);
+            this.enemyTurn();
+            return;
+        }
+
         for(let i=0; i<times; i++) {
             let dmg = Math.floor(dmgBase * mult);
+            
+            // Check Iron (20% reduction)
+            if (traits.includes("iron")) {
+                dmg = Math.floor(dmg * 0.8);
+                this.highlightTrait('iron');
+            }
+
             if(this.enemy.isMetal) {
                 dmg = (isCrit || (this.weapon&&this.weapon.id==="metal_w")) ? this.enemy.maxHp : (Math.random()<0.5 ? 0 : 1);
                 if(dmg>0) this.sound.playSE('metal');
             } else {
                 if(isCrit) { this.showCutin("会心の一撃"); this.sound.playSE('crit'); } else { this.sound.playSE('hit'); }
             }
+
             if(dmg>0) { 
+                // Check Reflect
+                if (traits.includes("reflect")) {
+                    const ref = Math.floor(dmg * 0.15);
+                    if (ref > 0) {
+                        this.hp -= ref;
+                        this.log(`ダメージ反射！ ${ref} 受けた！`, "damage");
+                        this.highlightTrait('reflect');
+                    }
+                }
+
                 this.log(`${this.enemy.name}に ${dmg} のダメージ！`, isCrit ? "critical" : "");
-                this.showDamage(dmg, 'deal', isCrit); this.enemy.hp-=dmg; 
+                this.showDamage(dmg, 'deal', isCrit); 
+                this.enemy.hp -= dmg; 
+
+                // Check Guts
+                if (this.enemy.hp <= 0 && traits.includes("guts") && !this.enemy.gutsUsed) {
+                    this.enemy.hp = 1;
+                    this.enemy.gutsUsed = true;
+                    this.log("敵は食いしばった！", "trait");
+                    this.highlightTrait('guts');
+                }
                 
                 if (this.enemy.hp < this.enemy.maxHp * 0.3 && Math.random() < 0.4) {
                     this.showBattleTalk(TALK_PATTERNS.pinch[Math.floor(Math.random()*TALK_PATTERNS.pinch.length)], 1000);
-                } else if (Math.random() < 0.2) {
-                    this.showBattleTalk(TALK_PATTERNS.hit[Math.floor(Math.random()*TALK_PATTERNS.hit.length)], 1000);
                 }
 
                 if ((this.weapon && this.weapon.effect === "drain") || (this.accessory && this.accessory.effect === "drain")) {
@@ -1651,10 +1731,31 @@ class Game {
         if(this.enemy.hp<=0) this.winBattle(); else this.enemyTurn();
     }
 
+    highlightTrait(key) {
+        const el = document.getElementById(`trait-${key}`);
+        if(el) {
+            el.classList.add('active');
+            setTimeout(()=>el.classList.remove('active'), 800);
+        }
+    }
+
+    // --- 1. ENEMY TURN MODIFIED FOR TRAITS ---
     async enemyTurn() {
         this.state = "ENEMY_TURN";
         await this.delay(400);
         
+        const traits = this.enemy.traits || [];
+
+        // Regen
+        if (traits.includes("regen")) {
+            const reg = Math.floor(this.enemy.maxHp * 0.05);
+            if (reg > 0 && this.enemy.hp < this.enemy.maxHp) {
+                this.enemy.hp += reg;
+                this.log(`${this.enemy.name}は再生した (+${reg})`, "revive");
+                this.highlightTrait('regen');
+            }
+        }
+
         if (this.enemy.isMetal && Math.random() < 0.5) {
             this.log(`${this.enemy.name}は逃げ出した！`, "system");
             this.el.enemy.style.opacity = 0;
@@ -1662,67 +1763,105 @@ class Game {
             this.state = "BATTLE_WAIT"; 
             this.el.btnMain.style.display = "block"; 
             this.el.btnMain.textContent = "さらに奥へ";
-            // Auto Continue
             if (this.isAutoMode) { setTimeout(()=>this.handleMainBtn(), 500); }
             return;
         }
 
-        this.log(`${this.enemy.name}の攻撃！`, "damage");
-        this.el.enemy.style.transform = "scale(1.2)";
-        
-        this.el.btnStopWrapper.style.display = "block";
-        this.el.btnStop.className = "btn-big-action btn-guard";
-        this.el.btnStop.textContent = "GUARD!";
-        
-        this.isGuardWindow = true;
-        this.guardStart = Date.now();
-        this.guardSuccess = false;
-        
-        // Auto Guard Logic (Simple: 50% chance, or higher based on luck/speed?)
-        // Let's make Auto Guard 50% chance to be fair, or it becomes too OP.
-        // Or make it rely on Titles. For now, no Auto Guard requested, so just let it take damage or rely on Defense Mode.
-        
-        await this.delay(600);
-        
-        this.isGuardWindow = false;
-        this.el.btnStopWrapper.style.display = "none";
-        this.el.enemy.style.transform = "scale(1)";
-
-        if (this.isDefenseMode) {
-             this.sound.playSE('metal');
-             this.log(`絶対防御界がダメージを無効化した！`, "block");
-             this.showDamage("BLOCK", 'block', false);
-             this.mp = Math.max(0, this.mp - 2); 
-             if(this.mp <= 0) this.breakDefenseMode();
-             this.updateHud();
-             this.state = "BATTLE_CMD"; this.el.menuBattle.style.display = "flex";
-             // Auto Attack Next Round
-             if (this.isAutoMode) setTimeout(() => this.selectAttack(), 500);
-             return;
-        }
-
-        if (this.guardSuccess) {
-            let counterDmg = Math.floor(this.totalAtk * 1.5);
-            this.log(`カウンター！ ${this.enemy.name}に ${counterDmg} のダメージ！`, "critical");
-            this.showDamage(counterDmg, 'deal', true);
-            this.enemy.hp -= counterDmg;
-            this.sound.playSE('crit');
-            if(this.enemy.hp<=0) { this.winBattle(); return; }
+        // Double Attack Logic
+        let attacks = 1;
+        if (traits.includes("double") && Math.random() < 0.5) {
+            attacks = 2;
+            this.log(`${this.enemy.name}の連続攻撃！`, "trait");
+            this.highlightTrait('double');
         } else {
-            this.noDamageNow = false;
-            let dmg = Math.max(1, this.enemy.atk - Math.floor(Math.random()*3));
+            this.log(`${this.enemy.name}の攻撃！`, "damage");
+        }
+        
+        for (let i=0; i<attacks; i++) {
+            if (this.hp <= 0) break; // Stop if player dead
+
+            this.el.enemy.style.transform = "scale(1.2)";
+            this.el.btnStopWrapper.style.display = "block";
+            this.el.btnStop.className = "btn-big-action btn-guard";
+            this.el.btnStop.textContent = "GUARD!";
             
-            if (this.armor && this.armor.effect === "reflect") {
-                 let ref = Math.floor(dmg * 0.3);
-                 if(ref > 0) { this.enemy.hp -= ref; this.log(`呪詛返し！敵に ${ref} ダメージ！`, "damage"); }
+            this.isGuardWindow = true;
+            this.guardStart = Date.now();
+            this.guardSuccess = false;
+            
+            await this.delay(600); // Wait for input
+            
+            this.isGuardWindow = false;
+            this.el.btnStopWrapper.style.display = "none";
+            this.el.enemy.style.transform = "scale(1)";
+
+            if (this.isDefenseMode) {
+                 this.sound.playSE('metal');
+                 this.log(`絶対防御界がダメージを無効化した！`, "block");
+                 this.showDamage("BLOCK", 'block', false);
+                 this.mp = Math.max(0, this.mp - 2); 
+                 if(this.mp <= 0) this.breakDefenseMode();
+                 this.updateHud();
+                 continue; // Next attack
             }
 
-            dmg = Math.max(1, Math.floor(dmg - (this.totalDef / 2)));
-            if(Math.random()<0.15 && !this.enemy.isMetal) { dmg=Math.floor(dmg*1.5); this.log("痛恨の一撃！","damage"); }
-            
-            this.hp-=dmg; this.updateHud(); 
-            this.log(`${dmg} のダメージを受けた！`, "damage"); this.showDamage(dmg, 'take', false); this.sound.playSE('hit');
-            this.el.stage.style.transform = "translate(5px, 5px)"; setTimeout(() => this.el.stage.style.transform = "translate(0, 0)", 100);
+            if (this.guardSuccess) {
+                let counterDmg = Math.floor(this.totalAtk * 1.5);
+                this.log(`カウンター！ ${this.enemy.name}に ${counterDmg} のダメージ！`, "critical");
+                this.showDamage(counterDmg, 'deal', true);
+                this.enemy.hp -= counterDmg;
+                this.sound.playSE('crit');
+                if(this.enemy.hp<=0) { this.winBattle(); return; }
+            } else {
+                this.noDamageNow = false;
+                let atkVal = this.enemy.atk;
+                
+                // Rage
+                if (traits.includes("rage") && this.enemy.hp < this.enemy.maxHp * 0.5) {
+                    atkVal = Math.floor(atkVal * 1.5);
+                    this.highlightTrait('rage');
+                }
+
+                let dmg = Math.max(1, atkVal - Math.floor(Math.random()*3));
+                
+                // Pierce
+                let defCalc = this.totalDef;
+                if (traits.includes("pierce")) {
+                    defCalc = Math.floor(defCalc * 0.5);
+                    this.highlightTrait('pierce');
+                }
+
+                dmg = Math.max(1, Math.floor(dmg - (defCalc / 2)));
+
+                if(Math.random()<0.15 && !this.enemy.isMetal) { dmg=Math.floor(dmg*1.5); this.log("痛恨の一撃！","damage"); }
+                
+                this.hp-=dmg; 
+                this.log(`${dmg} のダメージを受けた！`, "damage"); this.showDamage(dmg, 'take', false); this.sound.playSE('hit');
+                this.el.stage.style.transform = "translate(5px, 5px)"; setTimeout(() => this.el.stage.style.transform = "translate(0, 0)", 100);
+
+                // Drain
+                if (traits.includes("drain")) {
+                    let heal = Math.floor(dmg * 0.3);
+                    this.enemy.hp += heal;
+                    this.highlightTrait('drain');
+                }
+                
+                // Poison
+                if (traits.includes("poison")) {
+                    let pDmg = Math.floor(this.maxHp * 0.05);
+                    this.hp -= pDmg;
+                    this.log("毒が身体を蝕む...", "damage");
+                    this.highlightTrait('poison');
+                }
+                
+                // Reflect Armor
+                if (this.armor && this.armor.effect === "reflect") {
+                     let ref = Math.floor(dmg * 0.3);
+                     if(ref > 0) { this.enemy.hp -= ref; this.log(`呪詛返し！敵に ${ref} ダメージ！`, "damage"); }
+                }
+            }
+            this.updateHud();
+            await this.delay(200);
         }
 
         if ((this.armor && this.armor.effect === "regen") || (this.accessory && this.accessory.effect === "regen")) {
@@ -1813,20 +1952,17 @@ class Game {
         }
 
         this.log(`${this.enemy.name}を倒した。`, "critical");
-        if (Math.random() < 0.3) {
-            this.showBattleTalk(TALK_PATTERNS.die[Math.floor(Math.random()*TALK_PATTERNS.die.length)], 1000);
-        }
-
         this.sound.playSE('select'); 
         this.el.enemy.style.transition = "opacity 1s, transform 1s";
         this.el.enemy.style.opacity = 0;
         this.el.enemy.style.transform = "scale(0.1) rotate(180deg)";
+        this.el.enemyInfoPanel.style.display = "none";
+
         await this.delay(1000);
         
         this.lv += 1;
         const mult = this.enemy.expMult;
         
-        // BALANCE: Stat gain
         this.maxHp += 4 * mult; this.hp = Math.min(this.maxHp, this.hp + 20);
         this.baseAtk += 1 * mult; this.maxMp += 2 * mult; this.mp += 2 * mult;
         
@@ -1857,21 +1993,13 @@ class Game {
             this.pendingItem = soulItem;
             this.log("敵の魂が具現化した...", "revive");
             
-            // Auto Equip check for Soul
-            if (this.isAutoMode) {
-                 await this.autoEquipCheck(soulItem);
-            } else {
-                 await this.showItemCompare(soulItem);
-            }
+            if (this.isAutoMode) { await this.autoEquipCheck(soulItem); } else { await this.showItemCompare(soulItem); }
             return;
         }
 
         if (forceDrop || Math.random() < 0.4) { 
             let drop = ITEMS[Math.floor(Math.random()*ITEMS.length)]; 
-            
-            // BALANCE UPDATE: Item Inflation
             const inflation = Math.pow(1.5, this.clears);
-            
             let scale = Math.pow(1.15, this.lv/5) * (1 + this.generation * 0.5) * inflation;
             let newI = JSON.parse(JSON.stringify(drop)); 
             if(newI.atk) newI.atk = Math.floor(newI.atk * scale);
@@ -1880,23 +2008,16 @@ class Game {
             this.acquiredItems.add(drop.id);
             this.pendingItem = newI;
             
-            // ADDED: Auto Equip Check
-            if (this.isAutoMode) {
-                 await this.autoEquipCheck(newI);
-            } else {
-                 await this.showItemCompare(newI);
-            }
+            if (this.isAutoMode) { await this.autoEquipCheck(newI); } else { await this.showItemCompare(newI); }
         } else {
             this.state="BATTLE_WAIT"; 
             this.el.btnMain.textContent="さらに奥へ"; 
             this.el.btnMain.style.display="block"; 
             if(!this.isDefenseMode) this.sound.playBGM('battle');
-            // Auto Continue
             if (this.isAutoMode) { setTimeout(()=>this.handleMainBtn(), 500); }
         }
     }
 
-    // ADDED: Auto Equip Logic
     async autoEquipCheck(item) {
         let cur = null;
         if (item.type === "acc") cur = this.accessory;
@@ -1906,15 +2027,9 @@ class Game {
         const getStat = (i) => (i ? (i.atk||0) + (i.def||0) : 0);
         const curVal = getStat(cur);
         const newVal = getStat(item);
-
-        // Simple logic: If new item is stronger or equal, take it. Else sell.
-        // Also prioritize Souls if slot is empty or weak? 
-        // For simplicity, stick to raw stat sum.
         const take = newVal >= curVal;
         
         this.decideItem(take);
-        
-        // No promise resolve needed as decideItem continues flow, but for consistency:
         return Promise.resolve();
     }
     
@@ -1972,15 +2087,12 @@ class Game {
     }
 
     decideItem(take) {
-        // Only play sound if UI is shown (manual mode) or just force it (auto mode)
-        // Actually sound is fine in auto too for feedback
         if (!this.isAutoMode) this.sound.playSE('select');
         
         let soldPrice = 0;
         let soldName = "";
 
         if(take) {
-            // Sell old
             let old;
             if(this.pendingItem.type === "acc") old = this.accessory;
             else if(this.pendingItem.type === "a") old = this.armor;
@@ -2000,7 +2112,6 @@ class Game {
             this.log(`${this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"")}を装備！`, "item"); 
             if(!this.isAutoMode) this.sound.playSE('revive');
         } else { 
-            // Sell new (discarded)
             soldPrice = this.calcPrice(this.pendingItem);
             soldName = this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"");
             this.gold += soldPrice;
@@ -2011,6 +2122,7 @@ class Game {
         this.el.chestDisplay.style.display = "none"; 
         this.el.menuChest.style.display = "none";
         this.el.enemy.style.display = "block";
+        this.el.enemyInfoPanel.style.display = "flex";
         
         this.updateHud(); 
         
@@ -2019,9 +2131,7 @@ class Game {
         this.el.btnMain.style.display="block"; 
         if(!this.isDefenseMode) this.sound.playBGM('battle');
         
-        // Auto Continue
         if (this.isAutoMode) { setTimeout(()=>this.handleMainBtn(), 500); }
-        
         if(this.resolveItem) this.resolveItem();
     }
 
@@ -2110,7 +2220,7 @@ class Game {
     openShop() { 
         this.el.modalGo.style.display="none"; 
         this.el.modalShop.style.display="flex"; 
-        this.shopMultiplier = 1; // Reset to 1 on open
+        this.shopMultiplier = 1; 
         this.updateShopUI();
     }
 
@@ -2122,15 +2232,12 @@ class Game {
 
     updateShopUI() {
         document.getElementById('shop-gold').textContent = this.gold;
-        
-        // Update Buttons Visual
         Object.keys(this.el.shopMultBtns).forEach(k => {
              const btn = this.el.shopMultBtns[k];
              if(String(k) === String(this.shopMultiplier)) btn.classList.add('selected');
              else btn.classList.remove('selected');
         });
 
-        // Update Price Labels (Optional Visual Feedback)
         const basePrices = { hp: 500, mp: 500, atk: 1000, def: 1000, luck: 2000 };
         Object.keys(basePrices).forEach(type => {
             const base = basePrices[type];
@@ -2154,7 +2261,7 @@ class Game {
         else if (this.shopMultiplier === 10) amount = 10;
         else if (this.shopMultiplier === 'MAX') {
             amount = Math.floor(this.gold / baseCost);
-            if(amount === 0) amount = 1; // Let it fail below naturally
+            if(amount === 0) amount = 1; 
         }
 
         const totalCost = baseCost * amount;
@@ -2162,30 +2269,16 @@ class Game {
         if(this.gold >= totalCost){
             this.gold -= totalCost;
             this.boosts[t] += (inc * amount);
-            
-            // Immediate effect for HP/MP
             if(t === 'hp') { this.maxHp += (inc * amount); this.hp += (inc * amount); }
             if(t === 'mp') { this.maxMp += (inc * amount); this.mp += (inc * amount); }
-
-            this.updateShopUI();
-            this.updateHud(); // Reflect maxHp/mp changes immediately
-            this.sound.playSE('coin');
-            this.saveData();
-            
-            // Visual feedback
-            const label = t.toUpperCase();
-            this.log(`${label}を +${inc*amount} 強化した！`, "item");
-
-        } else {
-            this.sound.playSE('hit'); // Error sound
-        }
+            this.updateShopUI(); this.updateHud(); this.sound.playSE('coin'); this.saveData();
+            const label = t.toUpperCase(); this.log(`${label}を +${inc*amount} 強化した！`, "item");
+        } else { this.sound.playSE('hit'); }
     }
     
     openLibrary() {
-        this.sound.playSE('select'); 
-        this.el.modalHelp.style.display = "none"; // Close help if coming from there
-        this.el.modalLib.style.display="flex"; 
-        document.getElementById('lib-grid').innerHTML="";
+        this.sound.playSE('select'); this.el.modalHelp.style.display = "none";
+        this.el.modalLib.style.display="flex"; document.getElementById('lib-grid').innerHTML="";
         
         const allItems = [...ITEMS];
         Object.keys(SOULS).forEach(key => {
@@ -2203,12 +2296,9 @@ class Game {
             div.className=`list-item ${has?'got':''} ${i.isSoul?'soul':''}`;
             let label = "";
             if(i.type==="w") label=`攻${i.atk}`; else if(i.type==="a") label=`守${i.def}`; else label="装飾";
-            
-            // Masking
             const name = has ? i.name.replace(/<rt>.*?<\/rt>/g,"") : "？？？";
             const icon = has ? generateSVG(SPRITES[i.sprite], i.color) : generateSVG(SPRITES.stick, "#222");
             const stat = has ? label : "---";
-
             div.innerHTML=`${icon}<div>${name}</div><div>${stat}</div>`;
             document.getElementById('lib-grid').appendChild(div);
         });
