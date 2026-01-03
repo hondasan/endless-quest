@@ -453,6 +453,15 @@
         .list-item.got { border-color: #fff; color: #fff; }
         .list-item.soul { border-color: var(--accent-purple); }
 
+        /* Score Modal Styles */
+        .score-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px dashed #333;
+        }
+        .score-label { color: #aaa; font-size: 0.9rem; }
+        .score-val { color: #fff; font-size: 1.1rem; font-family: var(--font-serif); }
+        .score-val.high { color: var(--accent-yellow); }
+
         /* Overlays */
         .overlay-center {
             position: absolute; top:0; left:0; width:100%; height:100%;
@@ -489,6 +498,7 @@
     <!-- HEADER -->
     <div class="header-bar">
         <button class="icon-btn" onclick="game.openHelp()">?</button>
+        <button class="icon-btn" onclick="game.openScore()">🏆</button> <!-- Score Button -->
         <button class="icon-btn" id="btn-mute" onclick="game.toggleMute()">🔊</button>
         <button class="icon-btn" id="btn-speed" onclick="game.toggleSpeed()" style="font-size:0.7rem; width:40px;">x1</button>
         <button class="icon-btn" id="btn-auto" onclick="game.toggleAutoMode()" style="font-size:0.6rem; width:44px;">AUTO</button>
@@ -655,11 +665,42 @@
                 <p><strong>[AUTOモード]</strong><br>戦闘と装備選択を自動化します。<br>※魔王戦では自動で解除されます。<br>※運(LUCK)が高いほど精度が向上します。</p>
                 <p><strong>[変異種と特性]</strong><br>赤黒いオーラを纏う敵は「変異種」です。<br>強力ですが報酬も弾みます。<br>特性(パッシブ)に注意して戦ってください。</p>
             </div>
-            <div style="display:flex; gap:5px;">
+            <!-- TRAITS LIST AREA -->
+            <div style="font-size:0.8rem; color:#aaa; margin-top:10px; border-top:1px dashed #444; padding-top:5px;">
+                <div style="color:var(--accent-orange); margin-bottom:5px;">▼ 敵の特性一覧</div>
+                <div id="help-traits-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;"></div>
+            </div>
+            <div style="display:flex; gap:5px; margin-top:10px;">
                 <button class="cmd-btn" style="flex:1; text-align:center;" onclick="game.openLibrary()">図鑑を見る</button>
                 <button class="cmd-btn" style="flex:1; text-align:center;" onclick="game.closeHelp()">閉じる</button>
             </div>
-            <button style="background:#300; border:1px solid #f00; color:#f88; padding:5px; margin-top:20px;" onclick="game.resetSaveData()">記録消去</button>
+            <button style="background:#300; border:1px solid #f00; color:#f88; padding:5px; margin-top:10px;" onclick="game.resetSaveData()">記録消去</button>
+        </div>
+    </div>
+
+    <!-- NEW: SCORE MODAL -->
+    <div id="score-modal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-title">歴戦の記録</div>
+            <div style="display:flex; flex-direction:column; gap:5px; margin-bottom:20px;">
+                <div class="score-row">
+                    <span class="score-label">最高到達階数</span>
+                    <span class="score-val" id="score-floor">0F</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">魔王討伐数</span>
+                    <span class="score-val" id="score-clears">0回</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">最大与ダメージ</span>
+                    <span class="score-val high" id="score-dmg-deal">0</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">最大被ダメージ</span>
+                    <span class="score-val high" id="score-dmg-take" style="color:var(--accent-red);">0</span>
+                </div>
+            </div>
+            <button class="cmd-btn" style="text-align:center;" onclick="game.closeScore()">閉じる</button>
         </div>
     </div>
 
@@ -940,6 +981,7 @@ class Game {
             
             modalGo: document.getElementById('modal-go'), modalShop: document.getElementById('shop-modal'), modalLib: document.getElementById('lib-modal'),
             modalHelp: document.getElementById('help-modal'),
+            modalScore: document.getElementById('score-modal'), // NEW
             
             drama: document.getElementById('drama-window'), flash: document.getElementById('flash'), flashInv: document.getElementById('flash-invert'), cutin: document.getElementById('cutin'),
             damagePop: document.getElementById('damage-pop'), chainPop: document.getElementById('chain-pop'),
@@ -963,10 +1005,10 @@ class Game {
             shopMultBtns: { 1: document.getElementById('shop-mult-1'), 10: document.getElementById('shop-mult-10'), MAX: document.getElementById('shop-mult-max') },
             shopCostLabels: { hp: document.getElementById('cost-hp'), mp: document.getElementById('cost-mp'), atk: document.getElementById('cost-atk'), def: document.getElementById('cost-def'), luck: document.getElementById('cost-luck') },
             
-            // NEW: Enemy Info
             enemyInfoPanel: document.getElementById('enemy-info-panel'),
             enemyNameDisp: document.getElementById('enemy-name-disp'),
-            enemyTraitsRow: document.getElementById('enemy-traits-row')
+            enemyTraitsRow: document.getElementById('enemy-traits-row'),
+            helpTraitsList: document.getElementById('help-traits-list') // NEW
         };
     }
     
@@ -974,6 +1016,11 @@ class Game {
         let save = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
         this.boosts = save?.boosts || { hp: 0, mp: 0, atk: 0, def: 0, luck: 0 };
         this.clears = save?.clears || 0;
+        // Load High Scores
+        this.maxFloor = save?.maxFloor || 1;
+        this.maxDamageDealt = save?.maxDamageDealt || 0;
+        this.maxDamageTaken = save?.maxDamageTaken || 0;
+
         this.acquiredTitles = new Set(save?.titles || []);
         if (save) {
             this.generation = save.generation || 1; this.gold = save.gold || 0; this.acquiredItems = new Set(save.library || []);
@@ -996,9 +1043,15 @@ class Game {
     }
     
     saveData() {
+        // Update max floor before saving
+        if(this.lv > this.maxFloor) this.maxFloor = this.lv;
+
         localStorage.setItem(SAVE_KEY, JSON.stringify({
             generation: this.generation + 1, gold: this.gold, library: Array.from(this.acquiredItems),
-            boosts: this.boosts, clears: this.clears, titles: Array.from(this.acquiredTitles)
+            boosts: this.boosts, clears: this.clears, titles: Array.from(this.acquiredTitles),
+            maxFloor: this.maxFloor, // Save
+            maxDamageDealt: this.maxDamageDealt, // Save
+            maxDamageTaken: this.maxDamageTaken // Save
         }));
     }
 
@@ -1160,6 +1213,9 @@ class Game {
         const prog = Math.min(100, (this.lv / this.targetLv) * 100);
         this.el.bar.style.width = `${prog}%`;
         this.el.txt.textContent = this.lv >= this.targetLv ? "決戦！ 魔王の間" : `地下 ${this.lv} / ${this.targetLv} 階`;
+        
+        // Update High Score if needed (realtime)
+        if(this.lv > this.maxFloor) this.maxFloor = this.lv;
         
         if(this.acquiredTitles.size > 0) {
             const last = Array.from(this.acquiredTitles).pop();
@@ -1649,13 +1705,16 @@ class Game {
         await this.performAttack(mult, isCrit);
     }
 
-    // --- 1. PLAYER ATTACK MODIFIED FOR ENEMY TRAITS ---
+    // --- 1. PLAYER ATTACK MODIFIED FOR ENEMY TRAITS & MAX DAMAGE RECORD ---
     async performAttack(mult, isCrit) {
         this.el.enemy.classList.add("anim-shake"); 
         let dmgBase = this.totalAtk * (this.selectedSkill ? this.selectedSkill.dmg : 1.0);
         let times = this.selectedSkill && this.selectedSkill.times ? this.selectedSkill.times : 1;
         
         const traits = this.enemy.traits || [];
+        
+        // NEW: Total Damage Calculation for Score
+        let totalDamageInThisAction = 0;
 
         // Check Barrier (First hit nullified)
         if (traits.includes("barrier") && !this.enemy.barrierBroken) {
@@ -1701,6 +1760,9 @@ class Game {
                 this.log(`${this.enemy.name}に ${dmg} のダメージ！`, isCrit ? "critical" : "");
                 this.showDamage(dmg, 'deal', isCrit); 
                 this.enemy.hp -= dmg; 
+                
+                // Add to total
+                totalDamageInThisAction += dmg;
 
                 // Check Guts
                 if (this.enemy.hp <= 0 && traits.includes("guts") && !this.enemy.gutsUsed) {
@@ -1726,6 +1788,13 @@ class Game {
             }
             await this.delay(200);
         }
+
+        // NEW: Check High Score (Max Damage Dealt)
+        if (totalDamageInThisAction > this.maxDamageDealt) {
+            this.maxDamageDealt = totalDamageInThisAction;
+            this.saveData(); // Auto save new record
+        }
+
         this.updateHud(); 
         setTimeout(() => this.el.enemy.classList.remove("anim-shake"), 200);
         if(this.enemy.hp<=0) this.winBattle(); else this.enemyTurn();
@@ -1739,12 +1808,13 @@ class Game {
         }
     }
 
-    // --- 1. ENEMY TURN MODIFIED FOR TRAITS ---
+    // --- 1. ENEMY TURN MODIFIED FOR TRAITS & MAX DAMAGE TAKEN ---
     async enemyTurn() {
         this.state = "ENEMY_TURN";
         await this.delay(400);
         
         const traits = this.enemy.traits || [];
+        let totalDamageTakenInThisTurn = 0; // NEW: Track damage for score
 
         // Regen
         if (traits.includes("regen")) {
@@ -1811,6 +1881,14 @@ class Game {
                 this.showDamage(counterDmg, 'deal', true);
                 this.enemy.hp -= counterDmg;
                 this.sound.playSE('crit');
+                
+                // Note: Counter damage counts as 'Dealt' too? Usually defensive.
+                // We'll treat it as dealt for score.
+                if (counterDmg > this.maxDamageDealt) {
+                    this.maxDamageDealt = counterDmg;
+                    this.saveData();
+                }
+
                 if(this.enemy.hp<=0) { this.winBattle(); return; }
             } else {
                 this.noDamageNow = false;
@@ -1837,6 +1915,10 @@ class Game {
                 
                 this.hp-=dmg; 
                 this.log(`${dmg} のダメージを受けた！`, "damage"); this.showDamage(dmg, 'take', false); this.sound.playSE('hit');
+                
+                // Add to total taken score
+                totalDamageTakenInThisTurn += dmg;
+
                 this.el.stage.style.transform = "translate(5px, 5px)"; setTimeout(() => this.el.stage.style.transform = "translate(0, 0)", 100);
 
                 // Drain
@@ -1851,6 +1933,8 @@ class Game {
                     let pDmg = Math.floor(this.maxHp * 0.05);
                     this.hp -= pDmg;
                     this.log("毒が身体を蝕む...", "damage");
+                    // Poison doesn't count as "taken damage" from attack usually, but it hurts.
+                    // For simplicity, we only count direct hit damage for now.
                     this.highlightTrait('poison');
                 }
                 
@@ -1862,6 +1946,12 @@ class Game {
             }
             this.updateHud();
             await this.delay(200);
+        }
+        
+        // NEW: Check Max Damage Taken
+        if (totalDamageTakenInThisTurn > this.maxDamageTaken) {
+            this.maxDamageTaken = totalDamageTakenInThisTurn;
+            this.saveData();
         }
 
         if ((this.armor && this.armor.effect === "regen") || (this.accessory && this.accessory.effect === "regen")) {
@@ -2214,9 +2304,35 @@ class Game {
              this.el.chainPop.style.opacity = 0;
         }, 500);
     }
-    openHelp() { this.sound.playSE('select'); this.el.modalHelp.style.display="flex"; }
+    openHelp() { 
+        this.sound.playSE('select'); 
+        this.el.modalHelp.style.display="flex"; 
+        
+        // NEW: Populate traits list
+        this.el.helpTraitsList.innerHTML = "";
+        TRAIT_KEYS.forEach(k => {
+            const t = ENEMY_TRAITS[k];
+            const div = document.createElement("div");
+            div.style.display = "flex";
+            div.style.gap = "4px";
+            div.style.alignItems = "center";
+            div.innerHTML = `<span style="color:#ddd; font-weight:bold;">[${t.name}]</span> <span>${t.desc}</span>`;
+            this.el.helpTraitsList.appendChild(div);
+        });
+    }
     closeHelp() { this.sound.playSE('select'); this.el.modalHelp.style.display="none"; }
     
+    // NEW: Score Modal
+    openScore() {
+        this.sound.playSE('select');
+        this.el.modalScore.style.display = "flex";
+        document.getElementById('score-floor').textContent = `${this.maxFloor}F`;
+        document.getElementById('score-clears').textContent = `${this.clears}回`;
+        document.getElementById('score-dmg-deal').textContent = this.maxDamageDealt.toLocaleString();
+        document.getElementById('score-dmg-take').textContent = this.maxDamageTaken.toLocaleString();
+    }
+    closeScore() { this.sound.playSE('select'); this.el.modalScore.style.display = "none"; }
+
     openShop() { 
         this.el.modalGo.style.display="none"; 
         this.el.modalShop.style.display="flex"; 
