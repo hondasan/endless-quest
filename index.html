@@ -937,6 +937,27 @@ const TALK_PATTERNS = {
     die: [ "バカな…私が敗れるとは…", "見事だ…", "これが…敗北の味か…", "第二形態への布石に過ぎん…", "闇は…滅びぬ…" ]
 };
 
+// --- Big Number Formatter ---
+function formatBigNum(num) {
+    if (num === null || num === undefined) return "0";
+    if (typeof num !== 'number') return num; // Return as is if not a number
+    // 1万未満はそのまま（3桁区切り推奨）
+    if (num < 10000) return Math.floor(num).toLocaleString();
+    
+    const units = ["万", "億", "兆", "京", "垓", "𥝱"];
+    let unitIndex = -1;
+    let v = num;
+    
+    // 10000で割り続けて単位を決める
+    while (v >= 10000 && unitIndex < units.length - 1) {
+        v /= 10000;
+        unitIndex++;
+    }
+    
+    // 小数点2桁まで表示し、.00は削除する
+    return v.toFixed(2).replace(/\.00$/, "") + units[unitIndex];
+}
+
 let game = null;
 
 class Game {
@@ -1197,9 +1218,12 @@ class Game {
 
     updateHud() {
         if(!this.el.hp) return;
-        this.el.hp.textContent = this.hp; this.el.mp.textContent = this.mp;
-        this.el.lv.textContent = this.lv; this.el.atk.textContent = this.totalAtk; this.el.def.textContent = this.totalDef;
-        this.el.gold.textContent = this.gold; 
+        this.el.hp.textContent = formatBigNum(this.hp); 
+        this.el.mp.textContent = formatBigNum(this.mp);
+        this.el.lv.textContent = this.lv; 
+        this.el.atk.textContent = formatBigNum(this.totalAtk); 
+        this.el.def.textContent = formatBigNum(this.totalDef);
+        this.el.gold.textContent = formatBigNum(this.gold); 
         
         this.el.genHero.textContent = this.generation;
         this.el.genDemon.textContent = this.clears + 1;
@@ -1300,10 +1324,10 @@ class Game {
             title = "謎の行商人"; desc = "「いい薬、あるよ...」";
             const healAmount = Math.floor(this.maxHp * 0.5);
             const cost = 500 * (1 + this.clears);
-            createBtn(`薬を買う (${cost}G)`, () => {
+            createBtn(`薬を買う (${formatBigNum(cost)}G)`, () => {
                 if(this.gold >= cost) { 
                     this.gold -= cost; this.hp = Math.min(this.maxHp, this.hp + healAmount); 
-                    this.log(`怪しい薬を飲んで体力が ${healAmount} 回復した！`); 
+                    this.log(`怪しい薬を飲んで体力が ${formatBigNum(healAmount)} 回復した！`); 
                 } else { this.log("お金が足りない..."); }
             });
             createBtn("立ち去る", () => {});
@@ -1311,7 +1335,7 @@ class Game {
             title = "悪魔の契約"; desc = "「HP最大値を捧げれば、力をやろう...」";
             const hpCost = Math.floor(this.maxHp * 0.1);
             const atkGain = Math.floor(this.lv * 0.5) + 5;
-            createBtn(`契約 (最大HP -${hpCost} / 攻+${atkGain})`, () => {
+            createBtn(`契約 (最大HP -${formatBigNum(hpCost)} / 攻+${formatBigNum(atkGain)})`, () => {
                 if(this.maxHp > hpCost * 1.5) { 
                     this.maxHp -= hpCost; this.hp = Math.min(this.hp, this.maxHp); this.boosts.atk += atkGain; 
                     this.log("寿命を削り力を得た...", "damage"); this.sound.playSE('crit'); 
@@ -1321,13 +1345,13 @@ class Game {
         } else if (type === "blacksmith") {
             title = "流浪の鍛冶屋"; desc = "「武器を鍛えてやろうか？」";
             const cost = 1000 * (1 + this.clears);
-            createBtn(`鍛える (${cost}G)`, () => {
+            createBtn(`鍛える (${formatBigNum(cost)}G)`, () => {
                 if(this.gold >= cost) {
                     if(this.weapon) {
                         this.gold -= cost;
                         const boost = Math.floor(this.weapon.atk * 0.2) + 2;
                         this.weapon.atk += boost;
-                        this.log(`武器の攻撃力が +${boost} 上昇！`, "critical"); this.sound.playSE('metal');
+                        this.log(`武器の攻撃力が +${formatBigNum(boost)} 上昇！`, "critical"); this.sound.playSE('metal');
                     } else { this.log("武器を持っていない！"); }
                 } else { this.log("金が足りないようだ。"); }
             });
@@ -1336,11 +1360,11 @@ class Game {
             title = "怪しいギャンブラー"; desc = "「金貨の裏表を当てたら倍にしてやる」";
             const bet = Math.floor(this.gold / 2);
             if(bet > 0) {
-                createBtn(`勝負する (賭け金:${bet}G)`, () => {
+                createBtn(`勝負する (賭け金:${formatBigNum(bet)}G)`, () => {
                     if(Math.random() < 0.5) {
-                        this.gold += bet; this.log(`勝った！ ${bet}G 増えた！`, "critical"); this.sound.playSE('coin');
+                        this.gold += bet; this.log(`勝った！ ${formatBigNum(bet)}G 増えた！`, "critical"); this.sound.playSE('coin');
                     } else {
-                        this.gold -= bet; this.log(`負けた... ${bet}G 失った...`, "damage");
+                        this.gold -= bet; this.log(`負けた... ${formatBigNum(bet)}G 失った...`, "damage");
                     }
                 });
             } else { desc = "「金が無い奴に用はないな」"; }
@@ -1366,7 +1390,7 @@ class Game {
                     this.maxHp -= sac; this.hp = Math.min(this.hp, this.maxHp);
                     const gain = Math.floor(this.baseAtk * 0.2) + 5;
                     this.baseAtk += gain;
-                    this.log(`最大HPが ${sac} 減り、力が ${gain} 上がった！`, "critical"); this.sound.playSE('crit');
+                    this.log(`最大HPが ${formatBigNum(sac)} 減り、力が ${formatBigNum(gain)} 上がった！`, "critical"); this.sound.playSE('crit');
                 }
             });
             createBtn("立ち去る", () => {});
@@ -1618,7 +1642,7 @@ class Game {
         if(skill.type==="heal") {
             let h = skill.heal + Math.floor(Math.random()*10) + this.boosts.atk;
             this.hp = Math.min(this.maxHp, this.hp+h); this.updateHud(); this.showDamage(h, 'heal', false);
-            this.log(`${skill.name}！ 体力が ${h} 回復した！`, "revive"); this.sound.playSE('revive');
+            this.log(`${skill.name}！ 体力が ${formatBigNum(h)} 回復した！`, "revive"); this.sound.playSE('revive');
             this.el.menuSkills.style.display="none"; setTimeout(()=>this.enemyTurn(),800);
         } else {
             this.selectedSkill = skill; this.el.menuSkills.style.display="none"; this.startGauge();
@@ -1752,12 +1776,12 @@ class Game {
                     const ref = Math.floor(dmg * 0.15);
                     if (ref > 0) {
                         this.hp -= ref;
-                        this.log(`ダメージ反射！ ${ref} 受けた！`, "damage");
+                        this.log(`ダメージ反射！ ${formatBigNum(ref)} 受けた！`, "damage");
                         this.highlightTrait('reflect');
                     }
                 }
 
-                this.log(`${this.enemy.name}に ${dmg} のダメージ！`, isCrit ? "critical" : "");
+                this.log(`${this.enemy.name}に ${formatBigNum(dmg)} のダメージ！`, isCrit ? "critical" : "");
                 this.showDamage(dmg, 'deal', isCrit); 
                 this.enemy.hp -= dmg; 
                 
@@ -1780,7 +1804,7 @@ class Game {
                      let drain = Math.floor(dmg * 0.2);
                      if(drain > 0) {
                          this.hp = Math.min(this.maxHp, this.hp + drain);
-                         this.log(`血を啜り ${drain} 回復！`, "revive");
+                         this.log(`血を啜り ${formatBigNum(drain)} 回復！`, "revive");
                      }
                 }
             } else { 
@@ -1821,7 +1845,7 @@ class Game {
             const reg = Math.floor(this.enemy.maxHp * 0.05);
             if (reg > 0 && this.enemy.hp < this.enemy.maxHp) {
                 this.enemy.hp += reg;
-                this.log(`${this.enemy.name}は再生した (+${reg})`, "revive");
+                this.log(`${this.enemy.name}は再生した (+${formatBigNum(reg)})`, "revive");
                 this.highlightTrait('regen');
             }
         }
@@ -1877,7 +1901,7 @@ class Game {
 
             if (this.guardSuccess) {
                 let counterDmg = Math.floor(this.totalAtk * 1.5);
-                this.log(`カウンター！ ${this.enemy.name}に ${counterDmg} のダメージ！`, "critical");
+                this.log(`カウンター！ ${this.enemy.name}に ${formatBigNum(counterDmg)} のダメージ！`, "critical");
                 this.showDamage(counterDmg, 'deal', true);
                 this.enemy.hp -= counterDmg;
                 this.sound.playSE('crit');
@@ -1914,7 +1938,7 @@ class Game {
                 if(Math.random()<0.15 && !this.enemy.isMetal) { dmg=Math.floor(dmg*1.5); this.log("痛恨の一撃！","damage"); }
                 
                 this.hp-=dmg; 
-                this.log(`${dmg} のダメージを受けた！`, "damage"); this.showDamage(dmg, 'take', false); this.sound.playSE('hit');
+                this.log(`${formatBigNum(dmg)} のダメージを受けた！`, "damage"); this.showDamage(dmg, 'take', false); this.sound.playSE('hit');
                 
                 // Add to total taken score
                 totalDamageTakenInThisTurn += dmg;
@@ -1941,7 +1965,7 @@ class Game {
                 // Reflect Armor
                 if (this.armor && this.armor.effect === "reflect") {
                      let ref = Math.floor(dmg * 0.3);
-                     if(ref > 0) { this.enemy.hp -= ref; this.log(`呪詛返し！敵に ${ref} ダメージ！`, "damage"); }
+                     if(ref > 0) { this.enemy.hp -= ref; this.log(`呪詛返し！敵に ${formatBigNum(ref)} ダメージ！`, "damage"); }
                 }
             }
             this.updateHud();
@@ -2065,7 +2089,7 @@ class Game {
         this.gold+=g;
         
         this.updateHud(); 
-        this.log(mult > 1 ? `${g}G 強奪。莫大な経験値を得た。(Lv+1)` : `${g}G 獲得。Lv${this.lv}に到達。`);
+        this.log(mult > 1 ? `${formatBigNum(g)}G 強奪。莫大な経験値を得た。(Lv+1)` : `${formatBigNum(g)}G 獲得。Lv${this.lv}に到達。`);
         this.sound.playSE('coin');
         await this.checkDrop(this.enemy.isMimicEvent);
     }
@@ -2159,9 +2183,9 @@ class Game {
         els.icon.innerHTML = generateSVG(sp, item.color);
         
         let statTxt = "";
-        if (type === "acc") statTxt = `攻+${item.atk||0} 守+${item.def||0}`;
-        else if (type === "a") statTxt = `守+${item.def}`;
-        else statTxt = `攻+${item.atk}`;
+        if (type === "acc") statTxt = `攻+${formatBigNum(item.atk||0)} 守+${formatBigNum(item.def||0)}`;
+        else if (type === "a") statTxt = `守+${formatBigNum(item.def)}`;
+        else statTxt = `攻+${formatBigNum(item.atk)}`;
         els.stat.textContent = statTxt;
         
         let sText = "";
@@ -2192,7 +2216,7 @@ class Game {
                 soldPrice = this.calcPrice(old);
                 soldName = old.name.replace(/<rt>.*?<\/rt>/g,"");
                 this.gold += soldPrice;
-                this.log(`${soldName}を下取り (+${soldPrice}G)`, "system");
+                this.log(`${soldName}を下取り (+${formatBigNum(soldPrice)}G)`, "system");
                 if(!this.isAutoMode) this.sound.playSE('coin');
             }
 
@@ -2205,7 +2229,7 @@ class Game {
             soldPrice = this.calcPrice(this.pendingItem);
             soldName = this.pendingItem.name.replace(/<rt>.*?<\/rt>/g,"");
             this.gold += soldPrice;
-            this.log(`${soldName}を売却 (+${soldPrice}G)`, "system");
+            this.log(`${soldName}を売却 (+${formatBigNum(soldPrice)}G)`, "system");
             if(!this.isAutoMode) this.sound.playSE('coin');
         }
         
@@ -2283,7 +2307,10 @@ class Game {
     }
 
     showDamage(val, t, c){
-        const el = this.el.damagePop; el.textContent = val; el.className = "damage-pop";
+        // 数値ならフォーマット、文字列ならそのまま
+        const dispVal = (typeof val === 'number') ? formatBigNum(val) : val;
+
+        const el = this.el.damagePop; el.textContent = dispVal; el.className = "damage-pop";
         if (t === 'deal') { el.classList.add('deal'); if (c) el.classList.add('crit'); }
         else if (t === 'take') el.classList.add('take'); else if (t === 'heal') el.classList.add('heal'); 
         else if (t === 'block') el.classList.add('block');
@@ -2328,8 +2355,9 @@ class Game {
         this.el.modalScore.style.display = "flex";
         document.getElementById('score-floor').textContent = `${this.maxFloor}F`;
         document.getElementById('score-clears').textContent = `${this.clears}回`;
-        document.getElementById('score-dmg-deal').textContent = this.maxDamageDealt.toLocaleString();
-        document.getElementById('score-dmg-take').textContent = this.maxDamageTaken.toLocaleString();
+        // Apply big num format
+        document.getElementById('score-dmg-deal').textContent = formatBigNum(this.maxDamageDealt);
+        document.getElementById('score-dmg-take').textContent = formatBigNum(this.maxDamageTaken);
     }
     closeScore() { this.sound.playSE('select'); this.el.modalScore.style.display = "none"; }
 
@@ -2347,7 +2375,9 @@ class Game {
     }
 
     updateShopUI() {
-        document.getElementById('shop-gold').textContent = this.gold;
+        // Apply big num format
+        document.getElementById('shop-gold').textContent = formatBigNum(this.gold);
+
         Object.keys(this.el.shopMultBtns).forEach(k => {
              const btn = this.el.shopMultBtns[k];
              if(String(k) === String(this.shopMultiplier)) btn.classList.add('selected');
@@ -2357,9 +2387,9 @@ class Game {
         const basePrices = { hp: 500, mp: 500, atk: 1000, def: 1000, luck: 2000 };
         Object.keys(basePrices).forEach(type => {
             const base = basePrices[type];
-            let label = `${base}G`;
-            if (this.shopMultiplier === 10) label = `${base*10}G`;
-            if (this.shopMultiplier === 'MAX') label = `${base}G~`;
+            let label = `${formatBigNum(base)}G`;
+            if (this.shopMultiplier === 10) label = `${formatBigNum(base*10)}G`;
+            if (this.shopMultiplier === 'MAX') label = `${formatBigNum(base)}G~`;
             if (this.el.shopCostLabels[type]) this.el.shopCostLabels[type].textContent = label;
         });
     }
@@ -2388,7 +2418,7 @@ class Game {
             if(t === 'hp') { this.maxHp += (inc * amount); this.hp += (inc * amount); }
             if(t === 'mp') { this.maxMp += (inc * amount); this.mp += (inc * amount); }
             this.updateShopUI(); this.updateHud(); this.sound.playSE('coin'); this.saveData();
-            const label = t.toUpperCase(); this.log(`${label}を +${inc*amount} 強化した！`, "item");
+            const label = t.toUpperCase(); this.log(`${label}を +${formatBigNum(inc*amount)} 強化した！`, "item");
         } else { this.sound.playSE('hit'); }
     }
     
@@ -2411,7 +2441,7 @@ class Game {
             const div=document.createElement('div'); const has=this.acquiredItems.has(i.id);
             div.className=`list-item ${has?'got':''} ${i.isSoul?'soul':''}`;
             let label = "";
-            if(i.type==="w") label=`攻${i.atk}`; else if(i.type==="a") label=`守${i.def}`; else label="装飾";
+            if(i.type==="w") label=`攻${formatBigNum(i.atk)}`; else if(i.type==="a") label=`守${formatBigNum(i.def)}`; else label="装飾";
             const name = has ? i.name.replace(/<rt>.*?<\/rt>/g,"") : "？？？";
             const icon = has ? generateSVG(SPRITES[i.sprite], i.color) : generateSVG(SPRITES.stick, "#222");
             const stat = has ? label : "---";
