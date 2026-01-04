@@ -944,7 +944,7 @@ function formatBigNum(num) {
     // 1万未満はそのまま（3桁区切り推奨）
     if (num < 10000) return Math.floor(num).toLocaleString();
     
-    const units = ["万", "億", "兆", "京", "垓", "𥝱"];
+    const units = ["万", "億", "兆", "京", "垓", "𥝱", "穣"];
     let unitIndex = -1;
     let v = num;
     
